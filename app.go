@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -59,4 +61,59 @@ func (a *App) TestExcelReading() (string, error) {
 	// Return information about the file
 	return fmt.Sprintf("Successfully read Excel file with %d sheets. First sheet '%s' has %d rows.", 
 		len(sheets), sheets[0], len(rows)), nil
+}
+
+// SetDiretorioPlanilhas recebe o caminho do diretório contendo as planilhas e o valida
+func (a *App) SetDiretorioPlanilhas(caminho string) (bool, error) {
+	// Verificando se o caminho foi fornecido
+	if caminho == "" {
+		return false, fmt.Errorf("caminho do diretório não pode ser vazio")
+	}
+
+	// Verificando se o caminho existe
+	info, err := os.Stat(caminho)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, fmt.Errorf("diretório não encontrado: %s", caminho)
+		}
+		return false, fmt.Errorf("erro ao acessar o diretório: %w", err)
+	}
+
+	// Verificando se é um diretório
+	if !info.IsDir() {
+		return false, fmt.Errorf("o caminho fornecido não é um diretório: %s", caminho)
+	}
+
+	// Verificando se o diretório contém arquivos .xlsx
+	arquivos, err := os.ReadDir(caminho)
+	if err != nil {
+		return false, fmt.Errorf("erro ao ler o diretório: %w", err)
+	}
+
+	// Procurando por arquivos .xlsx
+	encontrouPlanilha := false
+	for _, arquivo := range arquivos {
+		if !arquivo.IsDir() && filepath.Ext(arquivo.Name()) == ".xlsx" {
+			encontrouPlanilha = true
+			break
+		}
+	}
+
+	if !encontrouPlanilha {
+		return false, fmt.Errorf("nenhum arquivo .xlsx encontrado no diretório: %s", caminho)
+	}
+
+	// Se passou por todas as validações, o diretório é válido
+	return true, nil
+}
+
+// SelecionarDiretorio abre um diálogo para o usuário selecionar um diretório
+func (a *App) SelecionarDiretorio() (string, error) {
+	directory, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Selecione o diretório das planilhas",
+	})
+	if err != nil {
+		return "", err
+	}
+	return directory, nil
 }
