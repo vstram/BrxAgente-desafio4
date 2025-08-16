@@ -19,6 +19,15 @@ O framework utilizado para a parte de análise dos dados via Modelo de Linguagem
 
 Para o Front End foi utilizado o React JS.
 
+## Arquitetura do Projeto
+
+O projeto segue uma arquitetura modular com os seguintes pacotes internos:
+
+- `internal/excel`: Responsável pela manipulação de planilhas Excel
+- `internal/calculo`: Contém a lógica de cálculo do VR
+- `internal/modelo`: Define as estruturas de dados utilizadas no projeto
+- `internal/validacao`: Implementa as regras de validação dos dados
+
 ## Características
 
 * Permite a análise de um diretório com um conjunto de planilhas com os dados de funcionarios visando automatizar o processo mensal de compra de Vale Refeição.
