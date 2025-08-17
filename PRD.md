@@ -39,7 +39,7 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
     - Outros afastamentos.
     - Data de desligamento.
 - [x] **Implementar regra de desligamento**: Aplicar a regra específica para desligamentos: se comunicado até o dia 15, não considerar; se após o dia 15, calcular proporcionalmente.
-- [ ] **Calcular valores de VR**: Desenvolver a lógica para calcular o valor total de VR a ser concedido a cada colaborador, utilizando o valor definido para o seu sindicato.
+- [x] **Calcular valores de VR**: Desenvolver a lógica para calcular o valor total de VR a ser concedido a cada colaborador, utilizando o valor definido para o seu sindicato.
 
 > ⚠️ **Nota de Confidencialidade**: Como os nomes dos colaboradores não estão disponíveis nas planilhas, todas as referências aos colaboradores serão feitas exclusivamente através do campo **MATRICULA**.
 

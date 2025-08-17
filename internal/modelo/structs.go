@@ -48,6 +48,18 @@ type Colaborador struct {
 	
 	// Situacao atual do colaborador (Trabalhando, Férias, etc.)
 	Situacao string
+	
+	// ValorTotalVR é o valor total de VR a ser concedido ao colaborador
+	ValorTotalVR float64
+	
+	// ValorEmpresa é a parcela paga pela empresa (80% do valor total)
+	ValorEmpresa float64
+	
+	// ValorColaborador é a parcela descontada do colaborador (20% do valor total)
+	ValorColaborador float64
+	
+	// DiasUteisEfetivos é o número de dias úteis efetivos calculados para o colaborador
+	DiasUteisEfetivos int
 }
 
 // EstaAtivo verifica se o colaborador está ativo em uma determinada data

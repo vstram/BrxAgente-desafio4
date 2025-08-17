@@ -208,6 +208,12 @@ func ConsolidarBases(diretorioPlanilhas string) (map[string]*modelo.Colaborador,
 		return nil, erros[0]
 	}
 	
+	// 13. Calcular valores de VR para cada colaborador
+	err = calcularValoresVR(colaboradores, sindicatos, diasUteis)
+	if err != nil {
+		return nil, err
+	}
+	
 	return colaboradores, nil
 }
 
@@ -215,13 +221,10 @@ func ConsolidarBases(diretorioPlanilhas string) (map[string]*modelo.Colaborador,
 func validarDadosConsolidados(colaboradores map[string]*modelo.Colaborador, sindicatos map[string]float64, diasUteis map[string]int) []error {
 	var erros []error
 	
-	// Criar mapas de mapeamento de sindicatos para estados
-	mapaSindicatos := criarMapaSindicatos(sindicatos)
-	
 	// Validar cada colaborador
 	for _, colaborador := range colaboradores {
 		// Mapear o sindicato do colaborador para o estado correspondente
-		estadoSindicato := mapearSindicatoParaEstado(colaborador.Sindicato, mapaSindicatos)
+		estadoSindicato := mapearSindicatoParaEstado(colaborador.Sindicato)
 		if estadoSindicato != "" {
 			// Criar uma cópia do colaborador com o sindicato mapeado
 			colaboradorMapeado := *colaborador
@@ -238,36 +241,6 @@ func validarDadosConsolidados(colaboradores map[string]*modelo.Colaborador, sind
 	}
 	
 	return erros
-}
-
-// criarMapaSindicatos cria um mapa de sindicatos para estados
-func criarMapaSindicatos(sindicatos map[string]float64) map[string]string {
-	mapa := make(map[string]string)
-	
-	// Mapear os sindicatos para os estados
-	for sindicato := range sindicatos {
-		mapa[sindicato] = sindicato
-	}
-	
-	return mapa
-}
-
-// mapearSindicatoParaEstado mapeia o nome do sindicato do colaborador para o estado correspondente
-func mapearSindicatoParaEstado(sindicato string, mapaSindicatos map[string]string) string {
-	// Mapear os sindicatos para os estados
-	switch {
-	case strings.Contains(sindicato, "PR") || strings.Contains(sindicato, "CURITIBA"):
-		return "Paraná"
-	case strings.Contains(sindicato, "RS"):
-		return "Rio Grande do Sul"
-	case strings.Contains(sindicato, "SP"):
-		return "São Paulo"
-	case strings.Contains(sindicato, "RJ"):
-		return "Rio de Janeiro"
-	default:
-		// Se não conseguir identificar, retornar vazio
-		return ""
-	}
 }
 
 // processarAtivos processa os dados da planilha de colaboradores ativos
@@ -893,4 +866,51 @@ func parseDataAdmissao(dataStr string) (time.Time, error) {
 	data := time.Date(anoCompleto, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
 	
 	return data, nil
+}
+
+// calcularValoresVR calcula os valores de VR para todos os colaboradores
+func calcularValoresVR(colaboradores map[string]*modelo.Colaborador, valorPorSindicato map[string]float64, diasUteisPorSindicato map[string]int) error {
+	// Data de referência para cálculo (maio de 2025)
+	mesReferencia := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
+	
+	// Calcular valores de VR para cada colaborador
+	for _, colaborador := range colaboradores {
+		// Calcular o valor total de VR
+		valorTotal, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
+		if err != nil {
+			return err
+		}
+		
+		// Armazenar o valor total de VR no colaborador
+		colaborador.ValorTotalVR = valorTotal
+		
+		// Calcular o rateio 80%/20% (empresa/colaborador)
+		colaborador.ValorEmpresa = valorTotal * 0.8
+		colaborador.ValorColaborador = valorTotal * 0.2
+		
+		// Calcular e armazenar os dias úteis efetivos
+		// Mapear o sindicato do colaborador para o estado correspondente
+	estadoSindicato := mapearSindicatoParaEstado(colaborador.Sindicato)
+		if estadoSindicato == "" {
+			// Se não conseguir mapear, usar o nome do sindicato diretamente
+			estadoSindicato = colaborador.Sindicato
+		}
+		
+		// Obter o número de dias úteis para o sindicato do colaborador
+		diasUteisSindicato, existe := diasUteisPorSindicato[estadoSindicato]
+		if !existe {
+			// Tentar encontrar os dias úteis usando o nome do sindicato diretamente
+			diasUteisSindicato, existe = diasUteisPorSindicato[colaborador.Sindicato]
+			if !existe {
+				// Se não encontrar os dias úteis, usar 22 como padrão
+				diasUteisSindicato = 22
+			}
+		}
+		
+		// Calcular os dias úteis efetivos para o colaborador
+		diasUteisEfetivos := CalcularDiasUteisPorSindicato(colaborador, diasUteisSindicato, mesReferencia)
+		colaborador.DiasUteisEfetivos = diasUteisEfetivos
+	}
+	
+	return nil
 }
