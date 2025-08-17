@@ -1,36 +1,40 @@
+// main.go
 package main
 
 import (
-	"embed"
-
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"fmt"
+	"log"
+	
+	"BrxAgente-desafio4/internal/calculo"
 )
 
-//go:embed all:frontend/dist
-var assets embed.FS
-
 func main() {
-	// Create an instance of the app structure
-	app := NewApp()
-
-	// Create application with options
-	err := wails.Run(&options.App{
-		Title:  "BrxAgente-desafio4",
-		Width:  1024,
-		Height: 768,
-		AssetServer: &assetserver.Options{
-			Assets: assets,
-		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
-		Bind: []interface{}{
-			app,
-		},
-	})
-
+	// Diretório onde estão as planilhas
+	diretorioPlanilhas := "./files"
+	
+	// Consolidar as bases de dados
+	fmt.Println("Iniciando consolidação das bases de dados...")
+	colaboradores, err := calculo.ConsolidarBases(diretorioPlanilhas)
 	if err != nil {
-		println("Error:", err.Error())
+		log.Fatalf("Erro ao consolidar bases: %v", err)
 	}
+	
+	// Exibir informações sobre os colaboradores consolidados
+	fmt.Printf("Total de colaboradores consolidados: %d\n", len(colaboradores))
+	
+	// Exibir os primeiros 5 colaboradores como exemplo
+	i := 0
+	for _, colaborador := range colaboradores {
+		if i >= 5 {
+			break
+		}
+		
+		fmt.Printf("Matrícula: %s, Empresa: %s, Cargo: %s, Situação: %s, Sindicato: %s\n",
+			colaborador.Matricula, colaborador.Empresa, colaborador.Cargo, 
+			colaborador.Situacao, colaborador.Sindicato)
+		
+		i++
+	}
+	
+	fmt.Println("Consolidação concluída com sucesso!")
 }

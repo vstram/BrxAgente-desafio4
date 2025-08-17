@@ -6,17 +6,17 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
 
 ### 1. Fundação e Estrutura do Projeto
 
-- [ ] **Configurar dependências do projeto**: Adicionar bibliotecas necessárias para manipulação de arquivos Excel (ex: `github.com/xuri/excelize/v2`) ao `go.mod`.
-- [ ] **Definir estrutura de pacotes internos**: Criar os pacotes sugeridos (`internal/excel`, `internal/calculo`, `internal/modelo`, `internal/validacao`) para organizar a lógica da aplicação.
-- [ ] **Criar estruturas de dados (structs)**: Definir as structs `Colaborador` e `Periodo` para representar os dados dos funcionários e seus afastamentos/férias.
-- [ ] **Implementar sistema de tratamento de erros**: Criar um tipo de erro customizado (`ErroProcessamento`) para lidar com falhas durante o processamento das planilhas.
+- [x] **Configurar dependências do projeto**: Adicionar bibliotecas necessárias para manipulação de arquivos Excel (ex: `github.com/xuri/excelize/v2`) ao `go.mod`.
+- [x] **Definir estrutura de pacotes internos**: Criar os pacotes sugeridos (`internal/excel`, `internal/calculo`, `internal/modelo`, `internal/validacao`) para organizar a lógica da aplicação.
+- [x] **Criar estruturas de dados (structs)**: Definir as structs `Colaborador` e `Periodo` para representar os dados dos funcionários e seus afastamentos/férias.
+- [x] **Implementar sistema de tratamento de erros**: Criar um tipo de erro customizado (`ErroProcessamento`) para lidar com falhas durante o processamento das planilhas.
 
 ### 2. Leitura e Processamento de Dados
 
-- [ ] **Implementar função para ler planilhas Excel**: Criar uma função no backend (`LerPlanilha`) que utilize uma biblioteca de manipulação de Excel para abrir e ler os arquivos `.xlsx`.
-- [ ] **Implementar seleção de diretório no frontend**: Adicionar uma funcionalidade na interface React para que o usuário possa selecionar a pasta contendo as planilhas de entrada.
-- [ ] **Consolidar bases de dados**: Desenvolver a lógica para ler e combinar as informações de todas as 5 planilhas separadas (Ativos, Férias, Desligados, Base Cadastral, Base Sindicato) em uma única estrutura de dados em memória.
-- [ ] **Validar integridade dos dados**: Implementar validações para verificar:
+- [x] **Implementar função para ler planilhas Excel**: Criar uma função no backend (`LerPlanilha`) que utilize uma biblioteca de manipulação de Excel para abrir e ler os arquivos `.xlsx`.
+- [~] **Implementar seleção de diretório no frontend**: Adicionar uma funcionalidade na interface React para que o usuário possa selecionar a pasta contendo as planilhas de entrada.
+- [x] **Consolidar bases de dados**: Desenvolver a lógica para ler e combinar as informações de todas as 5 planilhas separadas (Ativos, Férias, Desligados, Base Cadastral, Base Sindicato) em uma única estrutura de dados em memória.
+- [~] **Validar integridade dos dados**: Implementar validações para verificar:
     - Consistência de datas (admissão, desligamento, férias, afastamentos).
     - Preenchimento de campos obrigatórios.
     - Formatação correta dos dados (ex: formato de datas).
