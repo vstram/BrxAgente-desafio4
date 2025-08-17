@@ -8,32 +8,41 @@ O projeto BrxAgente-desafio4 é um aplicativo desktop desenvolvido com Wails (Go
 
 ```
 BrxAgente-desafio4/
-├── app.go              # Lógica principal do backend em Go
-├── main.go             # Ponto de entrada da aplicação
+├── app.go              # Lógica principal do backend em Go (arquivo temporário para testes)
+├── main.go             # Ponto de entrada da aplicação (versão de teste para desenvolvimento)
 ├── go.mod/go.sum       # Gerenciamento de dependências Go
 ├── wails.json          # Configuração do Wails
 ├── frontend/           # Código frontend React
 ├── files/              # Planilhas de dados Excel
-└── build/              # Arquivos de build
+├── build/              # Arquivos de build
+└── internal/           # Implementação da lógica de negócio e processamento de dados
+    ├── calculo/        # Funções de cálculo e consolidação de dados
+    ├── excel/          # Funções de leitura e escrita de planilhas Excel
+    ├── modelo/         # Estruturas de dados (structs) para representar colaboradores
+    └── validacao/      # Funções de validação de dados
 ```
+
+> ⚠️ **Nota**: O arquivo `app.go` foi criado temporariamente para testes e não contém a lógica principal da aplicação. A lógica de negócio foi implementada nos pacotes dentro do diretório `internal/`, seguindo as melhores práticas de organização de código Go.
 
 ## Recomendações Técnicas
 
 ### 1. Implementação da Lógica de Negócio
 
-Atualmente, o projeto tem apenas uma função de exemplo `Greet`. É necessário implementar a lógica de cálculo do VR:
+A lógica de cálculo do VR já foi parcialmente implementada nos pacotes internos:
 
 ```go
-// Em app.go, adicione funções como:
-func (a *App) ProcessarVR(diretorioPlanilhas string) error {
+// A lógica principal foi implementada em internal/calculo/consolidar.go:
+func ConsolidarBases(diretorioPlanilhas string) (map[string]*modelo.Colaborador, error) {
     // Implementar a lógica de processamento das planilhas
     // - Leitura dos arquivos Excel
     // - Consolidação das bases de dados
     // - Aplicação das regras de negócio
     // - Geração da planilha final
-    return nil
+    return colaboradores, nil
 }
 ```
+
+> ⚠️ **Nota**: A lógica de negócio foi implementada seguindo as melhores práticas de organização de código Go, utilizando pacotes internos (`internal/`) em vez de colocar toda a lógica no arquivo `app.go`.
 
 ### 2. Manipulação de Arquivos Excel
 
