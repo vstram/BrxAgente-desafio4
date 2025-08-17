@@ -11,6 +11,7 @@ import (
 
 // GerarPlanilhaResultado cria uma planilha Excel com os resultados do cálculo de VR
 // seguindo o formato especificado no modelo VR MENSAL 05.2025.xlsx
+// Respeitando a Nota de Confidencialidade, apenas a MATRICULA é usada para identificar o colaborador
 func GerarPlanilhaResultado(colaboradores map[string]*modelo.Colaborador, caminhoArquivo string) error {
 	// Criar um novo arquivo Excel
 	f := excelize.NewFile()
@@ -19,9 +20,9 @@ func GerarPlanilhaResultado(colaboradores map[string]*modelo.Colaborador, caminh
 	sheetName := "Planilha1"
 	f.SetSheetName("Sheet1", sheetName)
 	
-	// Criar os cabeçalhos da planilha
+	// Criar os cabeçalhos da planilha (sem NOME, conforme Nota de Confidencialidade)
 	cabecalhos := []string{
-		"EMPRESA", "MATRICULA", "NOME", "CARGO", "SINDICATO", 
+		"EMPRESA", "MATRICULA", "CARGO", "SINDICATO", 
 		"REF", "DIAS", "VR", "DESCONTO", "VALOR",
 	}
 	
@@ -34,11 +35,10 @@ func GerarPlanilhaResultado(colaboradores map[string]*modelo.Colaborador, caminh
 	// Preencher os dados dos colaboradores
 	linha := 2
 	for _, colaborador := range colaboradores {
-		// Preencher os dados do colaborador
+		// Preencher os dados do colaborador (sem NOME, conforme Nota de Confidencialidade)
 		dados := []interface{}{
 			colaborador.Empresa,
 			colaborador.Matricula,
-			colaborador.Nome,
 			colaborador.Cargo,
 			colaborador.Sindicato,
 			"05/2025", // REF (mês de referência)
@@ -67,6 +67,7 @@ func GerarPlanilhaResultado(colaboradores map[string]*modelo.Colaborador, caminh
 
 // GerarPlanilhaResultadoComTemplate cria uma planilha Excel com os resultados do cálculo de VR
 // usando um template existente como base
+// Respeitando a Nota de Confidencialidade, apenas a MATRICULA é usada para identificar o colaborador
 func GerarPlanilhaResultadoComTemplate(colaboradores map[string]*modelo.Colaborador, caminhoTemplate, caminhoArquivo string) error {
 	// Abrir o template
 	f, err := excelize.OpenFile(caminhoTemplate)
@@ -88,7 +89,7 @@ func GerarPlanilhaResultadoComTemplate(colaboradores map[string]*modelo.Colabora
 		}
 		
 		// Limpar a linha
-		for col := 1; col <= 10; col++ {
+		for col := 1; col <= 9; col++ { // 9 colunas agora (sem NOME)
 			cell, _ := excelize.CoordinatesToCellName(col, linha)
 			f.SetCellValue(sheetName, cell, "")
 		}
@@ -99,11 +100,10 @@ func GerarPlanilhaResultadoComTemplate(colaboradores map[string]*modelo.Colabora
 	// Preencher os dados dos colaboradores começando da linha 2
 	linha = 2
 	for _, colaborador := range colaboradores {
-		// Preencher os dados do colaborador
+		// Preencher os dados do colaborador (sem NOME, conforme Nota de Confidencialidade)
 		dados := []interface{}{
 			colaborador.Empresa,
 			colaborador.Matricula,
-			colaborador.Nome,
 			colaborador.Cargo,
 			colaborador.Sindicato,
 			"05/2025", // REF (mês de referência)

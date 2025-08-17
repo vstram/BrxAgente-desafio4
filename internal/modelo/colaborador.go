@@ -1,4 +1,7 @@
 // Package modelo provides data structures for the application
+// ⚠️ NOTA DE CONFIDENCIALIDADE: Os nomes dos colaboradores não devem ser usados em saídas
+// devido aos requisitos de sigilo. Todas as referências aos colaboradores devem ser feitas
+// exclusivamente através do campo MATRICULA como identificador único.
 package modelo
 
 import (
@@ -20,7 +23,8 @@ type Colaborador struct {
 	// Matricula é o identificador único do colaborador
 	Matricula string
 	
-	// Nome do colaborador
+	// Nome do colaborador - Campo mantido para processamento interno, mas não deve ser usado em saídas
+	// devido à Nota de Confidencialidade que requer o uso exclusivo da MATRICULA
 	Nome string
 	
 	// DataAdmissao é a data em que o colaborador foi admitido

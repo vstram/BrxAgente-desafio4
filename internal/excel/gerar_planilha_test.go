@@ -13,7 +13,6 @@ func TestGerarPlanilhaResultado(t *testing.T) {
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
 			Matricula:        "001",
-			Nome:             "João Silva",
 			Empresa:          "Empresa A",
 			Cargo:            "Analista",
 			Sindicato:        "Paraná",
@@ -24,7 +23,6 @@ func TestGerarPlanilhaResultado(t *testing.T) {
 		},
 		"002": {
 			Matricula:        "002",
-			Nome:             "Maria Santos",
 			Empresa:          "Empresa B",
 			Cargo:            "Gerente",
 			Sindicato:        "Rio Grande do Sul",
@@ -54,7 +52,6 @@ func TestGerarPlanilhaResultadoComTemplate(t *testing.T) {
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
 			Matricula:        "001",
-			Nome:             "João Silva",
 			Empresa:          "Empresa A",
 			Cargo:            "Analista",
 			Sindicato:        "Paraná",
