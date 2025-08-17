@@ -340,31 +340,47 @@ func processarFerias(f *excelize.File, colaboradores map[string]*modelo.Colabora
 			continue
 		}
 		
-		// Verificar se a linha tem dados suficientes (pelo menos 3 colunas)
-		if len(row) < 3 {
+		// Verificar se a linha tem dados suficientes (pelo menos 4 colunas)
+		if len(row) < 4 {
 			continue
 		}
 		
 		// Extrair os dados da linha
 		matricula := strings.TrimSpace(row[0])
 		situacao := strings.TrimSpace(row[1])
-		diasStr := strings.TrimSpace(row[2])
+		dataInicioStr := strings.TrimSpace(row[2])
+		dataFimStr := strings.TrimSpace(row[3])
 		
-		// Converter dias para inteiro
-		dias, err := strconv.Atoi(diasStr)
+		// Parse das datas
+		dataInicio, err := time.Parse("01-02-06", dataInicioStr) // MM-DD-YY
 		if err != nil {
 			// Se não conseguir converter, continua para o próximo
 			continue
 		}
+		
+		// Ajustar o ano para 2025 (assumindo que YY=25 é 2025)
+		dataInicio = time.Date(2000+dataInicio.Year()%100, dataInicio.Month(), dataInicio.Day(), 0, 0, 0, 0, time.UTC)
+		
+		dataFim, err := time.Parse("01-02-06", dataFimStr) // MM-DD-YY
+		if err != nil {
+			// Se não conseguir converter, continua para o próximo
+			continue
+		}
+		
+		// Ajustar o ano para 2025 (assumindo que YY=25 é 2025)
+		dataFim = time.Date(2000+dataFim.Year()%100, dataFim.Month(), dataFim.Day(), 0, 0, 0, 0, time.UTC)
 		
 		// Verificar se o colaborador existe
 		if colaborador, existe := colaboradores[matricula]; existe {
 			// Atualizar situação do colaborador
 			colaborador.Situacao = situacao
 			
-			// TODO: Adicionar período de férias ao colaborador
-			// Por enquanto, estamos apenas atualizando a situação e usando a variável dias
-			_ = dias // Ignorando o valor por enquanto, mas usando a variável para evitar erro
+			// Adicionar período de férias ao colaborador
+			ferias := modelo.Periodo{
+				Inicio: dataInicio,
+				Fim:    dataFim,
+			}
+			colaborador.Ferias = append(colaborador.Ferias, ferias)
 		}
 		// Se o colaborador não existe, ignoramos (pode ser de outro mês)
 	}

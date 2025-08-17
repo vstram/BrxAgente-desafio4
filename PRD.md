@@ -28,17 +28,17 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
 
 ### 3. Regras de Negócio e Cálculos
 
-- [ ] **Implementar regras de exclusão**: Desenvolver a lógica para filtrar e remover colaboradores não elegíveis da base consolidada, como:
+- [x] **Implementar regras de exclusão**: Desenvolver a lógica para filtrar e remover colaboradores não elegíveis da base consolidada, como:
     - Diretores, estagiários e aprendizes.
     - Profissionais afastados (licença maternidade, etc.).
     - Profissionais que atuam no exterior.
-- [ ] **Aplicar regras de datas "quebradas"**: Implementar o cálculo proporcional para colaboradores admitidos ou desligados no meio do mês.
-- [ ] **Implementar cálculo de dias úteis por sindicato**: Criar a lógica para calcular os dias úteis relevantes para cada colaborador, considerando:
+- [x] **Aplicar regras de datas "quebradas"**: Implementar o cálculo proporcional para colaboradores admitidos ou desligados no meio do mês.
+- [x] **Implementar cálculo de dias úteis por sindicato**: Criar a lógica para calcular os dias úteis relevantes para cada colaborador, considerando:
     - O calendário de dias úteis de seu sindicato.
     - Férias (parciais ou integrais).
     - Outros afastamentos.
     - Data de desligamento.
-- [ ] **Implementar regra de desligamento**: Aplicar a regra específica para desligamentos: se comunicado até o dia 15, não considerar; se após o dia 15, calcular proporcionalmente.
+- [x] **Implementar regra de desligamento**: Aplicar a regra específica para desligamentos: se comunicado até o dia 15, não considerar; se após o dia 15, calcular proporcionalmente.
 - [ ] **Calcular valores de VR**: Desenvolver a lógica para calcular o valor total de VR a ser concedido a cada colaborador, utilizando o valor definido para o seu sindicato.
 
 > ⚠️ **Nota de Confidencialidade**: Como os nomes dos colaboradores não estão disponíveis nas planilhas, todas as referências aos colaboradores serão feitas exclusivamente através do campo **MATRICULA**.
