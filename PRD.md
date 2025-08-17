@@ -2,6 +2,8 @@
 
 Este documento define as tarefas principais a serem implementadas para desenvolver o aplicativo de automação da compra de Vale Refeição (VR), conforme especificações dos arquivos `instrucoes.md`, `leiame.md` e `QWEN.md`.
 
+> ⚠️ **Nota de Confidencialidade Importante**: Os nomes dos colaboradores não estão disponíveis nas planilhas por motivos de sigilo. Todas as referências aos colaboradores serão feitas exclusivamente através do campo **MATRICULA** como identificador único.
+
 ## Tarefas de Implementação
 
 ### 1. Fundação e Estrutura do Projeto
@@ -22,6 +24,8 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
     - Formatação correta dos dados (ex: formato de datas).
     - Relacionamento entre as planilhas através da matrícula.
 
+> ⚠️ **Nota de Confidencialidade**: Os nomes dos colaboradores não estão disponíveis nas planilhas por motivos de sigilo. Para referenciar os colaboradores, utilizaremos exclusivamente o campo **MATRICULA** como identificador único.
+
 ### 3. Regras de Negócio e Cálculos
 
 - [ ] **Implementar regras de exclusão**: Desenvolver a lógica para filtrar e remover colaboradores não elegíveis da base consolidada, como:
@@ -37,15 +41,19 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
 - [ ] **Implementar regra de desligamento**: Aplicar a regra específica para desligamentos: se comunicado até o dia 15, não considerar; se após o dia 15, calcular proporcionalmente.
 - [ ] **Calcular valores de VR**: Desenvolver a lógica para calcular o valor total de VR a ser concedido a cada colaborador, utilizando o valor definido para o seu sindicato.
 
+> ⚠️ **Nota de Confidencialidade**: Como os nomes dos colaboradores não estão disponíveis nas planilhas, todas as referências aos colaboradores serão feitas exclusivamente através do campo **MATRICULA**.
+
 ### 4. Geração de Resultados e Interface
 
 - [ ] **Gerar planilha de resultado**: Criar uma função para gerar a planilha final no formato especificado (`./files/VR Mensal 05.2025.xls`), contendo:
-    - Valor total de VR por colaborador.
+    - Valor total de VR por colaborador (identificado pela **MATRICULA**).
     - Rateio 80%/20% (empresa/colaborador).
 - [ ] **Salvar planilha de resultado**: Implementar a funcionalidade para salvar a planilha gerada na pasta de Downloads do usuário.
 - [ ] **Implementar botão de análise no frontend**: Adicionar um botão "Fazer Análise" na interface que acione o processo de leitura, cálculo e geração da planilha.
 - [ ] **Exibir resultados na interface**: Criar uma área na interface para exibir o status do processamento e os resultados finais (opcional, mas desejável).
 - [ ] **Implementar interface de configuração**: Adicionar um menu de configuração para que o usuário possa informar chaves de API (OpenAI) ou configurar o acesso ao Ollama.
+
+> ⚠️ **Nota de Confidencialidade**: A planilha de resultado utilizará a **MATRICULA** como identificador único do colaborador, uma vez que os nomes não estão disponíveis por motivos de sigilo.
 
 ### 5. Funcionalidades Adicionais
 
