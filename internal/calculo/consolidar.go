@@ -36,6 +36,12 @@ func ConsolidarBases(diretorioPlanilhas string) (map[string]*modelo.Colaborador,
 	sindicatos := make(map[string]float64)
 	diasUteis := make(map[string]int)
 	
+	// Mapas para armazenar dados das planilhas de exclusão
+	afastamentos := make(map[string]string)
+	aprendizes := make(map[string]string)
+	estagios := make(map[string]string)
+	exterior := make(map[string]float64)
+	
 	// 1. Ler a planilha de ATIVOS
 	caminhoAtivos := filepath.Join(diretorioPlanilhas, "ATIVOS.xlsx")
 	fAtivos, err := excel.LerPlanilha(caminhoAtivos)
@@ -106,7 +112,79 @@ func ConsolidarBases(diretorioPlanilhas string) (map[string]*modelo.Colaborador,
 		return nil, err
 	}
 	
-	// 6. Validar os dados consolidados
+	// 6. Ler a planilha de AFASTAMENTOS
+	caminhoAfastamentos := filepath.Join(diretorioPlanilhas, "AFASTAMENTOS.xlsx")
+	fAfastamentos, err := excel.LerPlanilha(caminhoAfastamentos)
+	if err != nil {
+		// Se não encontrar a planilha, continuamos sem ela
+		fmt.Println("Aviso: Planilha de AFASTAMENTOS não encontrada")
+	} else {
+		defer fAfastamentos.Close()
+		
+		// Processar dados da planilha de afastamentos
+		err = processarAfastamentos(fAfastamentos, afastamentos)
+		if err != nil {
+			return nil, err
+		}
+	}
+	
+	// 7. Ler a planilha de APRENDIZ
+	caminhoAprendizes := filepath.Join(diretorioPlanilhas, "APRENDIZ.xlsx")
+	fAprendizes, err := excel.LerPlanilha(caminhoAprendizes)
+	if err != nil {
+		// Se não encontrar a planilha, continuamos sem ela
+		fmt.Println("Aviso: Planilha de APRENDIZ não encontrada")
+	} else {
+		defer fAprendizes.Close()
+		
+		// Processar dados da planilha de aprendizes
+		err = processarAprendizes(fAprendizes, aprendizes)
+		if err != nil {
+			return nil, err
+		}
+	}
+	
+	// 8. Ler a planilha de ESTÁGIO
+	caminhoEstagios := filepath.Join(diretorioPlanilhas, "ESTÁGIO.xlsx")
+	fEstagios, err := excel.LerPlanilha(caminhoEstagios)
+	if err != nil {
+		// Se não encontrar a planilha, continuamos sem ela
+		fmt.Println("Aviso: Planilha de ESTÁGIO não encontrada")
+	} else {
+		defer fEstagios.Close()
+		
+		// Processar dados da planilha de estagiários
+		err = processarEstagios(fEstagios, estagios)
+		if err != nil {
+			return nil, err
+		}
+	}
+	
+	// 9. Ler a planilha de EXTERIOR
+	caminhoExterior := filepath.Join(diretorioPlanilhas, "EXTERIOR.xlsx")
+	fExterior, err := excel.LerPlanilha(caminhoExterior)
+	if err != nil {
+		// Se não encontrar a planilha, continuamos sem ela
+		fmt.Println("Aviso: Planilha de EXTERIOR não encontrada")
+	} else {
+		defer fExterior.Close()
+		
+		// Processar dados da planilha de exterior
+		err = processarExterior(fExterior, exterior)
+		if err != nil {
+			return nil, err
+		}
+	}
+	
+	// 10. Aplicar regras de exclusão
+	afastamentosMap := CriarMapaAfastamentos(afastamentos)
+	aprendizesMap := CriarMapaAprendizes(aprendizes)
+	estagiosMap := CriarMapaEstagios(estagios)
+	exteriorMap := CriarMapaExterior(exterior)
+	
+	colaboradores = AplicarRegrasExclusao(colaboradores, afastamentosMap, aprendizesMap, estagiosMap, exteriorMap)
+	
+	// 11. Validar os dados consolidados
 	erros := validarDadosConsolidados(colaboradores, sindicatos, diasUteis)
 	if len(erros) > 0 {
 		// Retornar o primeiro erro encontrado
@@ -370,6 +448,182 @@ func processarValoresSindicato(f *excelize.File, sindicatos map[string]float64) 
 		
 		// Adicionar ao mapa de sindicatos
 		sindicatos[sindicato] = valor
+	}
+	
+	return nil
+}
+
+// processarExterior processa os dados da planilha de colaboradores no exterior
+func processarExterior(f *excelize.File, exterior map[string]float64) error {
+	// Obter todas as linhas da primeira sheet
+	rows, err := f.GetRows(f.GetSheetList()[0])
+	if err != nil {
+		return modelo.NovoErroProcessamentoCompleto(
+			"Erro ao ler linhas da planilha de exterior",
+			"EXTERIOR.xlsx",
+			0,
+		)
+	}
+	
+	fmt.Printf("Total de linhas na planilha EXTERIOR: %d\n", len(rows))
+	
+	// Processar cada linha (ignorando o cabeçalho)
+	for i, row := range rows {
+		// Ignorar a primeira linha (cabeçalho)
+		if i == 0 {
+			continue
+		}
+		
+		// Verificar se a linha tem dados suficientes (pelo menos 1 coluna)
+		if len(row) < 1 {
+			continue
+		}
+		
+		// Extrair os dados da linha
+		matricula := strings.TrimSpace(row[0])
+		
+		// Extrair valor se disponível
+		var valor float64
+		if len(row) >= 2 {
+			valorStr := strings.TrimSpace(row[1])
+			// Remover caracteres não numéricos
+			valorStr = strings.ReplaceAll(valorStr, "R$", "")
+			valorStr = strings.ReplaceAll(valorStr, ",", ".")
+			valorStr = strings.TrimSpace(valorStr)
+			
+			if valorStr != "" && valorStr != "#N/A" {
+				valor, _ = strconv.ParseFloat(valorStr, 64)
+			}
+		}
+		
+		// Adicionar ao mapa de exterior
+		exterior[matricula] = valor
+	}
+	
+	return nil
+}
+
+// processarEstagios processa os dados da planilha de estagiários
+func processarEstagios(f *excelize.File, estagios map[string]string) error {
+	// Obter todas as linhas da primeira sheet
+	rows, err := f.GetRows(f.GetSheetList()[0])
+	if err != nil {
+		return modelo.NovoErroProcessamentoCompleto(
+			"Erro ao ler linhas da planilha de estagiários",
+			"ESTÁGIO.xlsx",
+			0,
+		)
+	}
+	
+	fmt.Printf("Total de linhas na planilha ESTÁGIO: %d\n", len(rows))
+	
+	// Processar cada linha (ignorando o cabeçalho)
+	for i, row := range rows {
+		// Ignorar a primeira linha (cabeçalho)
+		if i == 0 {
+			continue
+		}
+		
+		// Verificar se a linha tem dados suficientes (pelo menos 1 coluna)
+		if len(row) < 1 {
+			continue
+		}
+		
+		// Extrair os dados da linha
+		matricula := strings.TrimSpace(row[0])
+		
+		// Extrair cargo se disponível
+		var cargo string
+		if len(row) >= 2 {
+			cargo = strings.TrimSpace(row[1])
+		}
+		
+		// Adicionar ao mapa de estagiários
+		estagios[matricula] = cargo
+	}
+	
+	return nil
+}
+
+// processarAprendizes processa os dados da planilha de aprendizes
+func processarAprendizes(f *excelize.File, aprendizes map[string]string) error {
+	// Obter todas as linhas da primeira sheet
+	rows, err := f.GetRows(f.GetSheetList()[0])
+	if err != nil {
+		return modelo.NovoErroProcessamentoCompleto(
+			"Erro ao ler linhas da planilha de aprendizes",
+			"APRENDIZ.xlsx",
+			0,
+		)
+	}
+	
+	fmt.Printf("Total de linhas na planilha APRENDIZ: %d\n", len(rows))
+	
+	// Processar cada linha (ignorando o cabeçalho)
+	for i, row := range rows {
+		// Ignorar a primeira linha (cabeçalho)
+		if i == 0 {
+			continue
+		}
+		
+		// Verificar se a linha tem dados suficientes (pelo menos 1 coluna)
+		if len(row) < 1 {
+			continue
+		}
+		
+		// Extrair os dados da linha
+		matricula := strings.TrimSpace(row[0])
+		
+		// Extrair cargo se disponível
+		var cargo string
+		if len(row) >= 2 {
+			cargo = strings.TrimSpace(row[1])
+		}
+		
+		// Adicionar ao mapa de aprendizes
+		aprendizes[matricula] = cargo
+	}
+	
+	return nil
+}
+
+// processarAfastamentos processa os dados da planilha de afastamentos
+func processarAfastamentos(f *excelize.File, afastamentos map[string]string) error {
+	// Obter todas as linhas da primeira sheet
+	rows, err := f.GetRows(f.GetSheetList()[0])
+	if err != nil {
+		return modelo.NovoErroProcessamentoCompleto(
+			"Erro ao ler linhas da planilha de afastamentos",
+			"AFASTAMENTOS.xlsx",
+			0,
+		)
+	}
+	
+	fmt.Printf("Total de linhas na planilha AFASTAMENTOS: %d\n", len(rows))
+	
+	// Processar cada linha (ignorando o cabeçalho)
+	for i, row := range rows {
+		// Ignorar a primeira linha (cabeçalho)
+		if i == 0 {
+			continue
+		}
+		
+		// Verificar se a linha tem dados suficientes (pelo menos 1 coluna)
+		if len(row) < 1 {
+			continue
+		}
+		
+		// Extrair os dados da linha
+		matricula := strings.TrimSpace(row[0])
+		
+		// Extrair situação se disponível
+		var situacao string
+		if len(row) >= 2 {
+			situacao = strings.TrimSpace(row[1])
+		}
+		
+		// Adicionar ao mapa de afastamentos
+		afastamentos[matricula] = situacao
 	}
 	
 	return nil
