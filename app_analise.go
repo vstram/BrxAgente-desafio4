@@ -1,0 +1,43 @@
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"BrxAgente-desafio4/internal/calculo"
+	"BrxAgente-desafio4/internal/excel"
+)
+
+// RealizarAnaliseOrquestrada realiza todo o processo de análise de forma orquestrada
+// incluindo leitura, cálculo e geração da planilha de resultado
+func (a *App) RealizarAnaliseOrquestrada(diretorioPlanilhas string) (string, error) {
+	// Validar o diretório de planilhas
+	valido, err := a.SetDiretorioPlanilhas(diretorioPlanilhas)
+	if err != nil {
+		return "", fmt.Errorf("diretório de planilhas inválido: %w", err)
+	}
+	if !valido {
+		return "", fmt.Errorf("diretório de planilhas inválido")
+	}
+
+	// Consolidar bases de dados
+	colaboradores, err := calculo.ConsolidarBases(diretorioPlanilhas)
+	if err != nil {
+		return "", fmt.Errorf("erro ao consolidar bases de dados: %w", err)
+	}
+
+	// Verificar se há colaboradores para processar
+	if len(colaboradores) == 0 {
+		return "", fmt.Errorf("nenhum colaborador encontrado para processar")
+	}
+
+	// Salvar planilha de resultado na pasta de Downloads
+	nomeArquivo := fmt.Sprintf("VR_Mensal_%s.xlsx", time.Now().Format("01.2006"))
+	if err := excel.SalvarPlanilhaEmDownloads(colaboradores, nomeArquivo); err != nil {
+		return "", fmt.Errorf("erro ao salvar planilha de resultado: %w", err)
+	}
+
+	// Retornar mensagem de sucesso com o número de colaboradores processados
+	return fmt.Sprintf("Análise concluída com sucesso! %d colaboradores processados. Planilha salva em Downloads como %s", 
+		len(colaboradores), nomeArquivo), nil
+}

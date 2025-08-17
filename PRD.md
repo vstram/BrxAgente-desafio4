@@ -49,7 +49,7 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
     - Valor total de VR por colaborador (identificado pela **MATRICULA**).
     - Rateio 80%/20% (empresa/colaborador).
 - [x] **Salvar planilha de resultado**: Implementar a funcionalidade para salvar a planilha gerada na pasta de Downloads do usuário.
-- [ ] **Implementar botão de análise no frontend**: Adicionar um botão "Fazer Análise" na interface que acione o processo de leitura, cálculo e geração da planilha.
+- [x] **Implementar botão de análise no frontend**: Adicionar um botão "Fazer Análise" na interface que acione o processo de leitura, cálculo e geração da planilha.
 - [ ] **Exibir resultados na interface**: Criar uma área na interface para exibir o status do processamento e os resultados finais (opcional, mas desejável).
 - [ ] **Implementar interface de configuração**: Adicionar um menu de configuração para que o usuário possa informar chaves de API (OpenAI) ou configurar o acesso ao Ollama.
 

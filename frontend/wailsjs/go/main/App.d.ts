@@ -3,6 +3,8 @@
 
 export function Greet(arg1:string):Promise<string>;
 
+export function RealizarAnaliseOrquestrada(arg1:string):Promise<string>;
+
 export function SelecionarDiretorio():Promise<string>;
 
 export function SetDiretorioPlanilhas(arg1:string):Promise<boolean>;
