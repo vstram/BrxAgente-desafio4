@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 	
 	"github.com/xuri/excelize/v2"
 	
@@ -176,7 +177,23 @@ func ConsolidarBases(diretorioPlanilhas string) (map[string]*modelo.Colaborador,
 		}
 	}
 	
-	// 10. Aplicar regras de exclusão
+	// 10. Ler a planilha de ADMISSÃO
+	caminhoAdmissao := filepath.Join(diretorioPlanilhas, "ADMISSÃO ABRIL.xlsx")
+	fAdmissao, err := excel.LerPlanilha(caminhoAdmissao)
+	if err != nil {
+		// Se não encontrar a planilha, continuamos sem ela
+		fmt.Println("Aviso: Planilha de ADMISSÃO não encontrada")
+	} else {
+		defer fAdmissao.Close()
+		
+		// Processar dados da planilha de admissões
+		err = processarAdmissao(fAdmissao, colaboradores)
+		if err != nil {
+			return nil, err
+		}
+	}
+	
+	// 11. Aplicar regras de exclusão
 	afastamentosMap := CriarMapaAfastamentos(afastamentos)
 	aprendizesMap := CriarMapaAprendizes(aprendizes)
 	estagiosMap := CriarMapaEstagios(estagios)
@@ -184,7 +201,7 @@ func ConsolidarBases(diretorioPlanilhas string) (map[string]*modelo.Colaborador,
 	
 	colaboradores = AplicarRegrasExclusao(colaboradores, afastamentosMap, aprendizesMap, estagiosMap, exteriorMap)
 	
-	// 11. Validar os dados consolidados
+	// 12. Validar os dados consolidados
 	erros := validarDadosConsolidados(colaboradores, sindicatos, diasUteis)
 	if len(erros) > 0 {
 		// Retornar o primeiro erro encontrado
@@ -384,18 +401,65 @@ func processarDesligados(f *excelize.File, colaboradores map[string]*modelo.Cola
 		// Extrair os dados da linha
 		matricula := strings.TrimSpace(row[0])
 		
+		// Extrair data de desligamento se disponível (coluna 1)
+		var dataDesligamento *time.Time
+		if len(row) >= 2 {
+			dataDesligamentoStr := strings.TrimSpace(row[1])
+			if dataDesligamentoStr != "" {
+				// Parse da data de desligamento
+				data, err := parseDataDesligamento(dataDesligamentoStr)
+				if err == nil {
+					dataDesligamento = &data
+				}
+			}
+		}
+		
 		// Verificar se o colaborador existe
 		if colaborador, existe := colaboradores[matricula]; existe {
 			// Atualizar situação do colaborador como desligado
 			colaborador.Situacao = "Desligado"
 			
-			// TODO: Adicionar data de desligamento ao colaborador
-			// Por enquanto, estamos apenas atualizando a situação
+			// Atualizar data de desligamento do colaborador
+			colaborador.DataDesligamento = dataDesligamento
 		}
 		// Se o colaborador não existe, ignoramos (pode ser de outro mês)
 	}
 	
 	return nil
+}
+
+// parseDataDesligamento converte uma string de data no formato MM-DD-YY para time.Time
+func parseDataDesligamento(dataStr string) (time.Time, error) {
+	// Formato esperado: MM-DD-YY (ex: 05-01-25)
+	// Precisamos converter para 2025 (assumindo que YY=25 é 2025)
+	
+	parts := strings.Split(dataStr, "-")
+	if len(parts) != 3 {
+		return time.Time{}, fmt.Errorf("formato de data inválido: %s", dataStr)
+	}
+	
+	mes, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("mês inválido: %s", parts[0])
+	}
+	
+	dia, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("dia inválido: %s", parts[1])
+	}
+	
+	ano, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("ano inválido: %s", parts[2])
+	}
+	
+	// Assumindo que o ano é 2025 (para YY=25)
+	anoCompleto := 2000 + ano
+	
+	// Criar a data
+	data := time.Date(anoCompleto, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
+	
+	return data, nil
 }
 
 // processarValoresSindicato processa os dados da planilha de valores por sindicato
@@ -714,4 +778,87 @@ func processarDiasUteis(f *excelize.File, diasUteis map[string]int) error {
 	}
 	
 	return nil
+}
+
+// processarAdmissao processa os dados da planilha de admissões
+func processarAdmissao(f *excelize.File, colaboradores map[string]*modelo.Colaborador) error {
+	// Obter todas as linhas da primeira sheet
+	rows, err := f.GetRows(f.GetSheetList()[0])
+	if err != nil {
+		return modelo.NovoErroProcessamentoCompleto(
+			"Erro ao ler linhas da planilha de admissões",
+			"ADMISSÃO ABRIL.xlsx",
+			0,
+		)
+	}
+	
+	fmt.Printf("Total de linhas na planilha ADMISSÃO: %d\n", len(rows))
+	
+	// Processar cada linha (ignorando o cabeçalho)
+	for i, row := range rows {
+		// Ignorar a primeira linha (cabeçalho)
+		if i == 0 {
+			continue
+		}
+		
+		// Verificar se a linha tem dados suficientes (pelo menos 2 colunas)
+		if len(row) < 2 {
+			continue
+		}
+		
+		// Extrair os dados da linha
+		matricula := strings.TrimSpace(row[0])
+		dataAdmissaoStr := strings.TrimSpace(row[1])
+		
+		// Parse da data de admissão
+		// Formato esperado: MM-DD-YY (ex: 04-07-25)
+		dataAdmissao, err := parseDataAdmissao(dataAdmissaoStr)
+		if err != nil {
+			// Se não conseguir converter, continua para o próximo
+			continue
+		}
+		
+		// Verificar se o colaborador existe
+		if colaborador, existe := colaboradores[matricula]; existe {
+			// Atualizar data de admissão do colaborador
+			colaborador.DataAdmissao = dataAdmissao
+		}
+		// Se o colaborador não existe, ignoramos (pode ser de outro mês)
+	}
+	
+	return nil
+}
+
+// parseDataAdmissao converte uma string de data no formato MM-DD-YY para time.Time
+func parseDataAdmissao(dataStr string) (time.Time, error) {
+	// Formato esperado: MM-DD-YY (ex: 04-07-25)
+	// Precisamos converter para 2025 (assumindo que YY=25 é 2025)
+	
+	parts := strings.Split(dataStr, "-")
+	if len(parts) != 3 {
+		return time.Time{}, fmt.Errorf("formato de data inválido: %s", dataStr)
+	}
+	
+	mes, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("mês inválido: %s", parts[0])
+	}
+	
+	dia, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("dia inválido: %s", parts[1])
+	}
+	
+	ano, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("ano inválido: %s", parts[2])
+	}
+	
+	// Assumindo que o ano é 2025 (para YY=25)
+	anoCompleto := 2000 + ano
+	
+	// Criar a data
+	data := time.Date(anoCompleto, time.Month(mes), dia, 0, 0, 0, 0, time.UTC)
+	
+	return data, nil
 }
