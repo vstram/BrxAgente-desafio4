@@ -63,25 +63,31 @@ func TestCalcularDiasProporcionais(t *testing.T) {
 	t.Run("DesligamentoDia15", func(t *testing.T) {
 		// Desligamento no dia 15 de maio
 		dataDesligamento := time.Date(2025, 5, 15, 0, 0, 0, 0, time.UTC)
+		// Comunicação do desligamento no dia 15 de maio
+		dataComunicacao := time.Date(2025, 5, 15, 0, 0, 0, 0, time.UTC)
 		colaborador := &modelo.Colaborador{
-			Matricula:        "001",
-			DataDesligamento: &dataDesligamento,
+			Matricula:                   "001",
+			DataDesligamento:            &dataDesligamento,
+			DataComunicacaoDesligamento: &dataComunicacao,
 		}
 
 		dias := CalcularDiasProporcionais(colaborador, diasUteisMes, mesReferencia)
 
 		// Deve retornar 0 dias (regra: até dia 15 não considerar)
 		if dias != 0 {
-			t.Errorf("Esperava 0 dias (desligamento até dia 15), mas obteve %d", dias)
+			t.Errorf("Esperava 0 dias (comunicação até dia 15), mas obteve %d", dias)
 		}
 	})
 
 	t.Run("DesligamentoAposDia15", func(t *testing.T) {
 		// Desligamento no dia 20 de maio
 		dataDesligamento := time.Date(2025, 5, 20, 0, 0, 0, 0, time.UTC)
+		// Comunicação do desligamento no dia 20 de maio
+		dataComunicacao := time.Date(2025, 5, 20, 0, 0, 0, 0, time.UTC)
 		colaborador := &modelo.Colaborador{
-			Matricula:        "001",
-			DataDesligamento: &dataDesligamento,
+			Matricula:                   "001",
+			DataDesligamento:            &dataDesligamento,
+			DataComunicacaoDesligamento: &dataComunicacao,
 		}
 
 		dias := CalcularDiasProporcionais(colaborador, diasUteisMes, mesReferencia)

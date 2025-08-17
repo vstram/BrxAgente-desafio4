@@ -28,6 +28,9 @@ type Colaborador struct {
 	// DataDesligamento é a data em que o colaborador foi desligado (pode ser nulo)
 	DataDesligamento *time.Time
 	
+	// DataComunicacaoDesligamento é a data em que o desligamento foi comunicado (pode ser nulo)
+	DataComunicacaoDesligamento *time.Time
+	
 	// Sindicato ao qual o colaborador pertence
 	Sindicato string
 	

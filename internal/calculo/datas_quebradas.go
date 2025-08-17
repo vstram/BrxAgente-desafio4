@@ -22,21 +22,24 @@ func CalcularDiasProporcionais(colaborador *modelo.Colaborador, diasUteisMes int
 		}
 	}
 	
+	// Aplicar a regra de desligamento baseada na data de comunicação
+	diasProporcionais := AplicarRegraDesligamento(colaborador, diasUteisMes, mesReferencia)
+	
+	// Se a regra de desligamento retornou 0, não considerar para pagamento
+	if diasProporcionais == 0 {
+		return 0
+	}
+	
 	// Se o colaborador foi desligado no meio do mês, calcular dias proporcionais
+	// baseado na data de desligamento real (não na data de comunicação)
 	if colaborador.DataDesligamento != nil && !colaborador.DataDesligamento.IsZero() {
 		// Verificar se a data de desligamento é no mês de referência
 		if colaborador.DataDesligamento.Month() == mesReferencia.Month() && 
 		   colaborador.DataDesligamento.Year() == mesReferencia.Year() {
-			// Verificar a regra de desligamento (até dia 15 não considerar, após dia 15 calcular proporcional)
-			if colaborador.DataDesligamento.Day() <= 15 {
-				// Não considerar para pagamento
-				return 0
-			} else {
-				// Calcular dias trabalhados no mês até a data de desligamento
-				diasNoMes := diasNoMes(*colaborador.DataDesligamento)
-				diasTrabalhados := colaborador.DataDesligamento.Day()
-				return (diasUteisMes * diasTrabalhados) / diasNoMes
-			}
+			// Calcular dias trabalhados no mês até a data de desligamento
+			diasNoMes := diasNoMes(*colaborador.DataDesligamento)
+			diasTrabalhados := colaborador.DataDesligamento.Day()
+			return (diasUteisMes * diasTrabalhados) / diasNoMes
 		}
 	}
 	

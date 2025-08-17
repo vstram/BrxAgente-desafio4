@@ -430,6 +430,19 @@ func processarDesligados(f *excelize.File, colaboradores map[string]*modelo.Cola
 			}
 		}
 		
+		// Extrair data de comunicação de desligamento se disponível (coluna 2)
+		var dataComunicacao *time.Time
+		if len(row) >= 3 {
+			dataComunicacaoStr := strings.TrimSpace(row[2])
+			if dataComunicacaoStr != "" {
+				// Parse da data de comunicação de desligamento
+				data, err := parseDataDesligamento(dataComunicacaoStr)
+				if err == nil {
+					dataComunicacao = &data
+				}
+			}
+		}
+		
 		// Verificar se o colaborador existe
 		if colaborador, existe := colaboradores[matricula]; existe {
 			// Atualizar situação do colaborador como desligado
@@ -437,6 +450,9 @@ func processarDesligados(f *excelize.File, colaboradores map[string]*modelo.Cola
 			
 			// Atualizar data de desligamento do colaborador
 			colaborador.DataDesligamento = dataDesligamento
+			
+			// Atualizar data de comunicação de desligamento do colaborador
+			colaborador.DataComunicacaoDesligamento = dataComunicacao
 		}
 		// Se o colaborador não existe, ignoramos (pode ser de outro mês)
 	}
