@@ -45,7 +45,7 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
 
 ### 4. Geração de Resultados e Interface
 
-- [ ] **Gerar planilha de resultado**: Criar uma função para gerar a planilha final no formato especificado (`./files/VR Mensal 05.2025.xls`), contendo:
+- [x] **Gerar planilha de resultado**: Criar uma função para gerar a planilha final no formato especificado (`./files/VR Mensal 05.2025.xls`), contendo:
     - Valor total de VR por colaborador (identificado pela **MATRICULA**).
     - Rateio 80%/20% (empresa/colaborador).
 - [ ] **Salvar planilha de resultado**: Implementar a funcionalidade para salvar a planilha gerada na pasta de Downloads do usuário.

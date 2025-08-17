@@ -2,6 +2,7 @@
 package modelo
 
 import (
+	"strings"
 	"time"
 )
 
@@ -71,4 +72,31 @@ func (c *Colaborador) EstaAtivo(data time.Time) bool {
 	
 	// Se a data é anterior à data de desligamento, está ativo
 	return data.Before(*c.DataDesligamento)
+}
+
+// EhElegivel verifica se o colaborador é elegível para receber o benefício de VR
+func (c *Colaborador) EhElegivel() bool {
+	// Verificar se é diretor (não elegível)
+	if c.Cargo != "" && strings.Contains(strings.ToUpper(c.Cargo), "DIRETOR") {
+		return false
+	}
+	
+	// Verificar se é estagiário (não elegível)
+	if c.Cargo != "" && (strings.Contains(strings.ToUpper(c.Cargo), "ESTAGIÁRIO") || strings.Contains(strings.ToUpper(c.Cargo), "ESTAGIARIO")) {
+		return false
+	}
+	
+	// Verificar se é aprendiz (não elegível)
+	if c.Cargo != "" && strings.Contains(strings.ToUpper(c.Cargo), "APRENDIZ") {
+		return false
+	}
+	
+	// Verificar se está afastado (não elegível)
+	// Esta verificação pode ser feita em outro lugar onde temos as informações completas
+	
+	// Verificar se está no exterior (não elegível)
+	// Esta verificação pode ser feita em outro lugar onde temos as informações completas
+	
+	// Se não se enquadra em nenhuma das categorias acima, é elegível
+	return true
 }
