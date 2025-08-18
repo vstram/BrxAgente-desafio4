@@ -2,6 +2,7 @@ import {useState} from 'react';
 import logo from './assets/images/logo-universal.png';
 import './App.css';
 import {Greet, SelecionarDiretorio, SetDiretorioPlanilhas, RealizarAnaliseOrquestrada} from "../wailsjs/go/main/App";
+import ConfigModal from './ConfigModal';
 
 function App() {
     const [resultText, setResultText] = useState("Por favor, selecione o diretório das planilhas abaixo 👇");
@@ -11,6 +12,7 @@ function App() {
     const [analiseEmAndamento, setAnaliseEmAndamento] = useState(false);
     const [resultados, setResultados] = useState<{colaboradoresProcessados?: number, arquivoGerado?: string} | null>(null);
     const [erro, setErro] = useState<string | null>(null);
+    const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
     
     const updateName = (e: any) => setName(e.target.value);
     const updateResultText = (result: string) => setResultText(result);
@@ -83,6 +85,11 @@ function App() {
             <img src={logo} id="logo" alt="logo"/>
             <div id="result" className="result">{resultText}</div>
             
+            {/* Botão de configuração */}
+            <div id="config" className="input-box">
+                <button className="btn" onClick={() => setIsConfigModalOpen(true)}>Configurações</button>
+            </div>
+            
             {/* Área de exibição de resultados */}
             <div id="resultados" className="resultados-box">
                 {analiseEmAndamento && (
@@ -137,6 +144,12 @@ function App() {
                 <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
                 <button className="btn" onClick={greet}>Greet</button>
             </div>
+            
+            {/* Modal de configuração */}
+            <ConfigModal 
+                isOpen={isConfigModalOpen} 
+                onClose={() => setIsConfigModalOpen(false)} 
+            />
         </div>
     )
 }

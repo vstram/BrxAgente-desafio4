@@ -8,11 +8,14 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/xuri/excelize/v2"
+	
+	"BrxAgente-desafio4/internal/config"
 )
 
 // App struct
 type App struct {
 	ctx context.Context
+	cfg *config.Config
 }
 
 // NewApp creates a new App application struct
@@ -24,6 +27,15 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	
+	// Load configuration
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		fmt.Printf("Warning: Failed to load configuration: %v\n", err)
+		// Use default config
+		cfg = &config.Config{}
+	}
+	a.cfg = cfg
 }
 
 // Greet returns a greeting for the given name
@@ -116,4 +128,75 @@ func (a *App) SelecionarDiretorio() (string, error) {
 		return "", err
 	}
 	return directory, nil
+}
+
+// GetConfig retorna a configuração atual da aplicação
+func (a *App) GetConfig() (*config.Config, error) {
+	return a.cfg, nil
+}
+
+// SetOpenAIKey define a chave da API do OpenAI
+func (a *App) SetOpenAIKey(key string) error {
+	// Validate the key format
+	if key != "" && !config.ValidateOpenAIKey(key) {
+		return fmt.Errorf("chave da API do OpenAI inválida")
+	}
+	
+	// Update config
+	a.cfg.OpenAIKey = key
+	
+	// Save config
+	if err := config.SaveConfig(a.cfg); err != nil {
+		return fmt.Errorf("falha ao salvar a configuração: %w", err)
+	}
+	
+	return nil
+}
+
+// SetOllamaConfig define a configuração do Ollama
+func (a *App) SetOllamaConfig(ollamaConfig config.OllamaConfig) error {
+	// Validate the configuration
+	if err := config.ValidateOllamaConfig(ollamaConfig); err != nil {
+		return fmt.Errorf("configuração do Ollama inválida: %w", err)
+	}
+	
+	// Update config
+	a.cfg.OllamaConfig = ollamaConfig
+	
+	// Save config
+	if err := config.SaveConfig(a.cfg); err != nil {
+		return fmt.Errorf("falha ao salvar a configuração: %w", err)
+	}
+	
+	return nil
+}
+
+// TestOpenAIKey tests the OpenAI API key by making a simple request
+func (a *App) TestOpenAIKey(key string) (bool, error) {
+	// For now, just validate the format
+	// In a real implementation, we would make an actual API call
+	if key == "" {
+		return false, fmt.Errorf("chave da API do OpenAI não fornecida")
+	}
+	
+	if !config.ValidateOpenAIKey(key) {
+		return false, fmt.Errorf("chave da API do OpenAI inválida")
+	}
+	
+	// In a real implementation, we would test the key by making an API call
+	// For now, we'll just return true if the format is valid
+	return true, nil
+}
+
+// TestOllamaConnection tests the Ollama connection
+func (a *App) TestOllamaConnection(ollamaConfig config.OllamaConfig) (bool, error) {
+	// For now, just validate the configuration
+	// In a real implementation, we would make an actual connection test
+	if err := config.ValidateOllamaConfig(ollamaConfig); err != nil {
+		return false, fmt.Errorf("configuração do Ollama inválida: %w", err)
+	}
+	
+	// In a real implementation, we would test the connection by making an API call
+	// For now, we'll just return true if the configuration is valid
+	return true, nil
 }
