@@ -9,6 +9,8 @@ function App() {
     const [diretorio, setDiretorio] = useState('');
     const [diretorioValido, setDiretorioValido] = useState(false);
     const [analiseEmAndamento, setAnaliseEmAndamento] = useState(false);
+    const [resultados, setResultados] = useState<{colaboradoresProcessados?: number, arquivoGerado?: string} | null>(null);
+    const [erro, setErro] = useState<string | null>(null);
     
     const updateName = (e: any) => setName(e.target.value);
     const updateResultText = (result: string) => setResultText(result);
@@ -22,6 +24,8 @@ function App() {
             const caminho = await SelecionarDiretorio();
             if (caminho) {
                 setDiretorio(caminho);
+                setResultados(null);
+                setErro(null);
                 
                 // Validando o diretório no backend
                 try {
@@ -50,12 +54,25 @@ function App() {
 
         setAnaliseEmAndamento(true);
         setResultText("Análise em andamento, por favor aguarde...");
+        setResultados(null);
+        setErro(null);
 
         try {
             const resultado = await RealizarAnaliseOrquestrada(diretorio);
             setResultText(resultado);
+            
+            // Extrair informações do resultado para exibição formatada
+            const match = resultado.match(/(\d+) colaboradores processados.*como (.+\.xlsx)/);
+            if (match) {
+                setResultados({
+                    colaboradoresProcessados: parseInt(match[1]),
+                    arquivoGerado: match[2]
+                });
+            }
         } catch (err: any) {
-            setResultText(`Erro durante a análise: ${err.message}`);
+            const errorMessage = `Erro durante a análise: ${err.message}`;
+            setResultText(errorMessage);
+            setErro(errorMessage);
         } finally {
             setAnaliseEmAndamento(false);
         }
@@ -65,6 +82,31 @@ function App() {
         <div id="App">
             <img src={logo} id="logo" alt="logo"/>
             <div id="result" className="result">{resultText}</div>
+            
+            {/* Área de exibição de resultados */}
+            <div id="resultados" className="resultados-box">
+                {analiseEmAndamento && (
+                    <div className="status-em-andamento">
+                        <p>Processando dados... ⏳</p>
+                    </div>
+                )}
+                
+                {erro && (
+                    <div className="status-erro">
+                        <h3>Erro no Processamento</h3>
+                        <p>{erro}</p>
+                    </div>
+                )}
+                
+                {resultados && (
+                    <div className="status-concluido">
+                        <h3>Análise Concluída com Sucesso!</h3>
+                        <p><strong>Colaboradores processados:</strong> {resultados.colaboradoresProcessados}</p>
+                        <p><strong>Arquivo gerado:</strong> {resultados.arquivoGerado}</p>
+                        <p>O arquivo foi salvo na pasta Downloads.</p>
+                    </div>
+                )}
+            </div>
             
             {/* Seção de seleção de diretório */}
             <div id="diretorio" className="input-box">
