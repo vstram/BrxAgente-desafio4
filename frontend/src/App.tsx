@@ -83,66 +83,93 @@ function App() {
 
     return (
         <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
+            {/* Cabeçalho */}
+            <header className="app-header">
+                <img src={logo} id="logo" alt="logo" />
+                <h1>Automação de VR/VA</h1>
+                <p className="app-subtitle">Sistema de processamento automatizado de Vale Refeição e Vale Alimentação</p>
+            </header>
             
-            {/* Botão de configuração */}
-            <div id="config" className="input-box">
-                <button className="btn" onClick={() => setIsConfigModalOpen(true)}>Configurações</button>
-            </div>
-            
-            {/* Área de exibição de resultados */}
-            <div id="resultados" className="resultados-box">
-                {analiseEmAndamento && (
-                    <div className="status-em-andamento">
-                        <p>Processando dados... ⏳</p>
+            {/* Área principal */}
+            <main className="app-main">
+                {/* Área de seleção de diretório */}
+                <section className="section directory-section">
+                    <h2>Seleção de Planilhas</h2>
+                    <div className="section-content">
+                        <button className="btn primary-btn" onClick={selecionarDiretorio}>
+                            Selecionar Diretório
+                        </button>
+                        {diretorio && (
+                            <div className="directory-info">
+                                <p><strong>Diretório selecionado:</strong> {diretorio}</p>
+                                <p className={`status ${diretorioValido ? 'valid' : 'invalid'}`}>
+                                    <strong>Validade:</strong> {diretorioValido ? 'Válido' : 'Inválido'}
+                                </p>
+                            </div>
+                        )}
                     </div>
+                </section>
+                
+                {/* Botão de análise */}
+                {diretorioValido && (
+                    <section className="section analysis-section">
+                        <h2>Processamento</h2>
+                        <div className="section-content">
+                            <button 
+                                className="btn secondary-btn" 
+                                onClick={fazerAnalise} 
+                                disabled={analiseEmAndamento}
+                            >
+                                {analiseEmAndamento ? 'Processando...' : 'Iniciar Processamento'}
+                            </button>
+                        </div>
+                    </section>
                 )}
                 
-                {erro && (
-                    <div className="status-erro">
-                        <h3>Erro no Processamento</h3>
-                        <p>{erro}</p>
+                {/* Área de resultados */}
+                <section className="section results-section">
+                    <h2>Resultados</h2>
+                    <div className="section-content">
+                        <div id="result" className="result">{resultText}</div>
+                        
+                        {/* Área de exibição de resultados */}
+                        <div id="resultados" className="resultados-box">
+                            {analiseEmAndamento && (
+                                <div className="status-em-andamento">
+                                    <p>Processando dados... ⏳</p>
+                                </div>
+                            )}
+                            
+                            {erro && (
+                                <div className="status-erro">
+                                    <h3>Erro no Processamento</h3>
+                                    <p>{erro}</p>
+                                </div>
+                            )}
+                            
+                            {resultados && (
+                                <div className="status-concluido">
+                                    <h3>Análise Concluída com Sucesso!</h3>
+                                    <p><strong>Colaboradores processados:</strong> {resultados.colaboradoresProcessados}</p>
+                                    <p><strong>Arquivo gerado:</strong> {resultados.arquivoGerado}</p>
+                                    <p>O arquivo foi salvo na pasta Downloads.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
-                
-                {resultados && (
-                    <div className="status-concluido">
-                        <h3>Análise Concluída com Sucesso!</h3>
-                        <p><strong>Colaboradores processados:</strong> {resultados.colaboradoresProcessados}</p>
-                        <p><strong>Arquivo gerado:</strong> {resultados.arquivoGerado}</p>
-                        <p>O arquivo foi salvo na pasta Downloads.</p>
-                    </div>
-                )}
-            </div>
+                </section>
+            </main>
             
-            {/* Seção de seleção de diretório */}
-            <div id="diretorio" className="input-box">
-                <button className="btn" onClick={selecionarDiretorio}>Selecionar Diretório</button>
-                {diretorio && (
-                    <div>
-                        <p>Diretório selecionado: {diretorio}</p>
-                        <p>Validade: {diretorioValido ? 'Válido' : 'Inválido'}</p>
-                    </div>
-                )}
-            </div>
-            
-            {/* Botão de análise - só aparece quando há um diretório válido selecionado */}
-            {diretorioValido && (
-                <div id="analise" className="input-box">
-                    <button 
-                        className="btn" 
-                        onClick={fazerAnalise} 
-                        disabled={analiseEmAndamento}
-                    >
-                        {analiseEmAndamento ? 'Analisando...' : 'Fazer Análise'}
-                    </button>
-                </div>
-            )}
+            {/* Rodapé */}
+            <footer className="app-footer">
+                <button className="btn footer-btn" onClick={() => setIsConfigModalOpen(true)}>
+                    Configurações
+                </button>
+            </footer>
             
             {/* Seção de greeting - manter para testes, mas pode ser ocultada */}
             <div id="input" className="input-box" style={{display: 'none'}}>
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
+                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text" />
                 <button className="btn" onClick={greet}>Greet</button>
             </div>
             
