@@ -8,19 +8,54 @@ import (
 	"BrxAgente-desafio4/internal/modelo"
 )
 
+// FeriadosCache armazena os feriados calculados para evitar recálculos
+var feriadosCache map[int][]feriados.Feriado
+var feriadosEstaduaisCache map[string]map[int][]feriados.Feriado
+
+func init() {
+	feriadosCache = make(map[int][]feriados.Feriado)
+	feriadosEstaduaisCache = make(map[string]map[int][]feriados.Feriado)
+}
+
+// ObterFeriadosNacionaisCached obtém os feriados nacionais com cache
+func ObterFeriadosNacionaisCached(ano int) []feriados.Feriado {
+	if feriados, existe := feriadosCache[ano]; existe {
+		return feriados
+	}
+
+	feriados := feriados.ObterFeriadosNacionais(ano)
+	feriadosCache[ano] = feriados
+	return feriados
+}
+
+// ObterFeriadosEstaduaisCached obtém os feriados estaduais com cache
+func ObterFeriadosEstaduaisCached(estado string, ano int) []feriados.Feriado {
+	if feriadosEstaduaisCache[estado] == nil {
+		feriadosEstaduaisCache[estado] = make(map[int][]feriados.Feriado)
+	}
+
+	if feriados, existe := feriadosEstaduaisCache[estado][ano]; existe {
+		return feriados
+	}
+
+	feriados := feriados.ObterFeriadosEstaduais(estado, ano)
+	feriadosEstaduaisCache[estado][ano] = feriados
+	return feriados
+}
+
 // CalcularDiasUteisPorSindicato calcula os dias úteis relevantes para um colaborador,
-// considerando o calendário de dias úteis do seu sindicato, férias, outros afastamentos,
+// considerando o calendário de dias úteis de seu sindicato, férias, outros afastamentos,
 // data de desligamento e feriados
 func CalcularDiasUteisPorSindicato(colaborador *modelo.Colaborador, diasUteisSindicato int, mesReferencia time.Time) int {
 	// Começar com todos os dias úteis do sindicato
 	diasUteis := diasUteisSindicato
 
-	// Obter feriados para o mês de referência
-	feriadosNacionais := feriados.ObterFeriadosNacionais(mesReferencia.Year())
+	// Obter feriados para o mês de referência com cache para evitar recálculos
+	feriadosNacionais := ObterFeriadosNacionaisCached(mesReferencia.Year())
 	
 	// Determinar o estado do colaborador com base no sindicato
 	estado := determinarEstadoPorSindicato(colaborador.Sindicato)
-	feriadosEstaduais := feriados.ObterFeriadosEstaduais(estado, mesReferencia.Year())
+	feriadosEstaduais := ObterFeriadosEstaduaisCached(estado, mesReferencia.Year())
 	
 	// TODO: Implementar obtenção de feriados municipais quando disponível
 	// feriadosMunicipais := feriados.ObterFeriadosMunicipais(municipio, estado, mesReferencia.Year())
