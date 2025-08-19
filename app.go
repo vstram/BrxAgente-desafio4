@@ -153,11 +153,8 @@ func (a *App) SetOpenAIKey(key string) error {
 		return fmt.Errorf("falha ao criar string segura para a chave: %w", err)
 	}
 	
-	// Get the encrypted value
-	encryptedKey := secureKey.GetValue() // In a real implementation, this would be the encrypted value
-
-	// Update config with the encrypted key
-	a.cfg.OpenAIKey = key // In a real implementation, we would store the encrypted value
+	// Update config with the key
+	a.cfg.OpenAIKey = key
 
 	// Save config
 	if err := config.SaveConfig(a.cfg); err != nil {
@@ -219,9 +216,9 @@ func (a *App) TestOllamaConnection(ollamaConfig config.OllamaConfig) (bool, erro
 func (a *App) AskAI(question string) (string, error) {
 	// Define a system prompt with context about the VR/VA application
 	systemPrompt := `Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
-	Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
-	Os dados dos colaboradores são identificados exclusivamente por uma MATRICULA, por razões de confidencialidade.
-	Seja claro, preciso e objetivo em suas respostas.`
+Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
+Os dados dos colaboradores são identificados exclusivamente por uma MATRICULA, por razões de confidencialidade.
+Seja claro, preciso e objetivo em suas respostas.`
 
 	// Create empty context for now
 	var context []chat.Message
