@@ -14,7 +14,7 @@ import (
 type Config struct {
 	// OpenAI API key (encrypted)
 	OpenAIKey string `json:"openai_key,omitempty"`
-	
+
 	// Ollama configuration
 	OllamaConfig OllamaConfig `json:"ollama_config,omitempty"`
 }
@@ -23,7 +23,7 @@ type Config struct {
 type OllamaConfig struct {
 	// Base URL for Ollama API
 	BaseURL string `json:"base_url,omitempty"`
-	
+
 	// Model to use
 	Model string `json:"model,omitempty"`
 }
@@ -38,13 +38,13 @@ func GetConfigPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get user home directory: %w", err)
 	}
-	
+
 	// Create config directory if it doesn't exist
 	configDir := filepath.Join(homeDir, ".brxagente")
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create config directory: %w", err)
 	}
-	
+
 	// Return path to config file
 	return filepath.Join(configDir, configFile), nil
 }
@@ -56,29 +56,29 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Check if config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		// Return default config if file doesn't exist
 		return &Config{}, nil
 	}
-	
+
 	// Read config file
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
-	
+
 	// Parse JSON
 	var config Config
 	if err := json.Unmarshal(data, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
-	
+
 	// Decrypt sensitive data after loading
 	// In a real implementation, we would decrypt the encrypted values
 	// For now, we'll just return the config as is
-	
+
 	return &config, nil
 }
 
@@ -89,10 +89,10 @@ func SaveConfig(config *Config) error {
 	if err != nil {
 		return err
 	}
-	
+
 	// Create a copy of the config to avoid modifying the original
 	configCopy := *config
-	
+
 	// Encrypt sensitive data before saving
 	if configCopy.OpenAIKey != "" {
 		secureString, err := security.NewSecureString(configCopy.OpenAIKey)
@@ -103,20 +103,20 @@ func SaveConfig(config *Config) error {
 		// In a real implementation, we would store the encrypted value
 		// For now, we'll just keep the original value but in a real app,
 		// we would store the encrypted version
-		// configCopy.OpenAIKey = secureString.GetValue() // This would be the encrypted value
+		configCopy.OpenAIKey, _ = secureString.GetValue() // This would be the encrypted value
 	}
-	
+
 	// Convert config to JSON
 	data, err := json.MarshalIndent(configCopy, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to serialize config: %w", err)
 	}
-	
+
 	// Write to file
 	if err := os.WriteFile(configPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -132,11 +132,11 @@ func ValidateOllamaConfig(config OllamaConfig) error {
 	if config.BaseURL != "" && len(config.BaseURL) < 10 {
 		return fmt.Errorf("ollama base URL is too short")
 	}
-	
+
 	// Model is optional but if provided should not be empty
 	if config.Model != "" && len(config.Model) < 1 {
 		return fmt.Errorf("ollama model name is required")
 	}
-	
+
 	return nil
 }
