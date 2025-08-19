@@ -6,9 +6,11 @@
     flex-direction: column;
     background-color: var(--background-color);
     color: var(--text-primary);
-    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+        'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
 }
 
 /* Cabeçalho */
@@ -54,6 +56,7 @@
     margin: 0.5rem 0 0;
     color: var(--text-primary);
     font-size: 1.8rem;
+    font-weight: 700;
     animation: fadeIn 1s ease-out;
 }
 
@@ -61,6 +64,7 @@
     margin: 0.5rem 0;
     color: var(--text-secondary);
     font-size: 1rem;
+    font-weight: 400;
     animation: fadeIn 1.2s ease-out;
 }
 
@@ -95,6 +99,7 @@
     background-color: var(--primary-color);
     color: var(--surface-color);
     font-size: 1.2rem;
+    font-weight: 600;
     transition: background-color 0.3s ease;
 }
 
@@ -118,13 +123,13 @@
 
 .directory-info p {
     margin: 0.5rem 0;
+    font-weight: 400;
 }
 
 .status {
     padding: 0.5rem;
     border-radius: 4px;
-    font-weight: bold;
-    transition: all 0.3s ease;
+    font-weight: 600;
 }
 
 .status.valid {
@@ -313,10 +318,12 @@
 .status-erro h3 {
     color: var(--warning-color);
     margin-top: 0;
+    font-weight: 700;
 }
 
 .status-erro p {
     margin: 0.5rem 0;
+    font-weight: 400;
 }
 
 .status-concluido {
@@ -331,10 +338,12 @@
 .status-concluido h3 {
     color: var(--secondary-color);
     margin-top: 0;
+    font-weight: 700;
 }
 
 .status-concluido p {
     margin: 0.5rem 0;
+    font-weight: 400;
 }
 
 /* Loading spinner */
