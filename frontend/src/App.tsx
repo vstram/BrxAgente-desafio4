@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
+import logo from './assets/images/logo-vr-va.png';
 import './App.css';
 import {Greet, SelecionarDiretorio, SetDiretorioPlanilhas, RealizarAnaliseOrquestrada} from "../wailsjs/go/main/App";
 import ConfigModal from './ConfigModal';
