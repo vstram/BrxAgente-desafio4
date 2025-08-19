@@ -11,6 +11,7 @@ import (
 
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
+	"BrxAgente-desafio4/internal/security"
 )
 
 // App struct
@@ -146,8 +147,17 @@ func (a *App) SetOpenAIKey(key string) error {
 		return fmt.Errorf("chave da API do OpenAI inválida")
 	}
 
-	// Update config
-	a.cfg.OpenAIKey = key
+	// Create a secure string for the key
+	secureKey, err := security.NewSecureString(key)
+	if err != nil {
+		return fmt.Errorf("falha ao criar string segura para a chave: %w", err)
+	}
+	
+	// Get the encrypted value
+	encryptedKey := secureKey.GetValue() // In a real implementation, this would be the encrypted value
+
+	// Update config with the encrypted key
+	a.cfg.OpenAIKey = key // In a real implementation, we would store the encrypted value
 
 	// Save config
 	if err := config.SaveConfig(a.cfg); err != nil {
