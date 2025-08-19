@@ -120,7 +120,12 @@ function App() {
                                 onClick={fazerAnalise} 
                                 disabled={analiseEmAndamento}
                             >
-                                {analiseEmAndamento ? 'Processando...' : 'Iniciar Processamento'}
+                                {analiseEmAndamento ? (
+                                    <>
+                                        <span className="loading-spinner"></span>
+                                        Processando...
+                                    </>
+                                ) : 'Iniciar Processamento'}
                             </button>
                         </div>
                     </section>

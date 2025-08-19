@@ -18,24 +18,50 @@
     background-color: var(--surface-color);
     box-shadow: var(--shadow-1);
     z-index: 100;
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 #logo {
     width: 80px;
     height: 80px;
     margin: 0 auto;
+    animation: scaleIn 0.8s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .app-header h1 {
     margin: 0.5rem 0 0;
     color: var(--text-primary);
     font-size: 1.8rem;
+    animation: fadeIn 1s ease-out;
 }
 
 .app-subtitle {
     margin: 0.5rem 0;
     color: var(--text-secondary);
     font-size: 1rem;
+    animation: fadeIn 1.2s ease-out;
 }
 
 /* Área principal */
@@ -54,6 +80,13 @@
     border-radius: 8px;
     box-shadow: var(--shadow-1);
     overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+    transition: all 0.3s ease;
+}
+
+.section:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-2);
 }
 
 .section h2 {
@@ -62,6 +95,11 @@
     background-color: var(--primary-color);
     color: var(--surface-color);
     font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+}
+
+.section h2:hover {
+    background-color: var(--primary-dark);
 }
 
 .section-content {
@@ -74,6 +112,8 @@
     padding: 1rem;
     background-color: var(--background-color);
     border-radius: 4px;
+    transition: all 0.3s ease;
+    animation: slideUp 0.5s ease-out;
 }
 
 .directory-info p {
@@ -84,16 +124,31 @@
     padding: 0.5rem;
     border-radius: 4px;
     font-weight: bold;
+    transition: all 0.3s ease;
 }
 
 .status.valid {
     background-color: var(--secondary-light);
     color: var(--secondary-dark);
+    animation: pulseGreen 2s infinite;
 }
 
 .status.invalid {
     background-color: #ffebee;
     color: var(--warning-color);
+    animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseGreen {
+    0% { background-color: var(--secondary-light); }
+    50% { background-color: #a5d6a7; }
+    100% { background-color: var(--secondary-light); }
+}
+
+@keyframes pulseRed {
+    0% { background-color: #ffebee; }
+    50% { background-color: #ffcdd2; }
+    100% { background-color: #ffebee; }
 }
 
 /* Seção de análise */
@@ -109,6 +164,7 @@
     border-radius: 4px;
     text-align: center;
     font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 /* Rodapé */
@@ -118,6 +174,18 @@
     background-color: var(--surface-color);
     box-shadow: var(--shadow-1);
     z-index: 100;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Botões */
@@ -130,6 +198,26 @@
     font-weight: 600;
     transition: all 0.3s ease;
     box-shadow: var(--shadow-1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn:hover {
@@ -181,6 +269,7 @@
     border-radius: 5px;
     text-align: left;
     background-color: var(--background-color);
+    transition: all 0.3s ease;
 }
 
 .status-em-andamento {
@@ -191,6 +280,13 @@
     text-align: center;
     color: var(--text-primary);
     margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
 }
 
 .status-em-andamento p {
@@ -205,6 +301,13 @@
     border-radius: 5px;
     color: var(--text-primary);
     margin-bottom: 1rem;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
 }
 
 .status-erro h3 {
@@ -222,6 +325,7 @@
     padding: 1rem;
     border-radius: 5px;
     color: var(--text-primary);
+    animation: fadeIn 0.5s ease-out;
 }
 
 .status-concluido h3 {
@@ -233,9 +337,33 @@
     margin: 0.5rem 0;
 }
 
-/* Seção de input oculta */
-.input-box {
-    display: none;
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--surface-color);
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Animações gerais */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsividade */
