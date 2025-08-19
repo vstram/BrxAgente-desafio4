@@ -2,6 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import './Chat.css';
 import { AskAI } from "../wailsjs/go/main/App";
 
+// Importando ícones
+import ChatIcon from './assets/icons/chat.svg';
+import SendIcon from './assets/icons/send.svg';
+import ClearIcon from './assets/icons/clear.svg';
+import XIcon from './assets/icons/x.svg';
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -83,8 +89,12 @@ function Chat() {
             <div className="chat-header">
               <h3>Assistente de Dados</h3>
               <div className="chat-header-actions">
-                <button className="chat-clear-btn" onClick={clearChat}>Limpar</button>
-                <button className="chat-close-btn" onClick={() => setIsOpen(false)}>×</button>
+                <button className="chat-clear-btn" onClick={clearChat}>
+                  <img src={ClearIcon} alt="Limpar chat" className="icon" />
+                </button>
+                <button className="chat-close-btn" onClick={() => setIsOpen(false)}>
+                  <img src={XIcon} alt="Fechar" className="icon" />
+                </button>
               </div>
             </div>
             
@@ -137,7 +147,7 @@ function Chat() {
                 onClick={handleSend} 
                 disabled={isLoading || !inputValue.trim()}
               >
-                Enviar
+                <img src={SendIcon} alt="Enviar" className="icon" />
               </button>
             </div>
           </div>
@@ -145,7 +155,7 @@ function Chat() {
       )}
       
       <button className="chat-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
-        💬
+        <img src={ChatIcon} alt="Chat" className="icon" />
       </button>
     </>
   );

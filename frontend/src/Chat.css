@@ -26,18 +26,6 @@
   line-height: 1.6;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: var(--shadow-2);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.3);
-  }
-  100% {
-    box-shadow: var(--shadow-2);
-  }
-}
-
 .chat-toggle-btn:hover {
   transform: scale(1.1) rotate(10deg);
   box-shadow: var(--shadow-3);
@@ -120,6 +108,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  padding: 0;
 }
 
 .chat-clear-btn:hover,
@@ -297,6 +286,13 @@
   animation-delay: 0.4s;
 }
 
+.icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Animações gerais */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -314,5 +310,34 @@
   }
   30% {
     transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: var(--shadow-2);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.3);
+  }
+  100% {
+    box-shadow: var(--shadow-2);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .chat-toggle-btn {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .icon {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .chat-send-btn {
+    padding: 0 20px;
   }
 }

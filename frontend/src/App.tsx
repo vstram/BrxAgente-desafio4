@@ -5,6 +5,12 @@ import {Greet, SelecionarDiretorio, SetDiretorioPlanilhas, RealizarAnaliseOrques
 import ConfigModal from './ConfigModal';
 import Chat from './Chat';
 
+// Importando ícones
+import FolderIcon from './assets/icons/folder.svg';
+import PlayIcon from './assets/icons/play.svg';
+import SettingsIcon from './assets/icons/settings.svg';
+import SpinnerIcon from './assets/icons/spinner.svg';
+
 function App() {
     const [resultText, setResultText] = useState("Por favor, selecione o diretório das planilhas abaixo 👇");
     const [name, setName] = useState('');
@@ -97,6 +103,7 @@ function App() {
                     <h2>Seleção de Planilhas</h2>
                     <div className="section-content">
                         <button className="btn primary-btn" onClick={selecionarDiretorio}>
+                            <img src={FolderIcon} alt="Selecionar diretório" className="btn-icon" />
                             Selecionar Diretório
                         </button>
                         {diretorio && (
@@ -122,10 +129,15 @@ function App() {
                             >
                                 {analiseEmAndamento ? (
                                     <>
-                                        <span className="loading-spinner"></span>
+                                        <img src={SpinnerIcon} alt="Processando" className="btn-icon spinner" />
                                         Processando...
                                     </>
-                                ) : 'Iniciar Processamento'}
+                                ) : (
+                                    <>
+                                        <img src={PlayIcon} alt="Iniciar processamento" className="btn-icon" />
+                                        Iniciar Processamento
+                                    </>
+                                )}
                             </button>
                         </div>
                     </section>
@@ -168,6 +180,7 @@ function App() {
             {/* Rodapé */}
             <footer className="app-footer">
                 <button className="btn footer-btn" onClick={() => setIsConfigModalOpen(true)}>
+                    <img src={SettingsIcon} alt="Configurações" className="btn-icon" />
                     Configurações
                 </button>
             </footer>

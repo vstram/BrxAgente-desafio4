@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import './ConfigModal.css';
 import { GetConfig, SetOpenAIKey, SetOllamaConfig, TestOpenAIKey, TestOllamaConnection } from "../wailsjs/go/main/App";
 
+// Importando ícones
+import TestIcon from './assets/icons/test.svg';
+import SaveIcon from './assets/icons/save.svg';
+import CancelIcon from './assets/icons/cancel.svg';
+import XIcon from './assets/icons/x.svg';
+
 interface ConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -104,7 +110,9 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
       <div className="config-modal">
         <div className="config-modal-header">
           <h2>Configurações</h2>
-          <button className="config-modal-close" onClick={onClose}>×</button>
+          <button className="config-modal-close" onClick={onClose}>
+            <img src={XIcon} alt="Fechar" className="icon" />
+          </button>
         </div>
         
         <div className="config-modal-body">
@@ -125,6 +133,7 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
                 onClick={handleTestOpenAI}
                 disabled={isLoading || !openAIKey}
               >
+                <img src={TestIcon} alt="Testar" className="icon" />
                 Testar
               </button>
             </div>
@@ -157,6 +166,7 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
                 onClick={handleTestOllama}
                 disabled={isLoading || (!ollamaURL && !ollamaModel)}
               >
+                <img src={TestIcon} alt="Testar" className="icon" />
                 Testar
               </button>
             </div>
@@ -172,10 +182,21 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
         
         <div className="config-modal-footer">
           <button className="btn cancel-btn" onClick={onClose} disabled={isLoading}>
+            <img src={CancelIcon} alt="Cancelar" className="icon" />
             Cancelar
           </button>
           <button className="btn save-btn" onClick={handleSave} disabled={isLoading}>
-            {isLoading ? 'Salvando...' : 'Salvar'}
+            {isLoading ? (
+              <>
+                <img src={SaveIcon} alt="Salvando" className="icon spinner" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <img src={SaveIcon} alt="Salvar" className="icon" />
+                Salvar
+              </>
+            )}
           </button>
         </div>
       </div>
