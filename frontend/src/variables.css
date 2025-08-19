@@ -1,0 +1,27 @@
+:root {
+  /* Cores primárias */
+  --primary-color: #2196f3; /* Azul principal */
+  --primary-dark: #1976d2;  /* Azul escuro */
+  --primary-light: #bbdefb; /* Azul claro */
+  
+  /* Cores secundárias */
+  --secondary-color: #4caf50; /* Verde principal */
+  --secondary-dark: #388e3c;  /* Verde escuro */
+  --secondary-light: #c8e6c9; /* Verde claro */
+  
+  /* Cores de destaque */
+  --accent-color: #ff9800; /* Laranja */
+  --warning-color: #f44336; /* Vermelho */
+  
+  /* Cores neutras */
+  --background-color: #f5f7fa; /* Fundo principal */
+  --surface-color: #ffffff;    /* Superfícies */
+  --text-primary: #212121;     /* Texto principal */
+  --text-secondary: #757575;   /* Texto secundário */
+  --divider-color: #e0e0e0;    /* Divisores */
+  
+  /* Sombras */
+  --shadow-1: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-2: 0 4px 8px rgba(0,0,0,0.1);
+  --shadow-3: 0 8px 16px rgba(0,0,0,0.1);
+}

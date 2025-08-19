@@ -1,6 +1,10 @@
+@import './variables.css';
+
 #app {
     height: 100vh;
     text-align: center;
+    background-color: var(--background-color);
+    color: var(--text-primary);
 }
 
 #logo {
@@ -19,6 +23,7 @@
     height: 20px;
     line-height: 20px;
     margin: 1.5rem auto;
+    color: var(--text-primary);
 }
 
 .input-box .btn {
@@ -30,32 +35,49 @@
     margin: 0 0 0 20px;
     padding: 0 8px;
     cursor: pointer;
+    background-color: var(--primary-color);
+    color: var(--surface-color);
+    box-shadow: var(--shadow-1);
+    transition: all 0.3s ease;
 }
 
 .input-box .btn:hover {
-    background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-    color: #333333;
+    background-color: var(--primary-dark);
+    box-shadow: var(--shadow-2);
+    transform: translateY(-2px);
+}
+
+.input-box .btn:active {
+    transform: translateY(0);
+}
+
+.input-box .btn:disabled {
+    background-color: var(--primary-light);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .input-box .input {
-    border: none;
+    border: 1px solid var(--divider-color);
     border-radius: 3px;
     outline: none;
     height: 30px;
     line-height: 30px;
     padding: 0 10px;
-    background-color: rgba(240, 240, 240, 1);
+    background-color: var(--surface-color);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    transition: border-color 0.3s ease;
 }
 
 .input-box .input:hover {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
+    border-color: var(--primary-color);
 }
 
 .input-box .input:focus {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
 }
 
 /* Estilos para a área de resultados */
@@ -65,37 +87,51 @@
     max-width: 80%;
     border-radius: 5px;
     text-align: left;
+    background-color: var(--surface-color);
+    box-shadow: var(--shadow-1);
 }
 
 .status-em-andamento {
-    background-color: #e3f2fd;
-    border: 1px solid #2196f3;
+    background-color: var(--primary-light);
+    border: 1px solid var(--primary-color);
     padding: 15px;
     border-radius: 5px;
     text-align: center;
+    color: var(--text-primary);
+}
+
+.status-em-andamento p {
+    margin: 0;
+    font-weight: 500;
 }
 
 .status-erro {
     background-color: #ffebee;
-    border: 1px solid #f44336;
+    border: 1px solid var(--warning-color);
     padding: 15px;
     border-radius: 5px;
+    color: var(--text-primary);
 }
 
 .status-erro h3 {
-    color: #f44336;
+    color: var(--warning-color);
     margin-top: 0;
 }
 
+.status-erro p {
+    margin: 5px 0;
+}
+
 .status-concluido {
-    background-color: #e8f5e9;
-    border: 1px solid #4caf50;
+    background-color: var(--secondary-light);
+    border: 1px solid var(--secondary-color);
     padding: 15px;
     border-radius: 5px;
+    color: var(--text-primary);
 }
 
 .status-concluido h3 {
-    color: #4caf50;
+    color: var(--secondary-color);
     margin-top: 0;
 }
 
