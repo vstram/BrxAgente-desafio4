@@ -1,0 +1,241 @@
+// Package chat provides functionality for handling AI chat interactions
+package chat
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"time"
+
+	"BrxAgente-desafio4/internal/config"
+)
+
+// Message represents a chat message
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+// OpenAIRequest represents a request to the OpenAI API
+type OpenAIRequest struct {
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
+}
+
+// OpenAIResponse represents a response from the OpenAI API
+type OpenAIResponse struct {
+	ID      string `json:"id"`
+	Object  string `json:"object"`
+	Created int64  `json:"created"`
+	Model   string `json:"model"`
+	Choices []struct {
+		Index   int     `json:"index"`
+		Message Message `json:"message"`
+	} `json:"choices"`
+}
+
+// OllamaRequest represents a request to the Ollama API
+type OllamaRequest struct {
+	Model   string        `json:"model"`
+	Prompt  string        `json:"prompt"`
+	Stream  bool          `json:"stream"`
+	System  string        `json:"system,omitempty"`
+	Format  string        `json:"format,omitempty"`
+	Options OllamaOptions `json:"options,omitempty"`
+}
+
+// OllamaOptions represents options for Ollama requests
+type OllamaOptions struct {
+	Temperature float64 `json:"temperature,omitempty"`
+	TopP        float64 `json:"top_p,omitempty"`
+	TopK        int     `json:"top_k,omitempty"`
+}
+
+// OllamaResponse represents a response from the Ollama API
+type OllamaResponse struct {
+	Model              string    `json:"model"`
+	CreatedAt          time.Time `json:"created_at"`
+	Response           string    `json:"response"`
+	Done               bool      `json:"done"`
+	Context            []int     `json:"context,omitempty"`
+	TotalDuration      int64     `json:"total_duration,omitempty"`
+	LoadDuration       int64     `json:"load_duration,omitempty"`
+	PromptEvalCount    int       `json:"prompt_eval_count,omitempty"`
+	PromptEvalDuration int64     `json:"prompt_eval_duration,omitempty"`
+	EvalCount          int       `json:"eval_count,omitempty"`
+	EvalDuration       int64     `json:"eval_duration,omitempty"`
+}
+
+// Chat handles chat interactions with AI services
+type Chat struct {
+	cfg *config.Config
+}
+
+// NewChat creates a new Chat instance
+func NewChat(cfg *config.Config) *Chat {
+	return &Chat{
+		cfg: cfg,
+	}
+}
+
+// AskOpenAI sends a question to OpenAI and returns the response
+func (c *Chat) AskOpenAI(question string, context []Message) (string, error) {
+	// Check if OpenAI key is configured
+	if c.cfg.OpenAIKey == "" {
+		return "", fmt.Errorf("chave da API do OpenAI não configurada")
+	}
+
+	// Prepare messages
+	messages := append(context, Message{
+		Role:    "user",
+		Content: question,
+	})
+
+	// Create request
+	request := OpenAIRequest{
+		Model:    "gpt-3.5-turbo",
+		Messages: messages,
+	}
+
+	// Convert request to JSON
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		return "", fmt.Errorf("falha ao serializar requisição: %w", err)
+	}
+
+	// Create HTTP request
+	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("falha ao criar requisição HTTP: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+c.cfg.OpenAIKey)
+
+	// Create HTTP client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	// Send request
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("falha ao enviar requisição para OpenAI: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check status code
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("OpenAI API retornou status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Parse response
+	var response OpenAIResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return "", fmt.Errorf("falha ao parsear resposta da OpenAI: %w", err)
+	}
+
+	// Return the response content
+	if len(response.Choices) > 0 {
+		return response.Choices[0].Message.Content, nil
+	}
+
+	return "", fmt.Errorf("resposta da OpenAI vazia")
+}
+
+// AskOllama sends a question to Ollama and returns the response
+func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
+	// Check if Ollama is configured
+	if c.cfg.OllamaConfig.BaseURL == "" {
+		return "", fmt.Errorf("configuração do Ollama não encontrada")
+	}
+
+	// Create request
+	request := OllamaRequest{
+		Model:  c.cfg.OllamaConfig.Model,
+		Prompt: question,
+		Stream: false,
+		System: systemPrompt,
+		Options: OllamaOptions{
+			Temperature: 0.7,
+		},
+	}
+
+	// Convert request to JSON
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		return "", fmt.Errorf("falha ao serializar requisição: %w", err)
+	}
+
+	// Create full URL
+	url := c.cfg.OllamaConfig.BaseURL
+	if url[len(url)-1] != '/' {
+		url += "/"
+	}
+	url += "api/generate"
+
+	// Create HTTP request
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("falha ao criar requisição HTTP: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+
+	// Create HTTP client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	// Send request
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("falha ao enviar requisição para Ollama: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check status code
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("Ollama API retornou status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Parse response
+	var response OllamaResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return "", fmt.Errorf("falha ao parsear resposta do Ollama: %w", err)
+	}
+
+	return response.Response, nil
+}
+
+// Ask sends a question to the configured AI service and returns the response
+func (c *Chat) Ask(question string, systemPrompt string, context []Message) (string, error) {
+	// Try OpenAI first if configured
+	if c.cfg.OpenAIKey != "" {
+		response, err := c.AskOpenAI(question, context)
+		if err == nil {
+			return response, nil
+		}
+		// If OpenAI fails, log the error and try Ollama
+		fmt.Printf("Warning: OpenAI request failed: %v\n", err)
+	}
+
+	// Try Ollama if configured
+	if c.cfg.OllamaConfig.BaseURL != "" && c.cfg.OllamaConfig.Model != "" {
+		response, err := c.AskOllama(question, systemPrompt)
+		if err == nil {
+			return response, nil
+		}
+		// If Ollama fails, return the error
+		return "", fmt.Errorf("falha ao obter resposta de ambos os serviços de IA: %w", err)
+	}
+
+	// If neither is configured, return an error
+	return "", fmt.Errorf("nenhum serviço de IA configurado (OpenAI ou Ollama)")
+}

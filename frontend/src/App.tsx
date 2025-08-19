@@ -3,6 +3,7 @@ import logo from './assets/images/logo-universal.png';
 import './App.css';
 import {Greet, SelecionarDiretorio, SetDiretorioPlanilhas, RealizarAnaliseOrquestrada} from "../wailsjs/go/main/App";
 import ConfigModal from './ConfigModal';
+import Chat from './Chat';
 
 function App() {
     const [resultText, setResultText] = useState("Por favor, selecione o diretório das planilhas abaixo 👇");
@@ -150,6 +151,9 @@ function App() {
                 isOpen={isConfigModalOpen} 
                 onClose={() => setIsConfigModalOpen(false)} 
             />
+            
+            {/* Componente de chat */}
+            <Chat />
         </div>
     )
 }

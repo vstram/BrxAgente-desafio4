@@ -8,14 +8,16 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/xuri/excelize/v2"
-	
+
+	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
-	cfg *config.Config
+	ctx  context.Context
+	cfg  *config.Config
+	chat *chat.Chat
 }
 
 // NewApp creates a new App application struct
@@ -27,7 +29,7 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	
+
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -36,6 +38,8 @@ func (a *App) startup(ctx context.Context) {
 		cfg = &config.Config{}
 	}
 	a.cfg = cfg
+	// Initialize chat
+	a.chat = chat.NewChat(cfg)
 }
 
 // Greet returns a greeting for the given name
@@ -47,7 +51,7 @@ func (a *App) Greet(name string) string {
 func (a *App) TestExcelReading() (string, error) {
 	// Using the ADMISSÃO ABRIL.xlsx file as an example
 	filePath := filepath.Join("files", "ADMISSÃO ABRIL.xlsx")
-	
+
 	f, err := excelize.OpenFile(filePath)
 	if err != nil {
 		return "", fmt.Errorf("error opening Excel file: %w", err)
@@ -71,7 +75,7 @@ func (a *App) TestExcelReading() (string, error) {
 	}
 
 	// Return information about the file
-	return fmt.Sprintf("Successfully read Excel file with %d sheets. First sheet '%s' has %d rows.", 
+	return fmt.Sprintf("Successfully read Excel file with %d sheets. First sheet '%s' has %d rows.",
 		len(sheets), sheets[0], len(rows)), nil
 }
 
@@ -141,15 +145,15 @@ func (a *App) SetOpenAIKey(key string) error {
 	if key != "" && !config.ValidateOpenAIKey(key) {
 		return fmt.Errorf("chave da API do OpenAI inválida")
 	}
-	
+
 	// Update config
 	a.cfg.OpenAIKey = key
-	
+
 	// Save config
 	if err := config.SaveConfig(a.cfg); err != nil {
 		return fmt.Errorf("falha ao salvar a configuração: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -159,15 +163,15 @@ func (a *App) SetOllamaConfig(ollamaConfig config.OllamaConfig) error {
 	if err := config.ValidateOllamaConfig(ollamaConfig); err != nil {
 		return fmt.Errorf("configuração do Ollama inválida: %w", err)
 	}
-	
+
 	// Update config
 	a.cfg.OllamaConfig = ollamaConfig
-	
+
 	// Save config
 	if err := config.SaveConfig(a.cfg); err != nil {
 		return fmt.Errorf("falha ao salvar a configuração: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -178,11 +182,11 @@ func (a *App) TestOpenAIKey(key string) (bool, error) {
 	if key == "" {
 		return false, fmt.Errorf("chave da API do OpenAI não fornecida")
 	}
-	
+
 	if !config.ValidateOpenAIKey(key) {
 		return false, fmt.Errorf("chave da API do OpenAI inválida")
 	}
-	
+
 	// In a real implementation, we would test the key by making an API call
 	// For now, we'll just return true if the format is valid
 	return true, nil
@@ -195,8 +199,28 @@ func (a *App) TestOllamaConnection(ollamaConfig config.OllamaConfig) (bool, erro
 	if err := config.ValidateOllamaConfig(ollamaConfig); err != nil {
 		return false, fmt.Errorf("configuração do Ollama inválida: %w", err)
 	}
-	
+
 	// In a real implementation, we would test the connection by making an API call
 	// For now, we'll just return true if the configuration is valid
 	return true, nil
+}
+
+// AskAI sends a question to the configured AI service and returns the response
+func (a *App) AskAI(question string) (string, error) {
+	// Define a system prompt with context about the VR/VA application
+	systemPrompt := `Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
+	Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
+	Os dados dos colaboradores são identificados exclusivamente por uma MATRICULA, por razões de confidencialidade.
+	Seja claro, preciso e objetivo em suas respostas.`
+
+	// Create empty context for now
+	var context []chat.Message
+
+	// Ask the chat service
+	response, err := a.chat.Ask(question, systemPrompt, context)
+	if err != nil {
+		return "", fmt.Errorf("falha ao obter resposta da IA: %w", err)
+	}
+
+	return response, nil
 }
