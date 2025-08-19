@@ -4,15 +4,33 @@ package calculo
 import (
 	"time"
 
+	"BrxAgente-desafio4/internal/feriados"
 	"BrxAgente-desafio4/internal/modelo"
 )
 
 // CalcularDiasUteisPorSindicato calcula os dias úteis relevantes para um colaborador,
-// considerando o calendário de dias úteis do seu sindicato, férias, outros afastamentos
-// e data de desligamento
+// considerando o calendário de dias úteis do seu sindicato, férias, outros afastamentos,
+// data de desligamento e feriados
 func CalcularDiasUteisPorSindicato(colaborador *modelo.Colaborador, diasUteisSindicato int, mesReferencia time.Time) int {
 	// Começar com todos os dias úteis do sindicato
 	diasUteis := diasUteisSindicato
+
+	// Obter feriados para o mês de referência
+	feriadosNacionais := feriados.ObterFeriadosNacionais(mesReferencia.Year())
+	
+	// Determinar o estado do colaborador com base no sindicato
+	estado := determinarEstadoPorSindicato(colaborador.Sindicato)
+	feriadosEstaduais := feriados.ObterFeriadosEstaduais(estado, mesReferencia.Year())
+	
+	// TODO: Implementar obtenção de feriados municipais quando disponível
+	// feriadosMunicipais := feriados.ObterFeriadosMunicipais(municipio, estado, mesReferencia.Year())
+	
+	// Combinar todos os feriados
+	todosFeriados := append(feriadosNacionais, feriadosEstaduais...)
+	// todosFeriados = append(todosFeriados, feriadosMunicipais...)
+
+	// Descontar feriados do total de dias úteis
+	diasUteis -= contarFeriadosNoMes(todosFeriados, mesReferencia)
 
 	// Aplicar regra de datas quebradas (admissão/desligamento no meio do mês)
 	diasUteis = CalcularDiasProporcionais(colaborador, diasUteis, mesReferencia)
@@ -29,6 +47,36 @@ func CalcularDiasUteisPorSindicato(colaborador *modelo.Colaborador, diasUteisSin
 	}
 
 	return diasUteis
+}
+
+// determinarEstadoPorSindicato determina o estado com base no nome do sindicato
+func determinarEstadoPorSindicato(sindicato string) string {
+	// Mapear sindicatos para estados
+	switch {
+	case containsIgnoreCase(sindicato, "São Paulo") || containsIgnoreCase(sindicato, "SP"):
+		return "SP"
+	case containsIgnoreCase(sindicato, "Rio de Janeiro") || containsIgnoreCase(sindicato, "RJ"):
+		return "RJ"
+	case containsIgnoreCase(sindicato, "Paraná") || containsIgnoreCase(sindicato, "PR"):
+		return "PR"
+	case containsIgnoreCase(sindicato, "Rio Grande do Sul") || containsIgnoreCase(sindicato, "RS"):
+		return "RS"
+	default:
+		return ""
+	}
+}
+
+// containsIgnoreCase verifica se uma string contém outra string ignorando maiúsculas/minúsculas
+func containsIgnoreCase(s, substr string) bool {
+	return containsStringIgnoreCase(s, substr)
+}
+
+// contarFeriadosNoMes conta quantos feriados existem em um mês específico
+func contarFeriadosNoMes(feriadosLista []feriados.Feriado, mesReferencia time.Time) int {
+	inicioMes := time.Date(mesReferencia.Year(), mesReferencia.Month(), 1, 0, 0, 0, 0, time.UTC)
+	fimMes := time.Date(mesReferencia.Year(), mesReferencia.Month()+1, 1, 0, 0, 0, 0, time.UTC).AddDate(0, 0, -1)
+	
+	return feriados.ContarFeriadosNoPeriodo(inicioMes, fimMes, feriadosLista)
 }
 
 // calcularDiasFerias calcula os dias a serem descontados por férias
@@ -106,4 +154,34 @@ func calcularDiasProporcionaisParaPeriodo(periodo modelo.Periodo, mesReferencia 
 	}
 
 	return dias
+}
+
+// containsStringIgnoreCase verifica se uma string contém outra string ignorando case
+func containsStringIgnoreCase(s, substr string) bool {
+	// Convert both strings to uppercase for comparison
+	sUpper := ""
+	for _, r := range s {
+		if r >= 'a' && r <= 'z' {
+			sUpper += string(r - 'a' + 'A')
+		} else {
+			sUpper += string(r)
+		}
+	}
+	
+	substrUpper := ""
+	for _, r := range substr {
+		if r >= 'a' && r <= 'z' {
+			substrUpper += string(r - 'a' + 'A')
+		} else {
+			substrUpper += string(r)
+		}
+	}
+	
+	// Simple contains implementation
+	for i := 0; i <= len(sUpper)-len(substrUpper); i++ {
+		if sUpper[i:i+len(substrUpper)] == substrUpper {
+			return true
+		}
+	}
+	return false
 }

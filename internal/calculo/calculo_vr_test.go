@@ -31,8 +31,8 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 
 		valor, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
 		
-		// Valor esperado: 22 dias * R$ 35,00 = R$ 770,00
-		valorEsperado := 22.0 * 35.0
+		// Valor esperado: (22 - 1 feriado) dias * R$ 35,00 = 21 * 35 = R$ 735,00
+		valorEsperado := 21.0 * 35.0
 
 		if err != nil {
 			t.Errorf("Não esperava erro, mas obteve: %v", err)
@@ -59,10 +59,13 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 
 		valor, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
 		
-		// Valor esperado: (22 - dias descontados) * R$ 35,00
-		// Dias descontados: (22 * 5) / 31 ≈ 3.55 => 3 dias
-		// Valor esperado: (22 - 3) * 35.0 = 19 * 35.0 = 665.0
-		valorEsperado := 19.0 * 35.0
+		// Cálculo:
+		// Dias úteis totais: 22 - 1 feriado = 21
+		// Dias de férias: 5 dias em maio (31 dias)
+		// Proporção de dias úteis descontados: (21 * 5) / 31 ≈ 3.39 => 3 dias
+		// Dias úteis efetivos: 21 - 3 = 18
+		// Valor esperado: 18 * R$ 35,00 = R$ 630,00
+		valorEsperado := 18.0 * 35.0
 
 		if err != nil {
 			t.Errorf("Não esperava erro, mas obteve: %v", err)
@@ -94,23 +97,25 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 	})
 
 	t.Run("ColaboradorComAdmissaoNoMeioDoMes", func(t *testing.T) {
-		// Admissão no dia 15 de maio
-		dataAdmissao := time.Date(2025, 5, 15, 0, 0, 0, 0, time.UTC)
+		// Criar um colaborador admitido no dia 16 de maio
+		dataAdmissao := time.Date(2025, 5, 16, 0, 0, 0, 0, time.UTC)
 		
 		colaborador := &modelo.Colaborador{
-			Matricula:    "004",
-			Sindicato:    "Paraná",
-			DataAdmissao: dataAdmissao,
-			Ferias:       []modelo.Periodo{},
-			Afastamentos: []modelo.Periodo{},
+			Matricula:     "003",
+			Sindicato:     "Paraná",
+			DataAdmissao:  dataAdmissao,
+			Ferias:        []modelo.Periodo{},
+			Afastamentos:  []modelo.Periodo{},
 		}
 
 		valor, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
 		
-		// Dias trabalhados = 31 - 15 + 1 = 17
-		// Dias proporcionais = (22 * 17) / 31 ≈ 12.06 => 12 dias
-		// Valor esperado: 12 * 35.0 = 420.0
-		valorEsperado := 12.0 * 35.0
+		// Cálculo:
+		// Dias úteis totais: 22 - 1 feriado = 21
+		// Dias no mês após admissão (16-31): 16 dias
+		// Proporção dos dias úteis: (21 * 16) / 31 ≈ 10.84 => 10 dias úteis
+		// Valor esperado: 10 * R$ 35,00 = R$ 350,00
+		valorEsperado := 10.0 * 35.0
 
 		if err != nil {
 			t.Errorf("Não esperava erro, mas obteve: %v", err)
