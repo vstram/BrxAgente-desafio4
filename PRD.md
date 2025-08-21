@@ -50,20 +50,20 @@ Este documento define as tarefas principais a serem implementadas para desenvolv
     - Rateio 80%/20% (empresa/colaborador).
 - [x] **Salvar planilha de resultado**: Implementar a funcionalidade para salvar a planilha gerada na pasta de Downloads do usuário.
 - [x] **Implementar botão de análise no frontend**: Adicionar um botão "Fazer Análise" na interface que acione o processo de leitura, cálculo e geração da planilha.
-- [ ] **Exibir resultados na interface**: Criar uma área na interface para exibir o status do processamento e os resultados finais (opcional, mas desejável).
-- [ ] **Implementar interface de configuração**: Adicionar um menu de configuração para que o usuário possa informar chaves de API (OpenAI) ou configurar o acesso ao Ollama.
+- [X] **Exibir resultados na interface**: Criar uma área na interface para exibir o status do processamento e os resultados finais (opcional, mas desejável).
+- [X] **Implementar interface de configuração**: Adicionar um menu de configuração para que o usuário possa informar chaves de API (OpenAI) ou configurar o acesso ao Ollama.
 
 > ⚠️ **Nota de Confidencialidade**: A planilha de resultado utilizará a **MATRICULA** como identificador único do colaborador, uma vez que os nomes não estão disponíveis por motivos de sigilo.
 
 ### 5. Funcionalidades Adicionais
 
-- [ ] **Implementar funcionalidade de chat**: Criar uma interface de chat no frontend que permita ao usuário fazer perguntas sobre os dados processados, integrando com a API de IA.
-- [ ] **Adicionar validações da planilha**: Implementar as validações específicas indicadas na aba "validações" da planilha modelo.
-- [ ] **Considerar feriados**: Integrar um mecanismo (possivelmente através de uma API ou lista local) para considerar feriados estaduais e municipais no cálculo dos dias úteis.
+- [X] **Implementar funcionalidade de chat**: Criar uma interface de chat no frontend que permita ao usuário fazer perguntas sobre os dados processados, integrando com a API de IA.
+- [X] **Adicionar validações da planilha**: Implementar as validações específicas indicadas na aba "validações" da planilha modelo.
+- [X] **Considerar feriados**: Integrar um mecanismo (possivelmente através de uma API ou lista local) para considerar feriados estaduais e municipais no cálculo dos dias úteis.
 
 ### 6. Qualidade e Documentação
 
-- [ ] **Escrever testes unitários**: Criar testes para as funções críticas de cálculo e validação.
-- [ ] **Atualizar documentação**: Manter o `leiame.md` (ou `README.md`) atualizado com instruções de uso e desenvolvimento.
-- [ ] **Otimizar performance**: Garantir que o processamento seja eficiente, mesmo com grandes volumes de dados.
-- [ ] **Garantir segurança**: Proteger chaves de API e outros dados sensíveis.
+- [X] **Escrever testes unitários**: Criar testes para as funções críticas de cálculo e validação.
+- [X] **Atualizar documentação**: Manter o `leiame.md` (ou `README.md`) atualizado com instruções de uso e desenvolvimento.
+- [X] **Otimizar performance**: Garantir que o processamento seja eficiente, mesmo com grandes volumes de dados.
+- [X] **Garantir segurança**: Proteger chaves de API e outros dados sensíveis.
