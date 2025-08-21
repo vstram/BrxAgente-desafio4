@@ -71,7 +71,7 @@ type OllamaResponse struct {
 
 // Chat handles chat interactions with AI services
 type Chat struct {
-	cfg        *config.Config
+	cfg         *config.Config
 	contextData map[string]*modelo.Colaborador
 }
 
@@ -172,7 +172,7 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 
 	// Prepare the context data as a string
 	contextDataStr := c.formatContextData()
-	
+
 	// Print debug information
 	fmt.Printf("AskOllama: Tamanho dos dados de contexto formatados: %d caracteres\n", len(contextDataStr))
 
@@ -181,7 +181,7 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	if contextDataStr != "" {
 		fullSystemPrompt = fmt.Sprintf("Contexto dos dados:\n%s\n\n%s", contextDataStr, systemPrompt)
 	}
-	
+
 	// Print debug information
 	fmt.Printf("AskOllama: Tamanho do prompt completo: %d caracteres\n", len(fullSystemPrompt))
 
@@ -250,10 +250,10 @@ func (c *Chat) SetContextData(data map[string]*modelo.Colaborador) error {
 	// For now, just store a reference to the data
 	// In a real implementation, we might want to process or copy the data
 	c.contextData = data
-	
+
 	// Print debug information
 	fmt.Printf("SetContextData: Recebido %d colaboradores\n", len(data))
-	
+
 	return nil
 }
 
@@ -271,15 +271,15 @@ func (c *Chat) formatContextData() string {
 	// Create a more detailed summary of the data
 	var summary strings.Builder
 	summary.WriteString(fmt.Sprintf("Dados de %d colaboradores disponíveis:\n", len(c.contextData)))
-	
+
 	// Add details for each collaborator (limiting to 10 for brevity)
 	count := 0
 	for _, colaborador := range c.contextData {
-		if count >= 10 {
-			summary.WriteString(fmt.Sprintf("... e mais %d colaboradores\n", len(c.contextData)-10))
-			break
-		}
-		
+		// if count >= 10 {
+		// 	summary.WriteString(fmt.Sprintf("... e mais %d colaboradores\n", len(c.contextData)-10))
+		// 	break
+		// }
+
 		// Format the collaborator data in a more structured way
 		summary.WriteString(fmt.Sprintf(
 			"Colaborador %d:\n  Matrícula: %s\n  Empresa: %s\n  Sindicato: %s\n  Valor Total VR: R$ %.2f\n  Valor Empresa: R$ %.2f\n  Valor Colaborador: R$ %.2f\n  Dias Úteis: %d\n\n",
@@ -294,7 +294,7 @@ func (c *Chat) formatContextData() string {
 		))
 		count++
 	}
-	
+
 	return summary.String()
 }
 
@@ -304,7 +304,7 @@ func (c *Chat) Ask(question string, systemPrompt string, context []Message) (str
 	fmt.Printf("Ask: Recebida pergunta: %s\n", question)
 	fmt.Printf("Ask: Tamanho do contexto: %d\n", len(context))
 	fmt.Printf("Ask: Tamanho dos dados de contexto: %d\n", len(c.contextData))
-	
+
 	// Try OpenAI first if configured
 	if c.cfg.OpenAIKey != "" {
 		response, err := c.AskOpenAI(question, context)
