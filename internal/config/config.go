@@ -17,6 +17,28 @@ type Config struct {
 
 	// Ollama configuration
 	OllamaConfig OllamaConfig `json:"ollama_config,omitempty"`
+	
+	// Agent configuration
+	AgentConfig AgentConfig `json:"agent_config,omitempty"`
+}
+
+// AgentConfig represents the configuration for the AI agent
+type AgentConfig struct {
+	// Se o agente está habilitado
+	Enabled bool `json:"enabled"`
+	
+	// Configurações do modelo LLM
+	Model       string  `json:"model"`
+	Temperature float64 `json:"temperature"`
+	MaxTokens   int     `json:"max_tokens"`
+	
+	// Configurações de performance
+	WorkerPoolSize int  `json:"worker_pool_size"`
+	CacheEnabled   bool `json:"cache_enabled"`
+	CacheSize      int  `json:"cache_size"`
+	
+	// Ferramentas habilitadas
+	ToolsEnabled []string `json:"tools_enabled"`
 }
 
 // OllamaConfig represents the configuration for Ollama
@@ -60,7 +82,7 @@ func LoadConfig() (*Config, error) {
 	// Check if config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		// Return default config if file doesn't exist
-		return &Config{}, nil
+		return GetDefaultConfig(), nil
 	}
 
 	// Read config file
@@ -138,5 +160,42 @@ func ValidateOllamaConfig(config OllamaConfig) error {
 		return fmt.Errorf("ollama model name is required")
 	}
 
+	return nil
+}
+
+// GetDefaultConfig returns the default configuration
+func GetDefaultConfig() *Config {
+	return &Config{
+		AgentConfig: AgentConfig{
+			Enabled:        true,
+			Model:          "gpt-3.5-turbo",
+			Temperature:    0.7,
+			MaxTokens:      2000,
+			WorkerPoolSize: 4,
+			CacheEnabled:   true,
+			CacheSize:      1000,
+			ToolsEnabled:   []string{"excel", "calculation", "validation"},
+		},
+	}
+}
+
+// ValidateAgentConfig validates agent configuration
+func ValidateAgentConfig(config AgentConfig) error {
+	if config.Temperature < 0.0 || config.Temperature > 2.0 {
+		return fmt.Errorf("temperature must be between 0.0 and 2.0")
+	}
+	
+	if config.MaxTokens <= 0 {
+		return fmt.Errorf("max_tokens must be greater than 0")
+	}
+	
+	if config.WorkerPoolSize <= 0 {
+		return fmt.Errorf("worker_pool_size must be greater than 0")
+	}
+	
+	if config.CacheSize < 0 {
+		return fmt.Errorf("cache_size cannot be negative")
+	}
+	
 	return nil
 }
