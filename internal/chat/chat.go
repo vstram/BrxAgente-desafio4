@@ -172,12 +172,18 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 
 	// Prepare the context data as a string
 	contextDataStr := c.formatContextData()
+	
+	// Print debug information
+	fmt.Printf("AskOllama: Tamanho dos dados de contexto formatados: %d caracteres\n", len(contextDataStr))
 
 	// Prepend context data to the system prompt
 	fullSystemPrompt := systemPrompt
 	if contextDataStr != "" {
 		fullSystemPrompt = fmt.Sprintf("Contexto dos dados:\n%s\n\n%s", contextDataStr, systemPrompt)
 	}
+	
+	// Print debug information
+	fmt.Printf("AskOllama: Tamanho do prompt completo: %d caracteres\n", len(fullSystemPrompt))
 
 	// Create request
 	request := OllamaRequest{
@@ -261,20 +267,24 @@ func (c *Chat) formatContextData() string {
 	var summary strings.Builder
 	summary.WriteString(fmt.Sprintf("Dados de %d colaboradores disponíveis:\n", len(c.contextData)))
 	
-	// Add details for each collaborator (limiting to 5 for brevity)
+	// Add details for each collaborator (limiting to 10 for brevity)
 	count := 0
 	for _, colaborador := range c.contextData {
-		if count >= 5 {
-			summary.WriteString("... (mais colaboradores)\n")
+		if count >= 10 {
+			summary.WriteString(fmt.Sprintf("... e mais %d colaboradores\n", len(c.contextData)-10))
 			break
 		}
 		
+		// Format the collaborator data in a more structured way
 		summary.WriteString(fmt.Sprintf(
-			"- Matrícula: %s, Empresa: %s, Sindicato: %s, Valor Total VR: R$ %.2f, Dias Úteis: %d\n",
+			"Colaborador %d:\n  Matrícula: %s\n  Empresa: %s\n  Sindicato: %s\n  Valor Total VR: R$ %.2f\n  Valor Empresa: R$ %.2f\n  Valor Colaborador: R$ %.2f\n  Dias Úteis: %d\n\n",
+			count+1,
 			colaborador.Matricula,
 			colaborador.Empresa,
 			colaborador.Sindicato,
 			colaborador.ValorTotalVR,
+			colaborador.ValorEmpresa,
+			colaborador.ValorColaborador,
 			colaborador.DiasUteisEfetivos,
 		))
 		count++
