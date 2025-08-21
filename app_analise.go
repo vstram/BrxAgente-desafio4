@@ -37,6 +37,17 @@ func (a *App) RealizarAnaliseOrquestrada(diretorioPlanilhas string) (string, err
 		return "", fmt.Errorf("erro ao salvar planilha de resultado: %w", err)
 	}
 
+	// Armazenar os dados consolidados na instância do App
+	a.mu.Lock()
+	a.colaboradores = colaboradores
+	a.mu.Unlock()
+
+	// Enviar os dados consolidados para o chat
+	if err := a.SetChatContext(); err != nil {
+		// Logar o erro, mas não falhar a operação principal
+		fmt.Printf("Aviso: Falha ao definir o contexto do chat: %v\n", err)
+	}
+	
 	// Retornar mensagem de sucesso com o número de colaboradores processados
 	return fmt.Sprintf("Análise concluída com sucesso! %d colaboradores processados. Planilha salva em Downloads como %s", 
 		len(colaboradores), nomeArquivo), nil

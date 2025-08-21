@@ -5,25 +5,31 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/xuri/excelize/v2"
 
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
+	"BrxAgente-desafio4/internal/modelo"
 	"BrxAgente-desafio4/internal/security"
 )
 
 // App struct
 type App struct {
-	ctx  context.Context
-	cfg  *config.Config
-	chat *chat.Chat
+	ctx         context.Context
+	cfg         *config.Config
+	chat        *chat.Chat
+	colaboradores map[string]*modelo.Colaborador
+	mu          sync.RWMutex // Mutex para acesso seguro aos dados compartilhados
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{
+		colaboradores: make(map[string]*modelo.Colaborador),
+	}
 }
 
 // startup is called when the app starts. The context is saved
@@ -230,4 +236,31 @@ func (a *App) AskAI(question string) (string, error) {
 	}
 
 	return response, nil
+}
+
+// GetConsolidatedData returns a copy of the consolidated data
+func (a *App) GetConsolidatedData() (map[string]*modelo.Colaborador, error) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	
+	// Create a copy of the map to avoid external modifications
+	copia := make(map[string]*modelo.Colaborador)
+	for k, v := range a.colaboradores {
+		copia[k] = v
+	}
+	
+	return copia, nil
+}
+
+// SetChatContext sends the consolidated data to the chat service
+func (a *App) SetChatContext() error {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	
+	// Send the data to the chat service
+	if err := a.chat.SetContextData(a.colaboradores); err != nil {
+		return fmt.Errorf("falha ao definir o contexto do chat: %w", err)
+	}
+	
+	return nil
 }
