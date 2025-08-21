@@ -257,6 +257,11 @@ func (c *Chat) SetContextData(data map[string]*modelo.Colaborador) error {
 	return nil
 }
 
+// GetContextDataAsString returns the context data formatted as a string
+func (c *Chat) GetContextDataAsString() string {
+	return c.formatContextData()
+}
+
 // formatContextData formats the context data as a string for inclusion in the prompt
 func (c *Chat) formatContextData() string {
 	if len(c.contextData) == 0 {

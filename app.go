@@ -238,6 +238,25 @@ func (a *App) AskAI(question string) (string, error) {
 	return response, nil
 }
 
+// GetSystemPrompt returns the current system prompt with context data
+func (a *App) GetSystemPrompt() (string, error) {
+	// Create the same system prompt used in AskAI
+	systemPrompt := `Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
+	Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
+	Os dados dos colaboradores são identificados exclusivamente por uma MATRICULA, por razões de confidencialidade.
+	Seja claro, preciso e objetivo em suas respostas.`
+
+	// Get context data from chat service
+	contextDataStr := a.chat.GetContextDataAsString()
+
+	// Combine system prompt with context data
+	if contextDataStr != "" {
+		systemPrompt = fmt.Sprintf("Contexto dos dados:\n%s\n\n%s", contextDataStr, systemPrompt)
+	}
+
+	return systemPrompt, nil
+}
+
 // GetConsolidatedData returns a copy of the consolidated data
 func (a *App) GetConsolidatedData() (map[string]*modelo.Colaborador, error) {
 	a.mu.RLock()

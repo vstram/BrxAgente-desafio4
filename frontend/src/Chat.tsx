@@ -7,6 +7,7 @@ import ChatIcon from './assets/icons/chat.svg';
 import SendIcon from './assets/icons/send.svg';
 import ClearIcon from './assets/icons/clear.svg';
 import XIcon from './assets/icons/x.svg';
+import EyeIcon from './assets/icons/eye.svg';
 
 interface Message {
   id: string;
@@ -20,6 +21,8 @@ function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of messages
@@ -81,6 +84,13 @@ function Chat() {
     setMessages([]);
   };
 
+  const inspectSystemPrompt = () => {
+    // This would need to be implemented in the backend to get the actual system prompt
+    // For now, we'll just show a placeholder
+    setSystemPrompt("System prompt inspection functionality needs to be implemented in the backend.");
+    setIsInspectorOpen(true);
+  };
+
   return (
     <>
       {isOpen && (
@@ -89,6 +99,9 @@ function Chat() {
             <div className="chat-header">
               <h3>Assistente de Dados</h3>
               <div className="chat-header-actions">
+                <button className="chat-inspect-btn" onClick={inspectSystemPrompt}>
+                  <img src={EyeIcon} alt="Inspecionar" className="icon" />
+                </button>
                 <button className="chat-clear-btn" onClick={clearChat}>
                   <img src={ClearIcon} alt="Limpar chat" className="icon" />
                 </button>
@@ -149,6 +162,22 @@ function Chat() {
               >
                 <img src={SendIcon} alt="Enviar" className="icon" />
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {isInspectorOpen && (
+        <div className="inspector-overlay" onClick={() => setIsInspectorOpen(false)}>
+          <div className="inspector-window" onClick={(e) => e.stopPropagation()}>
+            <div className="inspector-header">
+              <h3>System Prompt</h3>
+              <button className="inspector-close-btn" onClick={() => setIsInspectorOpen(false)}>
+                <img src={XIcon} alt="Fechar" className="icon" />
+              </button>
+            </div>
+            <div className="inspector-content">
+              <pre>{systemPrompt}</pre>
             </div>
           </div>
         </div>
