@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './Chat.css';
-import { AskAI } from "../wailsjs/go/main/App";
+import { AskAI, GetSystemPrompt } from "../wailsjs/go/main/App";
 
 // Importando ícones
 import ChatIcon from './assets/icons/chat.svg';
@@ -84,11 +84,16 @@ function Chat() {
     setMessages([]);
   };
 
-  const inspectSystemPrompt = () => {
-    // This would need to be implemented in the backend to get the actual system prompt
-    // For now, we'll just show a placeholder
-    setSystemPrompt("System prompt inspection functionality needs to be implemented in the backend.");
-    setIsInspectorOpen(true);
+  const inspectSystemPrompt = async () => {
+    try {
+      // Get the system prompt from the backend
+      const prompt = await GetSystemPrompt();
+      setSystemPrompt(prompt);
+      setIsInspectorOpen(true);
+    } catch (err: any) {
+      setSystemPrompt(`Erro ao obter o System Prompt: ${err.message}`);
+      setIsInspectorOpen(true);
+    }
   };
 
   return (

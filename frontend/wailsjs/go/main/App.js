@@ -14,6 +14,10 @@ export function GetConsolidatedData() {
   return window['go']['main']['App']['GetConsolidatedData']();
 }
 
+export function GetSystemPrompt() {
+  return window['go']['main']['App']['GetSystemPrompt']();
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }

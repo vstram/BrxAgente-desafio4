@@ -9,6 +9,8 @@ export function GetConfig():Promise<config.Config>;
 
 export function GetConsolidatedData():Promise<Record<string, modelo.Colaborador>>;
 
+export function GetSystemPrompt():Promise<string>;
+
 export function Greet(arg1:string):Promise<string>;
 
 export function RealizarAnaliseOrquestrada(arg1:string):Promise<string>;
