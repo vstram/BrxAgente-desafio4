@@ -1,4 +1,3 @@
-// Package chat provides functionality for handling AI chat interactions
 package chat
 
 import (
@@ -7,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"BrxAgente-desafio4/internal/config"
@@ -253,10 +253,30 @@ func (c *Chat) formatContextData() string {
 		return ""
 	}
 
-	// For now, just return a simple summary
-	// In a real implementation, we might want to format the data more usefully
-	// or limit the amount of data sent
-	return fmt.Sprintf("Dados de %d colaboradores disponíveis.", len(c.contextData))
+	// Create a more detailed summary of the data
+	var summary strings.Builder
+	summary.WriteString(fmt.Sprintf("Dados de %d colaboradores disponíveis:\n", len(c.contextData)))
+	
+	// Add details for each collaborator (limiting to 5 for brevity)
+	count := 0
+	for _, colaborador := range c.contextData {
+		if count >= 5 {
+			summary.WriteString("... (mais colaboradores)\n")
+			break
+		}
+		
+		summary.WriteString(fmt.Sprintf(
+			"- Matrícula: %s, Empresa: %s, Sindicato: %s, Valor Total VR: R$ %.2f, Dias Úteis: %d\n",
+			colaborador.Matricula,
+			colaborador.Empresa,
+			colaborador.Sindicato,
+			colaborador.ValorTotalVR,
+			colaborador.DiasUteisEfetivos,
+		))
+		count++
+	}
+	
+	return summary.String()
 }
 
 // Ask sends a question to the configured AI service and returns the response
