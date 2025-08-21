@@ -86,50 +86,50 @@ func NewChat(cfg *config.Config) *Chat {
 // AskOpenAI sends a question to OpenAI and returns the response
 func (c *Chat) AskOpenAI(question string, context []Message) (string, error) {
 	// Check if OpenAI key is configured
-	if c.cfg.OpenAIKey == \"\" {
-		return \"\", fmt.Errorf(\"chave da API do OpenAI não configurada\")
+	if c.cfg.OpenAIKey == "" {
+		return "", fmt.Errorf("chave da API do OpenAI não configurada")
 	}
 
 	// Prepare the context data as a string
 	contextDataStr := c.formatContextData()
 
 	// Add context data as a system message if available
-	if contextDataStr != \"\" {
+	if contextDataStr != "" {
 		context = append([]Message{
 			{
-				Role:    \"system\",
-				Content: fmt.Sprintf(\"Contexto dos dados:\\n%s\", contextDataStr),
+				Role:    "system",
+				Content: fmt.Sprintf("Contexto dos dados:\n%s", contextDataStr),
 			},
 		}, context...)
 	}
 
 	// Prepare messages
 	messages := append(context, Message{
-		Role:    \"user\",
+		Role:    "user",
 		Content: question,
 	})
 
 	// Create request
 	request := OpenAIRequest{
-		Model:    \"gpt-3.5-turbo\",
+		Model:    "gpt-3.5-turbo",
 		Messages: messages,
 	}
 
 	// Convert request to JSON
 	jsonData, err := json.Marshal(request)
 	if err != nil {
-		return \"\", fmt.Errorf(\"falha ao serializar requisição: %w\", err)
+		return "", fmt.Errorf("falha ao serializar requisição: %w", err)
 	}
 
 	// Create HTTP request
-	req, err := http.NewRequest(\"POST\", \"https://api.openai.com/v1/chat/completions\", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return \"\", fmt.Errorf(\"falha ao criar requisição HTTP: %w\", err)
+		return "", fmt.Errorf("falha ao criar requisição HTTP: %w", err)
 	}
 
 	// Set headers
-	req.Header.Set(\"Content-Type\", \"application/json\")
-	req.Header.Set(\"Authorization\", \"Bearer \"+c.cfg.OpenAIKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+c.cfg.OpenAIKey)
 
 	// Create HTTP client with timeout
 	client := &http.Client{
@@ -139,20 +139,20 @@ func (c *Chat) AskOpenAI(question string, context []Message) (string, error) {
 	// Send request
 	resp, err := client.Do(req)
 	if err != nil {
-		return \"\", fmt.Errorf(\"falha ao enviar requisição para OpenAI: %w\", err)
+		return "", fmt.Errorf("falha ao enviar requisição para OpenAI: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return \"\", fmt.Errorf(\"OpenAI API retornou status %d: %s\", resp.StatusCode, string(body))
+		return "", fmt.Errorf("OpenAI API retornou status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse response
 	var response OpenAIResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return \"\", fmt.Errorf(\"falha ao parsear resposta da OpenAI: %w\", err)
+		return "", fmt.Errorf("falha ao parsear resposta da OpenAI: %w", err)
 	}
 
 	// Return the response content
@@ -160,14 +160,14 @@ func (c *Chat) AskOpenAI(question string, context []Message) (string, error) {
 		return response.Choices[0].Message.Content, nil
 	}
 
-	return \"\", fmt.Errorf(\"resposta da OpenAI vazia\")
+	return "", fmt.Errorf("resposta da OpenAI vazia")
 }
 
 // AskOllama sends a question to Ollama and returns the response
 func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	// Check if Ollama is configured
-	if c.cfg.OllamaConfig.BaseURL == \"\" {
-		return \"\", fmt.Errorf(\"configuração do Ollama não encontrada\")
+	if c.cfg.OllamaConfig.BaseURL == "" {
+		return "", fmt.Errorf("configuração do Ollama não encontrada")
 	}
 
 	// Prepare the context data as a string
@@ -175,8 +175,8 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 
 	// Prepend context data to the system prompt
 	fullSystemPrompt := systemPrompt
-	if contextDataStr != \"\" {
-		fullSystemPrompt = fmt.Sprintf(\"Contexto dos dados:\\n%s\\n\\n%s\", contextDataStr, systemPrompt)
+	if contextDataStr != "" {
+		fullSystemPrompt = fmt.Sprintf("Contexto dos dados:\n%s\n\n%s", contextDataStr, systemPrompt)
 	}
 
 	// Create request
@@ -193,24 +193,24 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	// Convert request to JSON
 	jsonData, err := json.Marshal(request)
 	if err != nil {
-		return \"\", fmt.Errorf(\"falha ao serializar requisição: %w\", err)
+		return "", fmt.Errorf("falha ao serializar requisição: %w", err)
 	}
 
 	// Create full URL
 	url := c.cfg.OllamaConfig.BaseURL
 	if url[len(url)-1] != '/' {
-		url += \"/\"
+		url += "/"
 	}
-	url += \"api/generate\"
+	url += "api/generate"
 
 	// Create HTTP request
-	req, err := http.NewRequest(\"POST\", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return \"\", fmt.Errorf(\"falha ao criar requisição HTTP: %w\", err)
+		return "", fmt.Errorf("falha ao criar requisição HTTP: %w", err)
 	}
 
 	// Set headers
-	req.Header.Set(\"Content-Type\", \"application/json\")
+	req.Header.Set("Content-Type", "application/json")
 
 	// Create HTTP client with timeout
 	client := &http.Client{
@@ -220,20 +220,20 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	// Send request
 	resp, err := client.Do(req)
 	if err != nil {
-		return \"\", fmt.Errorf(\"falha ao enviar requisição para Ollama: %w\", err)
+		return "", fmt.Errorf("falha ao enviar requisição para Ollama: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return \"\", fmt.Errorf(\"Ollama API retornou status %d: %s\", resp.StatusCode, string(body))
+		return "", fmt.Errorf("Ollama API retornou status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse response
 	var response OllamaResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return \"\", fmt.Errorf(\"falha ao parsear resposta do Ollama: %w\", err)
+		return "", fmt.Errorf("falha ao parsear resposta do Ollama: %w", err)
 	}
 
 	return response.Response, nil
@@ -257,4 +257,30 @@ func (c *Chat) formatContextData() string {
 	// In a real implementation, we might want to format the data more usefully
 	// or limit the amount of data sent
 	return fmt.Sprintf("Dados de %d colaboradores disponíveis.", len(c.contextData))
+}
+
+// Ask sends a question to the configured AI service and returns the response
+func (c *Chat) Ask(question string, systemPrompt string, context []Message) (string, error) {
+	// Try OpenAI first if configured
+	if c.cfg.OpenAIKey != "" {
+		response, err := c.AskOpenAI(question, context)
+		if err == nil {
+			return response, nil
+		}
+		// If OpenAI fails, log the error and try Ollama
+		fmt.Printf("Warning: OpenAI request failed: %v\n", err)
+	}
+
+	// Try Ollama if configured
+	if c.cfg.OllamaConfig.BaseURL != "" && c.cfg.OllamaConfig.Model != "" {
+		response, err := c.AskOllama(question, systemPrompt)
+		if err == nil {
+			return response, nil
+		}
+		// If Ollama fails, return the error
+		return "", fmt.Errorf("falha ao obter resposta de ambos os serviços de IA: %w", err)
+	}
+
+	// If neither is configured, return an error
+	return "", fmt.Errorf("nenhum serviço de IA configurado (OpenAI ou Ollama)")
 }
