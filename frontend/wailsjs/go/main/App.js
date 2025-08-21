@@ -10,6 +10,10 @@ export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
 
+export function GetConsolidatedData() {
+  return window['go']['main']['App']['GetConsolidatedData']();
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
@@ -20,6 +24,10 @@ export function RealizarAnaliseOrquestrada(arg1) {
 
 export function SelecionarDiretorio() {
   return window['go']['main']['App']['SelecionarDiretorio']();
+}
+
+export function SetChatContext() {
+  return window['go']['main']['App']['SetChatContext']();
 }
 
 export function SetDiretorioPlanilhas(arg1) {

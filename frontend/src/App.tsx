@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import logo from './assets/images/logo-vr-va.png';
 import './App.css';
-import {Greet, SelecionarDiretorio, SetDiretorioPlanilhas, RealizarAnaliseOrquestrada} from "../wailsjs/go/main/App";
+import {Greet, SelecionarDiretorio, SetDiretorioPlanilhas, RealizarAnaliseOrquestrada, GetConsolidatedData} from "../wailsjs/go/main/App";
 import ConfigModal from './ConfigModal';
 import Chat from './Chat';
 
