@@ -257,10 +257,16 @@ func (a *App) SetChatContext() error {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 	
+	// Print debug information
+	fmt.Printf("SetChatContext: Enviando %d colaboradores para o chat\n", len(a.colaboradores))
+	
 	// Send the data to the chat service
 	if err := a.chat.SetContextData(a.colaboradores); err != nil {
 		return fmt.Errorf("falha ao definir o contexto do chat: %w", err)
 	}
+	
+	// Print success message
+	fmt.Println("SetChatContext: Dados enviados com sucesso para o chat")
 	
 	return nil
 }

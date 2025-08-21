@@ -244,6 +244,10 @@ func (c *Chat) SetContextData(data map[string]*modelo.Colaborador) error {
 	// For now, just store a reference to the data
 	// In a real implementation, we might want to process or copy the data
 	c.contextData = data
+	
+	// Print debug information
+	fmt.Printf("SetContextData: Recebido %d colaboradores\n", len(data))
+	
 	return nil
 }
 
@@ -281,6 +285,11 @@ func (c *Chat) formatContextData() string {
 
 // Ask sends a question to the configured AI service and returns the response
 func (c *Chat) Ask(question string, systemPrompt string, context []Message) (string, error) {
+	// Print debug information
+	fmt.Printf("Ask: Recebida pergunta: %s\n", question)
+	fmt.Printf("Ask: Tamanho do contexto: %d\n", len(context))
+	fmt.Printf("Ask: Tamanho dos dados de contexto: %d\n", len(c.contextData))
+	
 	// Try OpenAI first if configured
 	if c.cfg.OpenAIKey != "" {
 		response, err := c.AskOpenAI(question, context)
