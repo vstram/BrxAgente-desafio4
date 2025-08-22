@@ -132,6 +132,8 @@ internal/
 └── validacao/   # Regras de validação
 ```
 
+> ⚠️ **Nota de Confidencialidade Importante**: Os nomes dos colaboradores não estão disponíveis nas planilhas por motivos de sigilo. Todas as referências aos colaboradores serão feitas exclusivamente através do campo **MATRICULA** como identificador único.
+
 ### 2. Tratamento de Erros
 
 Implemente um sistema robusto de tratamento de erros:
