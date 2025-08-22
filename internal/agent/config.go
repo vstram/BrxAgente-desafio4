@@ -14,9 +14,10 @@ type AgentConfig struct {
 	Timeout     time.Duration `json:"timeout"`      // Timeout para chamadas LLM
 
 	// Configurações de memória
-	MemorySize      int           `json:"memory_size"`       // Tamanho do buffer de memória
-	MemoryTTL       time.Duration `json:"memory_ttl"`        // TTL da memória de conversação
-	ContextWindow   int           `json:"context_window"`    // Janela de contexto
+	MemorySize       int           `json:"memory_size"`        // Tamanho do buffer de memória
+	MemoryTTL        time.Duration `json:"memory_ttl"`         // TTL da memória de conversação
+	ContextWindow    int           `json:"context_window"`     // Janela de contexto
+	MaxMemoryTokens  int           `json:"max_memory_tokens"`  // Máximo de tokens na memória
 	
 	// Configurações de performance
 	WorkerPoolSize  int           `json:"worker_pool_size"`  // Tamanho do pool de workers
@@ -41,9 +42,10 @@ func DefaultAgentConfig() *AgentConfig {
 		MaxTokens:      2000,
 		Timeout:        30 * time.Second,
 		
-		MemorySize:     100,
-		MemoryTTL:      24 * time.Hour,
-		ContextWindow:  4000,
+		MemorySize:      100,
+		MemoryTTL:       24 * time.Hour,
+		ContextWindow:   4000,
+		MaxMemoryTokens: 2000,
 		
 		WorkerPoolSize: 4,
 		CacheEnabled:   true,

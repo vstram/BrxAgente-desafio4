@@ -73,6 +73,14 @@ type OllamaResponse struct {
 type Chat struct {
 	cfg         *config.Config
 	contextData map[string]*modelo.Colaborador
+	agent       AgentInterface // Interface para integração com o agente
+}
+
+// AgentInterface define a interface para integração com o agente de IA
+type AgentInterface interface {
+	Ask(question string) (string, error)
+	IsEnabled() bool
+	GetStatus() interface{}
 }
 
 // NewChat creates a new Chat instance
@@ -298,12 +306,28 @@ func (c *Chat) formatContextData() string {
 	return summary.String()
 }
 
+// SetAgent configura o agente de IA para o chat
+func (c *Chat) SetAgent(agent AgentInterface) {
+	c.agent = agent
+}
+
 // Ask sends a question to the configured AI service and returns the response
 func (c *Chat) Ask(question string, systemPrompt string, context []Message) (string, error) {
 	// Print debug information
 	fmt.Printf("Ask: Recebida pergunta: %s\n", question)
 	fmt.Printf("Ask: Tamanho do contexto: %d\n", len(context))
 	fmt.Printf("Ask: Tamanho dos dados de contexto: %d\n", len(c.contextData))
+
+	// Try agent first if configured and enabled
+	if c.agent != nil && c.agent.IsEnabled() {
+		response, err := c.agent.Ask(question)
+		if err == nil {
+			fmt.Printf("Ask: Resposta obtida via agente\n")
+			return response, nil
+		}
+		// If agent fails, log the error and fallback to other services
+		fmt.Printf("Warning: Agent request failed, fallback to other services: %v\n", err)
+	}
 
 	// Try OpenAI first if configured
 	if c.cfg.OpenAIKey != "" {
