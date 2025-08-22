@@ -10,6 +10,7 @@ import (
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/excel"
 	"BrxAgente-desafio4/internal/agent/tools"
+	"BrxAgente-desafio4/internal/workflows"
 	
 	"github.com/tmc/langchaingo/chains"
 	"github.com/tmc/langchaingo/llms"
@@ -29,6 +30,9 @@ type VRAgent struct {
 	chatService    *chat.Chat
 	excelService   *excel.Service
 	toolRegistry   *tools.ToolRegistry
+	
+	// Sistema de workflow
+	orchestrator   *workflows.Orchestrator
 	
 	// Estado do agente
 	enabled    bool
@@ -75,12 +79,26 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		memory.WithOutputKey("output"),
 	)
 	
+	// Configurar orquestrador de workflows
+	orchestratorConfig := workflows.OrchestratorConfig{
+		MaxConcurrentWorkflows: 5,
+		DefaultTimeout:         5 * time.Minute,
+		EnableRollback:         true,
+		DetailedLogging:        agentConfig.DebugMode,
+	}
+	
+	orchestrator := workflows.NewOrchestrator(
+		&workflows.DefaultLogger{Logger: log.Default()}, 
+		orchestratorConfig,
+	)
+	
 	agent := &VRAgent{
 		config:       agentConfig,
 		memory:       memoryBuffer,
 		chatService:  chatSvc,
 		excelService: excelSvc,
 		toolRegistry: toolRegistry,
+		orchestrator: orchestrator,
 		enabled:      agentConfig.Enabled,
 		startTime:    time.Now(),
 		status: AgentStatus{
@@ -102,9 +120,14 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		}
 	}
 	
+	// Registrar workflows padrão
+	if err := agent.registerDefaultWorkflows(); err != nil {
+		agent.logger.Printf("Aviso: Falha ao registrar workflows padrão: %v", err)
+	}
+	
 	// Log de inicialização
-	agent.logger.Printf("VRAgent inicializado com sucesso - Enabled: %v, Model: %s, Tools: %d", 
-		agentConfig.Enabled, agentConfig.Model, toolRegistry.Count())
+	agent.logger.Printf("VRAgent inicializado com sucesso - Enabled: %v, Model: %s, Tools: %d, Workflows: %d", 
+		agentConfig.Enabled, agentConfig.Model, toolRegistry.Count(), len(agent.orchestrator.ListWorkflows()))
 	
 	return agent, nil
 }
@@ -411,4 +434,81 @@ func (a *VRAgent) updateStatus(state, task string) {
 	a.status.State = state
 	a.status.CurrentTask = task
 	a.status.LastActivity = time.Now()
+}
+
+// registerDefaultWorkflows registra workflows padrão no orquestrador
+func (a *VRAgent) registerDefaultWorkflows() error {
+	// Registrar workflow de validação simples
+	simpleValidation := workflows.NewSimpleValidationWorkflow()
+	if err := a.orchestrator.RegisterWorkflow(simpleValidation); err != nil {
+		return fmt.Errorf("erro ao registrar workflow simple-validation: %w", err)
+	}
+	
+	// Registrar outros workflows futuros aqui
+	// TODO: Implementar workflow processar-vr-mensal quando as ferramentas estiverem prontas
+	
+	return nil
+}
+
+// ExecuteWorkflowByName executa um workflow pelo nome através do orquestrador
+func (a *VRAgent) ExecuteWorkflowByName(workflowName string, params map[string]interface{}) (*workflows.WorkflowResult, error) {
+	if !a.enabled {
+		return nil, fmt.Errorf("agente está desabilitado")
+	}
+	
+	a.updateStatus("running", fmt.Sprintf("workflow:%s", workflowName))
+	a.status.TotalRequests++
+	
+	defer func() {
+		a.updateStatus("idle", "")
+	}()
+	
+	result, err := a.orchestrator.ExecuteWorkflow(workflowName, params)
+	if err != nil {
+		a.status.ErrorCount++
+		a.logger.Printf("Erro ao executar workflow %s: %v", workflowName, err)
+		return nil, err
+	}
+	
+	a.logger.Printf("Workflow %s executado com sucesso", workflowName)
+	return result, nil
+}
+
+// ExecuteWorkflowAsync executa um workflow de forma assíncrona
+func (a *VRAgent) ExecuteWorkflowAsync(workflowName string, params map[string]interface{}) (string, error) {
+	if !a.enabled {
+		return "", fmt.Errorf("agente está desabilitado")
+	}
+	
+	a.status.TotalRequests++
+	
+	executionID, err := a.orchestrator.ExecuteWorkflowAsync(workflowName, params)
+	if err != nil {
+		a.status.ErrorCount++
+		a.logger.Printf("Erro ao executar workflow async %s: %v", workflowName, err)
+		return "", err
+	}
+	
+	a.logger.Printf("Workflow %s iniciado assincronamente com ID: %s", workflowName, executionID)
+	return executionID, nil
+}
+
+// GetWorkflowExecution retorna informações sobre uma execução de workflow
+func (a *VRAgent) GetWorkflowExecution(executionID string) (*workflows.WorkflowExecution, error) {
+	return a.orchestrator.GetExecution(executionID)
+}
+
+// CancelWorkflowExecution cancela uma execução de workflow em andamento
+func (a *VRAgent) CancelWorkflowExecution(executionID string) error {
+	return a.orchestrator.CancelExecution(executionID)
+}
+
+// ListAvailableWorkflows retorna lista de workflows disponíveis
+func (a *VRAgent) ListAvailableWorkflows() []string {
+	return a.orchestrator.ListWorkflows()
+}
+
+// GetWorkflowOrchestrator retorna o orquestrador (para uso interno/testes)
+func (a *VRAgent) GetWorkflowOrchestrator() *workflows.Orchestrator {
+	return a.orchestrator
 }
