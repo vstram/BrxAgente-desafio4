@@ -230,8 +230,9 @@ func (tool *ReadExcelTool) simulateKnownFile(filePath, sheetName string, maxRows
 }
 
 // simulateAtivosFile simula arquivo ATIVOS.xlsx
+// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 func (tool *ReadExcelTool) simulateAtivosFile(filePath, sheetName string, maxRows int) (*ReadExcelOutput, error) {
-	headers := []string{"Matricula", "Nome", "DataAdmissao", "Empresa", "Sindicato", "Setor", "Cargo", "Status"}
+	headers := []string{"Matricula", "DataAdmissao", "Empresa", "Sindicato", "Setor", "Cargo", "Status"}
 	rowCount := 1247
 	colCount := len(headers)
 	
@@ -244,7 +245,6 @@ func (tool *ReadExcelTool) simulateAtivosFile(filePath, sheetName string, maxRow
 	for i := 1; i <= displayRows; i++ {
 		row := map[string]interface{}{
 			"Matricula":     fmt.Sprintf("1234%d", i),
-			"Nome":          fmt.Sprintf("Colaborador %d", i),
 			"DataAdmissao":  "2024-01-15",
 			"Empresa":       "Empresa ABC", 
 			"Sindicato":     "SINDPD",
@@ -273,8 +273,9 @@ func (tool *ReadExcelTool) simulateAtivosFile(filePath, sheetName string, maxRow
 }
 
 // simulateDesligadosFile simula arquivo DESLIGADOS.xlsx
+// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 func (tool *ReadExcelTool) simulateDesligadosFile(filePath, sheetName string, maxRows int) (*ReadExcelOutput, error) {
-	headers := []string{"Matricula", "Nome", "DataAdmissao", "DataDesligamento", "Empresa", "Sindicato", "Setor", "Cargo", "Status"}
+	headers := []string{"Matricula", "DataAdmissao", "DataDesligamento", "Empresa", "Sindicato", "Setor", "Cargo", "Status"}
 	
 	sheet := sheetName
 	if sheet == "" {
@@ -294,8 +295,9 @@ func (tool *ReadExcelTool) simulateDesligadosFile(filePath, sheetName string, ma
 }
 
 // simulateFeriasFile simula arquivo FERIAS.xlsx
+// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 func (tool *ReadExcelTool) simulateFeriasFile(filePath, sheetName string, maxRows int) (*ReadExcelOutput, error) {
-	headers := []string{"Matricula", "Nome", "DataInicio", "DataFim", "Dias"}
+	headers := []string{"Matricula", "DataInicio", "DataFim", "Dias"}
 	
 	sheet := sheetName
 	if sheet == "" {
@@ -315,8 +317,9 @@ func (tool *ReadExcelTool) simulateFeriasFile(filePath, sheetName string, maxRow
 }
 
 // simulateAfastamentosFile simula arquivo AFASTAMENTOS.xlsx
+// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 func (tool *ReadExcelTool) simulateAfastamentosFile(filePath, sheetName string, maxRows int) (*ReadExcelOutput, error) {
-	headers := []string{"Matricula", "Nome", "DataInicio", "DataFim", "Tipo", "Dias"}
+	headers := []string{"Matricula", "DataInicio", "DataFim", "Tipo", "Dias"}
 	
 	sheet := sheetName
 	if sheet == "" {

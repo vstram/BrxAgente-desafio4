@@ -221,10 +221,10 @@ func TestReadExcelTool_Execute_SpecialFiles(t *testing.T) {
 		expectedRows int
 		expectedCols int
 	}{
-		{"ATIVOS.xlsx", 1247, 8},
-		{"DESLIGADOS.xlsx", 23, 9},
-		{"FERIAS.xlsx", 156, 5},
-		{"AFASTAMENTOS.xlsx", 89, 6},
+		{"ATIVOS.xlsx", 1247, 7},     // ⚠️ CONFIDENCIALIDADE: Reduzido de 8 para 7 (removido Nome)
+		{"DESLIGADOS.xlsx", 23, 8},   // ⚠️ CONFIDENCIALIDADE: Reduzido de 9 para 8 (removido Nome)
+		{"FERIAS.xlsx", 156, 4},      // ⚠️ CONFIDENCIALIDADE: Reduzido de 5 para 4 (removido Nome)
+		{"AFASTAMENTOS.xlsx", 89, 5}, // ⚠️ CONFIDENCIALIDADE: Reduzido de 6 para 5 (removido Nome)
 	}
 	
 	for _, tc := range testCases {

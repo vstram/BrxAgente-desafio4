@@ -348,8 +348,9 @@ func (tool *ValidateDataTool) validatePlanilha(input ValidateDataInput) (*Valida
 	warnings := []WarningValidacao{}
 	
 	// Verificar estrutura básica da planilha
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 	if headers, ok := dados["headers"].([]interface{}); ok {
-		expectedHeaders := []string{"Matricula", "Nome", "DataAdmissao", "Empresa", "Sindicato"}
+		expectedHeaders := []string{"Matricula", "DataAdmissao", "Empresa", "Sindicato"}
 		for _, expected := range expectedHeaders {
 			found := false
 			for _, header := range headers {

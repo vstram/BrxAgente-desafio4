@@ -86,7 +86,7 @@ func TestValidateDataTool_Validate(t *testing.T) {
 			input: `{
 				"tipo_validacao": "planilha",
 				"dados_planilha": {
-					"headers": ["Matricula", "Nome"],
+					"headers": ["Matricula"],
 					"row_count": 10
 				}
 			}`,
@@ -144,9 +144,9 @@ func TestValidateDataTool_Execute_ColaboradorValido(t *testing.T) {
 	tool := NewValidateDataTool()
 	
 	// Colaborador válido
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 	colaborador := modelo.Colaborador{
 		Matricula:    "12345",
-		Nome:         "Teste Colaborador",
 		DataAdmissao: time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
 		Sindicato:    "SINDPD",
 		Empresa:      "Empresa Teste",
@@ -208,9 +208,9 @@ func TestValidateDataTool_Execute_ColaboradorComErros(t *testing.T) {
 	tool := NewValidateDataTool()
 	
 	// Colaborador com erros
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 	colaborador := modelo.Colaborador{
 		Matricula:    "", // Erro: matrícula vazia
-		Nome:         "Teste Colaborador",
 		DataAdmissao: time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC), // Erro: data futura
 		Sindicato:    "", // Erro: sindicato vazio
 		Empresa:      "", // Erro: empresa vazia
@@ -262,10 +262,10 @@ func TestValidateDataTool_Execute_ListaColaboradores(t *testing.T) {
 	tool := NewValidateDataTool()
 	
 	// Lista com colaboradores válidos e inválidos
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 	colaboradores := []modelo.Colaborador{
 		{
 			Matricula:    "12345",
-			Nome:         "Colaborador Válido",
 			DataAdmissao: time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
 			Sindicato:    "SINDPD",
 			Empresa:      "Empresa Teste",
@@ -274,12 +274,10 @@ func TestValidateDataTool_Execute_ListaColaboradores(t *testing.T) {
 		},
 		{
 			Matricula:    "", // Inválido
-			Nome:         "Colaborador Inválido",
 			Sindicato:    "SINDPD",
 		},
 		{
 			Matricula:    "12345", // Duplicata
-			Nome:         "Colaborador Duplicado",
 			Sindicato:    "SINDPD",
 		},
 	}
@@ -333,12 +331,13 @@ func TestValidateDataTool_Execute_Planilha(t *testing.T) {
 	tool := NewValidateDataTool()
 	
 	// Dados de planilha com headers válidos
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 	dadosPlanilha := map[string]interface{}{
 		"headers": []interface{}{
-			"Matricula", "Nome", "DataAdmissao", "Empresa", "Sindicato",
+			"Matricula", "DataAdmissao", "Empresa", "Sindicato",
 		},
 		"row_count": 100.0,
-		"col_count": 5.0,
+		"col_count": 4.0,
 	}
 	
 	input := map[string]interface{}{
@@ -381,9 +380,10 @@ func TestValidateDataTool_Execute_PlanilhaComHeadersAusentes(t *testing.T) {
 	tool := NewValidateDataTool()
 	
 	// Dados de planilha com headers ausentes
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md - usamos apenas Matricula
 	dadosPlanilha := map[string]interface{}{
 		"headers": []interface{}{
-			"Matricula", "Nome", // Faltam headers obrigatórios
+			"Matricula", // Faltam headers obrigatórios
 		},
 		"row_count": 50.0,
 	}

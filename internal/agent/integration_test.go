@@ -84,10 +84,10 @@ func TestVRAgent_ExecuteCalculateVRTool(t *testing.T) {
 	}
 
 	// Input válido para cálculo
+	// ⚠️ CONFIDENCIALIDADE: Remove campo nome conforme PRD.md
 	input := `{
 		"colaborador": {
 			"matricula": "12345",
-			"nome": "Teste Colaborador",
 			"sindicato": "SINDPD"
 		},
 		"valor_por_sindicato": {"SINDPD": 21.25},
@@ -125,11 +125,11 @@ func TestVRAgent_ExecuteValidateDataTool(t *testing.T) {
 	}
 
 	// Input para validação de colaborador
+	// ⚠️ CONFIDENCIALIDADE: Remove campo nome conforme PRD.md
 	input := `{
 		"tipo_validacao": "colaborador",
 		"colaborador": {
 			"matricula": "12345",
-			"nome": "Teste Colaborador",
 			"sindicato": "SINDPD",
 			"empresa": "Empresa ABC"
 		},

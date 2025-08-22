@@ -150,9 +150,9 @@ func TestCalculateVRTool_Execute_Success(t *testing.T) {
 	tool := NewCalculateVRTool()
 	
 	// Criar colaborador de teste
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 	colaborador := modelo.Colaborador{
 		Matricula:    "12345",
-		Nome:         "Teste Colaborador",
 		DataAdmissao: time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
 		Sindicato:    "SINDPD",
 		Empresa:      "Empresa Teste",
@@ -241,9 +241,9 @@ func TestCalculateVRTool_Execute_WithAfastamentos(t *testing.T) {
 	tool := NewCalculateVRTool()
 	
 	// Colaborador com afastamentos
+	// ⚠️ CONFIDENCIALIDADE: Remove campo Nome conforme PRD.md
 	colaborador := modelo.Colaborador{
 		Matricula:    "12346",
-		Nome:         "Teste Com Afastamento",
 		DataAdmissao: time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
 		Sindicato:    "SINDPD",
 		Empresa:      "Empresa Teste",
