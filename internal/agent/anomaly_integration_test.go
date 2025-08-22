@@ -1,0 +1,421 @@
+package agent
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+	"time"
+
+	"BrxAgente-desafio4/internal/chat"
+	"BrxAgente-desafio4/internal/config"
+	"BrxAgente-desafio4/internal/intelligence"
+)
+
+// TestAnomalyIntegration testa integração do sistema de anomalias com VRAgent
+func TestAnomalyIntegration(t *testing.T) {
+	t.Run("AgentAnomalyInitialization", testAgentAnomalyInitialization)
+	t.Run("AnalyzeAnomaliesDirectly", testAnalyzeAnomaliesDirectly)
+	t.Run("ValidatedVRWorkflow", testValidatedVRWorkflow)
+	t.Run("AnomalyReportFormatting", testAnomalyReportFormatting)
+	t.Run("AnomalyDetectionInWorkflow", testAnomalyDetectionInWorkflow)
+	t.Run("DisabledAgentAnomalyAnalysis", testDisabledAgentAnomalyAnalysis)
+}
+
+func testAgentAnomalyInitialization(t *testing.T) {
+	agent := createTestAgentForAnomaly(t)
+	
+	// Verificar se analisador foi inicializado
+	analyzer := agent.GetAnomalyAnalyzer()
+	if analyzer == nil {
+		t.Fatal("Analisador de anomalias não foi inicializado")
+	}
+	
+	stats := analyzer.GetStats()
+	if stats["analyzer_version"] == nil {
+		t.Error("Analisador deveria ter versão definida")
+	}
+	
+	// Verificar se workflow com detecção de anomalias foi registrado
+	workflows := agent.ListAvailableWorkflows()
+	
+	foundValidatedVR := false
+	for _, workflow := range workflows {
+		if workflow == "validated-vr-processing" {
+			foundValidatedVR = true
+			break
+		}
+	}
+	
+	if !foundValidatedVR {
+		t.Error("Workflow 'validated-vr-processing' deveria estar registrado")
+	}
+	
+	t.Logf("Workflows disponíveis: %v", workflows)
+	t.Logf("Analisador inicializado com versão: %v", stats["analyzer_version"])
+}
+
+func testAnalyzeAnomaliesDirectly(t *testing.T) {
+	agent := createTestAgentForAnomaly(t)
+	
+	// Criar dados com anomalias conhecidas
+	colaboradores := map[string]interface{}{
+		"001": map[string]interface{}{
+			"matricula": "001",
+			"sindicato": "SINDICATO_A",
+			"vr_total":  500.0,
+			"dias_uteis": 22,
+			"data_admissao": "2023-01-01",
+		},
+		"002": map[string]interface{}{
+			"matricula": "002",
+			"sindicato": "SINDICATO_A",
+			"vr_total":  0.0, // VR zerado (anomalia)
+			"dias_uteis": 22,
+			"data_admissao": "2023-01-01",
+		},
+		"003": map[string]interface{}{
+			"matricula": "003",
+			"sindicato": "SINDICATO_A",
+			"vr_total":  -100.0, // VR negativo (anomalia crítica)
+			"dias_uteis": 22,
+			"data_admissao": "2023-01-01",
+		},
+		"004": map[string]interface{}{
+			"matricula": "004",
+			"sindicato": "SINDICATO_A",
+			"vr_total":  500.0,
+			"dias_uteis": 22,
+			"data_admissao": time.Now().AddDate(1, 0, 0).Format("2006-01-02"), // Data futura
+		},
+	}
+	
+	// Executar análise de anomalias
+	report, err := agent.AnalyzeAnomalies(colaboradores, nil)
+	if err != nil {
+		t.Fatalf("Erro na análise de anomalias: %v", err)
+	}
+	
+	// Verificar resultados
+	if report.TotalRecords != 4 {
+		t.Errorf("Esperava 4 registros, mas analisou %d", report.TotalRecords)
+	}
+	
+	if report.TotalAnomalies == 0 {
+		t.Error("Deveria ter detectado anomalias nos dados de teste")
+	}
+	
+	// Verificar se detectou VR negativo como crítico
+	foundCritical := false
+	foundZeroVR := false
+	foundFutureDate := false
+	
+	for _, anomaly := range report.Anomalies {
+		if anomaly.Entity == "003" && anomaly.Severity == intelligence.SeverityCritical {
+			foundCritical = true
+		}
+		if anomaly.Entity == "002" && strings.Contains(anomaly.Title, "zerado") {
+			foundZeroVR = true
+		}
+		if anomaly.Entity == "004" && anomaly.Type == intelligence.AnomalyTypeTemporal {
+			foundFutureDate = true
+		}
+	}
+	
+	if !foundCritical {
+		t.Error("Deveria ter detectado VR negativo como anomalia crítica")
+	}
+	
+	if !foundZeroVR {
+		t.Error("Deveria ter detectado VR zerado")
+	}
+	
+	if !foundFutureDate {
+		t.Error("Deveria ter detectado data futura")
+	}
+	
+	// Verificar score geral
+	if report.Summary.OverallScore < 0 || report.Summary.OverallScore > 100 {
+		t.Errorf("Score geral inválido: %.2f", report.Summary.OverallScore)
+	}
+	
+	// Verificar se há anomalias críticas no resumo
+	if report.Summary.CriticalIssues == 0 {
+		t.Error("Deveria ter pelo menos uma anomalia crítica no resumo")
+	}
+	
+	t.Logf("Análise concluída: %d anomalias detectadas (score: %.1f, risco: %s)",
+		report.TotalAnomalies, report.Summary.OverallScore, report.Summary.RiskLevel)
+}
+
+func testValidatedVRWorkflow(t *testing.T) {
+	agent := createTestAgentForAnomaly(t)
+	
+	// Dados para o workflow
+	colaboradores := map[string]interface{}{
+		"001": map[string]interface{}{
+			"matricula": "001",
+			"sindicato": "SINDICATO_A",
+			"vr_total":  500.0,
+			"dias_uteis": 22,
+		},
+		"002": map[string]interface{}{
+			"matricula": "002",
+			"sindicato": "SINDICATO_A",
+			"vr_total":  5000.0, // Outlier alto
+			"dias_uteis": 22,
+		},
+	}
+	
+	// Preparar parâmetros do workflow
+	params := map[string]interface{}{
+		"file_path": "test_anomalies.xlsx",
+		"colaboradores": colaboradores,
+		"analysis_params": map[string]interface{}{
+			"confidence_threshold": 70.0,
+		},
+	}
+	
+	// Executar workflow com detecção de anomalias
+	result, err := agent.ExecuteWorkflowByName("validated-vr-processing", params)
+	if err != nil {
+		t.Fatalf("Erro ao executar workflow: %v", err)
+	}
+	
+	// Verificar resultado do workflow
+	if result == nil {
+		t.Fatal("Resultado do workflow não deveria ser nil")
+	}
+	
+	if result.Status.String() != "completed" {
+		t.Errorf("Workflow deveria ter completado, status: %s", result.Status)
+	}
+	
+	// Verificar se step de detecção de anomalias foi executado
+	foundAnomalyStep := false
+	foundReportStep := false
+	
+	for _, stepResult := range result.StepResults {
+		if stepResult.StepName == "anomaly-detection" {
+			foundAnomalyStep = true
+			if stepResult.Status != "completed" {
+				t.Errorf("Step de detecção de anomalias deveria ter completado: %s", stepResult.Status)
+			}
+		}
+		if stepResult.StepName == "anomaly-report" {
+			foundReportStep = true
+		}
+	}
+	
+	if !foundAnomalyStep {
+		t.Error("Workflow deveria ter executado step de detecção de anomalias")
+	}
+	
+	if !foundReportStep {
+		t.Error("Workflow deveria ter executado step de relatório de anomalias")
+	}
+	
+	t.Logf("Workflow executado com sucesso em %v", result.Duration)
+}
+
+func testAnomalyReportFormatting(t *testing.T) {
+	agent := createTestAgentForAnomaly(t)
+	
+	// Criar relatório de teste
+	report := &intelligence.AnomalyReport{
+		GeneratedAt:    time.Now(),
+		TotalRecords:   100,
+		TotalAnomalies: 5,
+		AnomaliesByType: map[intelligence.AnomalyType]int{
+			intelligence.AnomalyTypeValue:        2,
+			intelligence.AnomalyTypeTemporal:     2,
+			intelligence.AnomalyTypeRelationship: 1,
+		},
+		AnomaliesBySeverity: map[string]int{
+			"critical": 1,
+			"high":     2,
+			"medium":   2,
+		},
+		Summary: intelligence.AnomalySummary{
+			OverallScore:   75.5,
+			RiskLevel:      "medium",
+			CriticalIssues: 1,
+			RecommendedActions: []string{
+				"Resolver problema crítico",
+				"Revisar dados de entrada",
+			},
+		},
+	}
+	
+	// Formatar relatório
+	formatted := agent.FormatAnomalyReport(report)
+	
+	if len(formatted) == 0 {
+		t.Error("Relatório formatado não deveria estar vazio")
+	}
+	
+	// Verificar conteúdo essencial
+	requiredContent := []string{
+		"RELATÓRIO DE ANOMALIAS",
+		"100", // Total de registros
+		"5",   // Total de anomalias
+		"75.5", // Score
+		"medium", // Risk level
+		"critical", // Severidade
+		"RECOMENDAÇÕES",
+	}
+	
+	for _, content := range requiredContent {
+		if !strings.Contains(formatted, content) {
+			t.Errorf("Relatório formatado deveria conter '%s'", content)
+		}
+	}
+	
+	t.Logf("Relatório formatado gerado com %d caracteres", len(formatted))
+}
+
+func testAnomalyDetectionInWorkflow(t *testing.T) {
+	agent := createTestAgentForAnomaly(t)
+	
+	// Simular dados com problemas graves que deveriam parar o workflow
+	colaboradores := map[string]interface{}{
+		"001": map[string]interface{}{
+			"matricula": "001",
+			"sindicato": "SINDICATO_A",
+			"vr_total":  -500.0, // Crítico: VR negativo
+			"dias_uteis": -10,   // Crítico: Dias negativos
+		},
+	}
+	
+	params := map[string]interface{}{
+		"file_path": "critical_test.xlsx",
+		"colaboradores": colaboradores,
+	}
+	
+	// Executar workflow
+	result, err := agent.ExecuteWorkflowByName("validated-vr-processing", params)
+	if err != nil {
+		t.Fatalf("Erro ao executar workflow: %v", err)
+	}
+	
+	// Verificar se anomalias foram detectadas
+	if result.Status.String() != "completed" {
+		t.Errorf("Workflow deveria ter completado mesmo com anomalias: %s", result.Status)
+	}
+	
+	// Deve ter executado o step de detecção
+	foundAnomalyDetection := false
+	for _, stepResult := range result.StepResults {
+		if stepResult.StepName == "anomaly-detection" {
+			foundAnomalyDetection = true
+			break
+		}
+	}
+	
+	if !foundAnomalyDetection {
+		t.Error("Workflow deveria ter executado detecção de anomalias")
+	}
+	
+	t.Logf("Workflow com anomalias críticas executado")
+}
+
+func testDisabledAgentAnomalyAnalysis(t *testing.T) {
+	agent := createTestAgentForAnomaly(t)
+	
+	// Desabilitar agente
+	agent.Disable()
+	
+	// Tentar executar análise
+	colaboradores := map[string]interface{}{
+		"001": map[string]interface{}{
+			"matricula": "001",
+			"vr_total":  500.0,
+		},
+	}
+	
+	_, err := agent.AnalyzeAnomalies(colaboradores, nil)
+	if err == nil {
+		t.Error("Análise deveria falhar com agente desabilitado")
+	}
+	
+	if !strings.Contains(err.Error(), "desabilitado") {
+		t.Errorf("Erro deveria mencionar agente desabilitado: %v", err)
+	}
+	
+	// Reabilitar e verificar que funciona
+	agent.Enable()
+	
+	_, err = agent.AnalyzeAnomalies(colaboradores, nil)
+	if err != nil {
+		t.Errorf("Análise deveria funcionar após reabilitar agente: %v", err)
+	}
+}
+
+// TestAnomalyPerformance testa performance da detecção de anomalias
+func TestAnomalyPerformance(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Pulando teste de performance em modo short")
+	}
+	
+	agent := createTestAgentForAnomaly(t)
+	
+	// Criar dataset grande para teste de performance
+	colaboradores := make(map[string]interface{})
+	for i := 0; i < 500; i++ {
+		matricula := fmt.Sprintf("%04d", i)
+		colaboradores[matricula] = map[string]interface{}{
+			"matricula": matricula,
+			"sindicato": "SINDICATO_A",
+			"vr_total":  500.0 + float64(i%100), // Variar valores
+			"dias_uteis": 22,
+			"data_admissao": "2023-01-01",
+		}
+	}
+	
+	// Adicionar algumas anomalias
+	colaboradores["9999"] = map[string]interface{}{
+		"matricula": "9999",
+		"vr_total":  -100.0, // Anomalia
+		"dias_uteis": 22,
+	}
+	
+	start := time.Now()
+	
+	report, err := agent.AnalyzeAnomalies(colaboradores, nil)
+	if err != nil {
+		t.Fatalf("Erro na análise de performance: %v", err)
+	}
+	
+	duration := time.Since(start)
+	
+	t.Logf("Performance Test:")
+	t.Logf("- Registros analisados: %d", report.TotalRecords)
+	t.Logf("- Tempo total: %v", duration)
+	t.Logf("- Registros por segundo: %.2f", float64(report.TotalRecords)/duration.Seconds())
+	t.Logf("- Anomalias detectadas: %d", report.TotalAnomalies)
+	
+	// Verificar que performance está razoável (< 5 segundos para 500 registros)
+	if duration > 5*time.Second {
+		t.Errorf("Performance muito baixa: %v para %d registros", duration, report.TotalRecords)
+	}
+	
+	// Verificar que detectou as anomalias intencionais
+	if report.TotalAnomalies == 0 {
+		t.Error("Deveria ter detectado pelo menos as anomalias intencionais")
+	}
+}
+
+// Helper function
+func createTestAgentForAnomaly(t *testing.T) *VRAgent {
+	cfg := &config.Config{}
+	chatSvc := chat.NewChat(cfg)
+	
+	agentConfig := DefaultAgentConfig()
+	agentConfig.DebugMode = true // Habilitar debug para mais detalhes
+	
+	agent, err := NewVRAgent(agentConfig, chatSvc)
+	if err != nil {
+		t.Fatalf("Erro ao criar agente: %v", err)
+	}
+	
+	return agent
+}

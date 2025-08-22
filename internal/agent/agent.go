@@ -11,6 +11,7 @@ import (
 	"BrxAgente-desafio4/internal/excel"
 	"BrxAgente-desafio4/internal/agent/tools"
 	"BrxAgente-desafio4/internal/workflows"
+	"BrxAgente-desafio4/internal/intelligence"
 	
 	"github.com/tmc/langchaingo/chains"
 	"github.com/tmc/langchaingo/llms"
@@ -33,6 +34,9 @@ type VRAgent struct {
 	
 	// Sistema de workflow
 	orchestrator   *workflows.Orchestrator
+	
+	// Sistema de detecção de anomalias  
+	analyzer       *intelligence.Analyzer
 	
 	// Estado do agente
 	enabled    bool
@@ -92,6 +96,14 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		orchestratorConfig,
 	)
 	
+	// Configurar analisador de anomalias
+	analysisConfig := intelligence.DefaultAnalysisConfig()
+	if agentConfig.DebugMode {
+		analysisConfig.EnableParallelProcessing = true
+		analysisConfig.ConfidenceThreshold = 60.0 // Threshold mais baixo em debug
+	}
+	analyzer := intelligence.NewAnalyzer(analysisConfig)
+	
 	agent := &VRAgent{
 		config:       agentConfig,
 		memory:       memoryBuffer,
@@ -99,6 +111,7 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		excelService: excelSvc,
 		toolRegistry: toolRegistry,
 		orchestrator: orchestrator,
+		analyzer:     analyzer,
 		enabled:      agentConfig.Enabled,
 		startTime:    time.Now(),
 		status: AgentStatus{
@@ -444,6 +457,12 @@ func (a *VRAgent) registerDefaultWorkflows() error {
 		return fmt.Errorf("erro ao registrar workflow simple-validation: %w", err)
 	}
 	
+	// Registrar workflow com detecção de anomalias
+	validatedVR := intelligence.NewValidatedVRWorkflow(a.analyzer)
+	if err := a.orchestrator.RegisterWorkflow(validatedVR); err != nil {
+		return fmt.Errorf("erro ao registrar workflow validated-vr-processing: %w", err)
+	}
+	
 	// Registrar outros workflows futuros aqui
 	// TODO: Implementar workflow processar-vr-mensal quando as ferramentas estiverem prontas
 	
@@ -511,4 +530,40 @@ func (a *VRAgent) ListAvailableWorkflows() []string {
 // GetWorkflowOrchestrator retorna o orquestrador (para uso interno/testes)
 func (a *VRAgent) GetWorkflowOrchestrator() *workflows.Orchestrator {
 	return a.orchestrator
+}
+
+// AnalyzeAnomalies executa análise de anomalias nos dados fornecidos
+func (a *VRAgent) AnalyzeAnomalies(colaboradores map[string]interface{}, params map[string]interface{}) (*intelligence.AnomalyReport, error) {
+	if !a.enabled {
+		return nil, fmt.Errorf("agente está desabilitado")
+	}
+	
+	a.updateStatus("running", "anomaly-analysis")
+	a.status.TotalRequests++
+	
+	defer func() {
+		a.updateStatus("idle", "")
+	}()
+	
+	report, err := a.analyzer.AnalyzeData(colaboradores, params)
+	if err != nil {
+		a.status.ErrorCount++
+		a.logger.Printf("Erro na análise de anomalias: %v", err)
+		return nil, err
+	}
+	
+	a.logger.Printf("Análise de anomalias concluída: %d anomalias detectadas (score: %.1f)",
+		report.TotalAnomalies, report.Summary.OverallScore)
+	
+	return report, nil
+}
+
+// GetAnomalyAnalyzer retorna o analisador de anomalias (para uso interno/testes)
+func (a *VRAgent) GetAnomalyAnalyzer() *intelligence.Analyzer {
+	return a.analyzer
+}
+
+// FormatAnomalyReport formata relatório de anomalias para exibição
+func (a *VRAgent) FormatAnomalyReport(report *intelligence.AnomalyReport) string {
+	return intelligence.FormatAnomalyReportForHuman(report)
 }
