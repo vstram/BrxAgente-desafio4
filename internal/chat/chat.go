@@ -80,7 +80,7 @@ type Chat struct {
 type AgentInterface interface {
 	Ask(question string) (string, error)
 	IsEnabled() bool
-	GetStatus() interface{}
+	GetStatusInterface() interface{}
 }
 
 // NewChat creates a new Chat instance

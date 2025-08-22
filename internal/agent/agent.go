@@ -197,6 +197,11 @@ func (a *VRAgent) GetStatus() AgentStatus {
 	return a.status
 }
 
+// GetStatusInterface retorna o status como interface{} para compatibilidade
+func (a *VRAgent) GetStatusInterface() interface{} {
+	return a.GetStatus()
+}
+
 // IsEnabled retorna se o agente está habilitado
 func (a *VRAgent) IsEnabled() bool {
 	return a.enabled
