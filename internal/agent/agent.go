@@ -6,6 +6,8 @@ import (
 	"time"
 	
 	"BrxAgente-desafio4/internal/chat"
+	"BrxAgente-desafio4/internal/excel"
+	"BrxAgente-desafio4/internal/agent/tools"
 )
 
 // VRAgent representa o agente principal de IA para processamento de VR
@@ -14,8 +16,8 @@ type VRAgent struct {
 	
 	// Integração com sistema existente
 	chatService    *chat.Chat
-	// excelService   será implementado na próxima issue
-	// calculoService será implementado na próxima issue
+	excelService   *excel.Service
+	toolRegistry   *tools.ToolRegistry
 	
 	// Estado do agente
 	enabled    bool
@@ -45,12 +47,23 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 	if err := agentConfig.Validate(); err != nil {
 		return nil, fmt.Errorf("configuração inválida: %w", err)
 	}
+
+	// Criar serviços
+	excelSvc := excel.NewService()
+	
+	// Criar registry de ferramentas com todas as ferramentas padrão
+	toolRegistry, err := tools.GetDefaultToolRegistry()
+	if err != nil {
+		return nil, fmt.Errorf("erro ao criar registry de ferramentas: %w", err)
+	}
 	
 	agent := &VRAgent{
-		config:      agentConfig,
-		chatService: chatSvc,
-		enabled:     agentConfig.Enabled,
-		startTime:   time.Now(),
+		config:       agentConfig,
+		chatService:  chatSvc,
+		excelService: excelSvc,
+		toolRegistry: toolRegistry,
+		enabled:      agentConfig.Enabled,
+		startTime:    time.Now(),
 		status: AgentStatus{
 			State:         "idle",
 			LastActivity:  time.Now(),
@@ -63,8 +76,8 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 	}
 	
 	// Log de inicialização
-	agent.logger.Printf("VRAgent inicializado com sucesso - Enabled: %v, Model: %s", 
-		agentConfig.Enabled, agentConfig.Model)
+	agent.logger.Printf("VRAgent inicializado com sucesso - Enabled: %v, Model: %s, Tools: %d", 
+		agentConfig.Enabled, agentConfig.Model, toolRegistry.Count())
 	
 	return agent, nil
 }
@@ -136,6 +149,43 @@ func (a *VRAgent) Reset() error {
 // GetConfig retorna a configuração atual do agente
 func (a *VRAgent) GetConfig() *AgentConfig {
 	return a.config
+}
+
+// GetAvailableTools retorna lista de ferramentas disponíveis
+func (a *VRAgent) GetAvailableTools() []string {
+	return a.toolRegistry.ListNames()
+}
+
+// ExecuteTool executa uma ferramenta específica
+func (a *VRAgent) ExecuteTool(toolName, input string) (string, error) {
+	if !a.enabled {
+		return "", fmt.Errorf("agente está desabilitado")
+	}
+
+	a.updateStatus("running", fmt.Sprintf("Executando ferramenta: %s", toolName))
+	defer a.updateStatus("idle", "")
+
+	a.status.TotalRequests++
+
+	result, err := a.toolRegistry.Execute(toolName, input)
+	if err != nil {
+		a.status.ErrorCount++
+		a.logger.Printf("Erro ao executar ferramenta %s: %v", toolName, err)
+		return "", fmt.Errorf("erro ao executar ferramenta %s: %w", toolName, err)
+	}
+
+	a.logger.Printf("Ferramenta %s executada com sucesso", toolName)
+	return result, nil
+}
+
+// GetToolInfo retorna informações sobre uma ferramenta específica
+func (a *VRAgent) GetToolInfo(toolName string) (map[string]interface{}, error) {
+	return a.toolRegistry.GetToolInfo(toolName)
+}
+
+// GetAllToolsInfo retorna informações sobre todas as ferramentas
+func (a *VRAgent) GetAllToolsInfo() map[string]interface{} {
+	return a.toolRegistry.GetAllToolsInfo()
 }
 
 // updateStatus atualiza o status interno do agente
