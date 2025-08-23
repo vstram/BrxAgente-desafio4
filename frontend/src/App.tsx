@@ -4,12 +4,14 @@ import './App.css';
 import {Greet, SelecionarDiretorio, SetDiretorioPlanilhas, RealizarAnaliseOrquestrada, GetConsolidatedData} from "../wailsjs/go/main/App";
 import ConfigModal from './ConfigModal';
 import Chat from './Chat';
+import AgentDashboard from './components/AgentDashboard';
 
 // Importando ícones
 import FolderIcon from './assets/icons/folder.svg';
 import PlayIcon from './assets/icons/play.svg';
 import SettingsIcon from './assets/icons/settings.svg';
 import SpinnerIcon from './assets/icons/spinner.svg';
+import InfoIcon from './assets/icons/info.svg';
 
 function App() {
     const [resultText, setResultText] = useState("Por favor, selecione o diretório das planilhas abaixo 👇");
@@ -20,6 +22,7 @@ function App() {
     const [resultados, setResultados] = useState<{colaboradoresProcessados?: number, arquivoGerado?: string} | null>(null);
     const [erro, setErro] = useState<string | null>(null);
     const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+    const [showAgentDashboard, setShowAgentDashboard] = useState(false);
     
     const updateName = (e: any) => setName(e.target.value);
     const updateResultText = (result: string) => setResultText(result);
@@ -183,6 +186,10 @@ function App() {
                     <img src={SettingsIcon} alt="Configurações" className="btn-icon" />
                     Configurações
                 </button>
+                <button className="btn footer-btn" onClick={() => setShowAgentDashboard(!showAgentDashboard)}>
+                    <img src={InfoIcon} alt="Dashboard" className="btn-icon" />
+                    Dashboard IA
+                </button>
             </footer>
             
             {/* Seção de greeting - manter para testes, mas pode ser ocultada */}
@@ -196,6 +203,13 @@ function App() {
                 isOpen={isConfigModalOpen} 
                 onClose={() => setIsConfigModalOpen(false)} 
             />
+            
+            {/* Dashboard do Agente IA */}
+            {showAgentDashboard && (
+                <div style={{ padding: '20px 0' }}>
+                    <AgentDashboard />
+                </div>
+            )}
             
             {/* Componente de chat */}
             <Chat />

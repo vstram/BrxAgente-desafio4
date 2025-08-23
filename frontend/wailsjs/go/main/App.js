@@ -6,6 +6,18 @@ export function AskAI(arg1) {
   return window['go']['main']['App']['AskAI'](arg1);
 }
 
+export function CancelWorkflow() {
+  return window['go']['main']['App']['CancelWorkflow']();
+}
+
+export function ClearAgentLogs() {
+  return window['go']['main']['App']['ClearAgentLogs']();
+}
+
+export function GetAgentStatus() {
+  return window['go']['main']['App']['GetAgentStatus']();
+}
+
 export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
@@ -16,6 +28,10 @@ export function GetConsolidatedData() {
 
 export function GetSystemPrompt() {
   return window['go']['main']['App']['GetSystemPrompt']();
+}
+
+export function GetWorkflowHistory() {
+  return window['go']['main']['App']['GetWorkflowHistory']();
 }
 
 export function Greet(arg1) {
@@ -44,6 +60,14 @@ export function SetOllamaConfig(arg1) {
 
 export function SetOpenAIKey(arg1) {
   return window['go']['main']['App']['SetOpenAIKey'](arg1);
+}
+
+export function StartWorkflow(arg1) {
+  return window['go']['main']['App']['StartWorkflow'](arg1);
+}
+
+export function StopWorkflow() {
+  return window['go']['main']['App']['StopWorkflow']();
 }
 
 export function TestExcelReading() {
