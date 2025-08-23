@@ -13,6 +13,8 @@ import (
 
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
+	"BrxAgente-desafio4/internal/intelligence"
+	"BrxAgente-desafio4/internal/models"
 	"BrxAgente-desafio4/internal/modelo"
 	"BrxAgente-desafio4/internal/security"
 )
@@ -32,6 +34,15 @@ type App struct {
 	workflowHistory  []WorkflowExecution
 	systemLogs       []LogEntry
 	agentMu          sync.RWMutex // Mutex para campos de monitoramento
+	
+	// Intelligence and prediction system
+	trendPredictor     *intelligence.TrendPredictor
+	patternAnalyzer    *intelligence.PatternAnalyzer
+	trendDetector      *intelligence.TrendDetector
+	forecaster         *intelligence.Forecaster
+	recommendationEngine *intelligence.RecommendationEngine
+	historicalData     []models.HistoricalVRData
+	dataMu            sync.RWMutex // Mutex para dados históricos
 }
 
 // AgentStatus represents possible agent states
@@ -114,6 +125,31 @@ func NewApp() *App {
 		agentStartTime: time.Now(),
 		workflowHistory: make([]WorkflowExecution, 0),
 		systemLogs:    make([]LogEntry, 0),
+		historicalData: make([]models.HistoricalVRData, 0),
+		
+		// Initialize intelligence systems
+		trendPredictor: intelligence.NewTrendPredictor(intelligence.TrendPredictorConfig{
+			MinDataPoints:       6,
+			ConfidenceThreshold: 0.7,
+		}),
+		patternAnalyzer: intelligence.NewPatternAnalyzer(intelligence.PatternAnalyzerConfig{
+			MinDataPoints:   6,
+			ConfidenceLevel: 0.7,
+		}),
+		trendDetector: intelligence.NewTrendDetector(intelligence.TrendDetectorConfig{
+			MinDataPoints: 6,
+		}),
+		forecaster: intelligence.NewForecaster(intelligence.ForecastConfig{
+			DefaultHorizon: 3,
+			MinAccuracy:    0.7,
+		}),
+		recommendationEngine: intelligence.NewRecommendationEngine(intelligence.RecommendationConfig{
+			MaxRecommendations:   10,
+			MinConfidence:        0.7,
+			PriorityThreshold:    0.8,
+			AutoApproveThreshold: 0.9,
+			ContextWindow:        6,
+		}),
 	}
 }
 
@@ -797,4 +833,241 @@ func (a *App) SetChatContext() error {
 	fmt.Println("SetChatContext: Dados enviados com sucesso para o chat")
 	
 	return nil
+}
+
+// ============ Métodos de Análise Preditiva ============
+
+// AddHistoricalData adiciona dados históricos ao sistema
+func (a *App) AddHistoricalData(data models.HistoricalVRData) error {
+	a.dataMu.Lock()
+	defer a.dataMu.Unlock()
+	
+	a.historicalData = append(a.historicalData, data)
+	a.addSystemLog("info", fmt.Sprintf("Added historical data for %s - %s", data.Sindicato, data.Month.Format("2006-01")), "prediction")
+	
+	return nil
+}
+
+// GetHistoricalData retorna os dados históricos
+func (a *App) GetHistoricalData() ([]models.HistoricalVRData, error) {
+	a.dataMu.RLock()
+	defer a.dataMu.RUnlock()
+	
+	return a.historicalData, nil
+}
+
+// PredictTrends executa análise de tendências
+func (a *App) PredictTrends(sindicato string) (*models.Prediction, error) {
+	a.dataMu.RLock()
+	data := a.filterDataBySindicato(a.historicalData, sindicato)
+	a.dataMu.RUnlock()
+	
+	if len(data) < 6 {
+		return nil, fmt.Errorf("dados históricos insuficientes para análise de tendências (mínimo: 6, atual: %d)", len(data))
+	}
+	
+	// Use trend detector instead of trend predictor
+	result, err := a.trendDetector.DetectTrends(data, sindicato)
+	if err != nil {
+		return nil, fmt.Errorf("falha na detecção de tendência: %w", err)
+	}
+	
+	// Convert to Prediction format
+	prediction := &models.Prediction{
+		ID:         fmt.Sprintf("trend-%s-%d", sindicato, time.Now().Unix()),
+		Type:       models.PredictionTrend,
+		Target:     sindicato,
+		Value:      result,
+		Confidence: result.PrimaryTrend.Confidence,
+		Timeframe:  "próximos 3 meses",
+		CreatedAt:  time.Now(),
+		ValidUntil: time.Now().AddDate(0, 1, 0),
+		Method:     "trend_detection",
+		Description: fmt.Sprintf("Análise de tendência para %s", sindicato),
+	}
+	
+	a.addSystemLog("info", fmt.Sprintf("Trend prediction completed for %s with confidence %.2f", sindicato, prediction.Confidence), "prediction")
+	
+	return prediction, nil
+}
+
+// AnalyzePatterns executa análise de padrões
+func (a *App) AnalyzePatterns(sindicato string) ([]intelligence.ConsumptionPattern, error) {
+	a.dataMu.RLock()
+	data := a.filterDataBySindicato(a.historicalData, sindicato)
+	a.dataMu.RUnlock()
+	
+	if len(data) < 6 {
+		return nil, fmt.Errorf("dados históricos insuficientes para análise de padrões")
+	}
+	
+	patterns, err := a.patternAnalyzer.AnalyzeConsumptionPatterns(data)
+	if err != nil {
+		return nil, fmt.Errorf("falha na análise de padrões: %w", err)
+	}
+	
+	a.addSystemLog("info", fmt.Sprintf("Pattern analysis completed for %s - found %d patterns", sindicato, len(patterns)), "prediction")
+	
+	return patterns, nil
+}
+
+// DetectTrends detecta tendências nos dados
+func (a *App) DetectTrends(sindicato string) (*intelligence.TrendAnalysisResult, error) {
+	a.dataMu.RLock()
+	data := a.filterDataBySindicato(a.historicalData, sindicato)
+	a.dataMu.RUnlock()
+	
+	if len(data) < 6 {
+		return nil, fmt.Errorf("dados históricos insuficientes para detecção de tendências")
+	}
+	
+	result, err := a.trendDetector.DetectTrends(data, sindicato)
+	if err != nil {
+		return nil, fmt.Errorf("falha na detecção de tendências: %w", err)
+	}
+	
+	a.addSystemLog("info", fmt.Sprintf("Trend detection completed for %s - trend type: %s", sindicato, result.PrimaryTrend.Type), "prediction")
+	
+	return result, nil
+}
+
+// GenerateForecast gera previsões de consumo
+func (a *App) GenerateForecast(sindicato string, horizon int) (*models.ConsumptionForecast, error) {
+	a.dataMu.RLock()
+	data := a.filterDataBySindicato(a.historicalData, sindicato)
+	a.dataMu.RUnlock()
+	
+	if len(data) < 6 {
+		return nil, fmt.Errorf("dados históricos insuficientes para previsão")
+	}
+	
+	forecast, err := a.forecaster.ForecastConsumption(data, sindicato, horizon)
+	if err != nil {
+		return nil, fmt.Errorf("falha na geração de previsão: %w", err)
+	}
+	
+	// Convert EnsembleForecast to ConsumptionForecast
+	consumptionForecast := forecast.WeightedForecast
+	
+	a.addSystemLog("info", fmt.Sprintf("Forecast generated for %s - horizon: %d months, confidence: %.2f", sindicato, horizon, consumptionForecast.Confidence), "prediction")
+	
+	return consumptionForecast, nil
+}
+
+// GenerateRecommendations gera recomendações baseadas em análise preditiva
+func (a *App) GenerateRecommendations(sindicato string) (*intelligence.RecommendationSuite, error) {
+	a.dataMu.RLock()
+	data := a.filterDataBySindicato(a.historicalData, sindicato)
+	a.dataMu.RUnlock()
+	
+	if len(data) < 3 {
+		return nil, fmt.Errorf("dados históricos insuficientes para gerar recomendações")
+	}
+	
+	recommendations, err := a.recommendationEngine.GenerateRecommendations(data, sindicato)
+	if err != nil {
+		return nil, fmt.Errorf("falha na geração de recomendações: %w", err)
+	}
+	
+	a.addSystemLog("info", fmt.Sprintf("Generated %d recommendations for %s", len(recommendations.Recommendations), sindicato), "prediction")
+	
+	return recommendations, nil
+}
+
+// GetPredictiveAnalysisSummary gera um resumo completo da análise preditiva
+func (a *App) GetPredictiveAnalysisSummary(sindicato string) (map[string]interface{}, error) {
+	a.dataMu.RLock()
+	data := a.filterDataBySindicato(a.historicalData, sindicato)
+	a.dataMu.RUnlock()
+	
+	if len(data) < 6 {
+		return nil, fmt.Errorf("dados históricos insuficientes para análise completa")
+	}
+	
+	summary := make(map[string]interface{})
+	
+	// Análise de tendências
+	trendResult, err := a.trendDetector.DetectTrends(data, sindicato)
+	if err == nil {
+		summary["trends"] = trendResult
+	}
+	
+	// Análise de padrões
+	patterns, err := a.patternAnalyzer.AnalyzeConsumptionPatterns(data)
+	if err == nil {
+		summary["patterns"] = patterns
+	}
+	
+	// Previsão
+	forecast, err := a.forecaster.ForecastConsumption(data, sindicato, 3)
+	if err == nil {
+		summary["forecast"] = forecast
+	}
+	
+	// Recomendações
+	if len(data) >= 3 {
+		recommendations, err := a.recommendationEngine.GenerateRecommendations(data, sindicato)
+		if err == nil {
+			summary["recommendations"] = recommendations
+		}
+	}
+	
+	summary["data_points"] = len(data)
+	summary["analysis_date"] = time.Now()
+	summary["sindicato"] = sindicato
+	
+	a.addSystemLog("info", fmt.Sprintf("Complete predictive analysis summary generated for %s", sindicato), "prediction")
+	
+	return summary, nil
+}
+
+// CreateHistoricalDataFromCurrent cria dados históricos baseados nos dados atuais
+func (a *App) CreateHistoricalDataFromCurrent(sindicato string, month time.Time) error {
+	a.mu.RLock()
+	colaboradores := a.colaboradores
+	a.mu.RUnlock()
+	
+	if len(colaboradores) == 0 {
+		return fmt.Errorf("nenhum dado de colaborador disponível")
+	}
+	
+	// Calcular totais por sindicato
+	totalVR := 0.0
+	numColaboradores := 0
+	
+	for _, colab := range colaboradores {
+		if colab.Sindicato == sindicato {
+			numColaboradores++
+			// Estimativa de VR - seria calculado com base nas regras de negócio
+			totalVR += 500.0 // Valor estimativo
+		}
+	}
+	
+	if numColaboradores == 0 {
+		return fmt.Errorf("nenhum colaborador encontrado para o sindicato %s", sindicato)
+	}
+	
+	historicalData := models.HistoricalVRData{
+		Month:            month,
+		Sindicato:        sindicato,
+		TotalVR:          totalVR,
+		NumColaboradores: numColaboradores,
+		MediaPorPessoa:   totalVR / float64(numColaboradores),
+		DaysProcessed:    30, // Estimativa de dias úteis
+		Anomalies:        make([]string, 0),
+		Metadata:         make(map[string]interface{}),
+	}
+	
+	return a.AddHistoricalData(historicalData)
+}
+
+// Helper method to filter data by sindicato
+func (a *App) filterDataBySindicato(data []models.HistoricalVRData, sindicato string) []models.HistoricalVRData {
+	filtered := make([]models.HistoricalVRData, 0)
+	for _, d := range data {
+		if d.Sindicato == sindicato {
+			filtered = append(filtered, d)
+		}
+	}
+	return filtered
 }
