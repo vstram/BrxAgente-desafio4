@@ -1,0 +1,161 @@
+{
+  "compliance_rules": [
+    {
+      "id": "clt_vr_001",
+      "name": "Valor Máximo Vale Refeição - CLT",
+      "description": "O valor do vale refeição não pode exceder os limites estabelecidos pelo PAT (Programa de Alimentação do Trabalhador)",
+      "category": "CLT",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "1943-05-01T00:00:00Z",
+      "parameters": {
+        "valor_maximo_diario": 55.00,
+        "percentual_subsidio_maximo": 80,
+        "percentual_desconto_maximo": 20,
+        "base_legal": "CLT Art. 458, Lei 6.321/1976"
+      },
+      "evidence": [
+        "Comprovante de valor pago",
+        "Controle de descontos",
+        "Relatório mensal de benefícios"
+      ],
+      "penalties": [
+        "Autuação fiscal",
+        "Perda do incentivo fiscal",
+        "Caracterização como salário in natura"
+      ],
+      "references": [
+        "CLT Art. 458",
+        "Lei 6.321/1976",
+        "Portaria MTE 193/2020"
+      ]
+    },
+    {
+      "id": "clt_vr_002",
+      "name": "Desconto em Folha - Limite Legal",
+      "description": "O desconto do vale refeição em folha de pagamento não pode exceder 20% do valor do benefício",
+      "category": "CLT",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "1976-04-14T00:00:00Z",
+      "parameters": {
+        "percentual_maximo_desconto": 20,
+        "base_calculo": "valor_total_beneficio",
+        "obrigatorio_termo_adesao": true
+      },
+      "evidence": [
+        "Folha de pagamento",
+        "Termo de adesão assinado",
+        "Demonstrativo de desconto"
+      ],
+      "penalties": [
+        "Desconto indevido considerado empréstimo",
+        "Juros e correção monetária",
+        "Ação trabalhista"
+      ],
+      "references": [
+        "CLT Art. 462",
+        "Súmula 342 do TST",
+        "Lei 6.321/1976"
+      ]
+    },
+    {
+      "id": "clt_vr_003",
+      "name": "Elegibilidade por Jornada de Trabalho",
+      "description": "Para ter direito ao vale refeição, o empregado deve ter jornada de trabalho mínima conforme legislação",
+      "category": "CLT",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "1943-05-01T00:00:00Z",
+      "parameters": {
+        "jornada_minima_horas": 6,
+        "jornada_minima_diaria": true,
+        "excecoes": ["estagiários", "aprendizes", "diretores"],
+        "base_legal": "CLT Art. 58"
+      },
+      "evidence": [
+        "Controle de ponto",
+        "Contrato de trabalho",
+        "Registro de jornada"
+      ],
+      "penalties": [
+        "Pagamento indevido de benefício",
+        "Questionamento em auditoria",
+        "Perda de incentivos fiscais"
+      ],
+      "references": [
+        "CLT Art. 58",
+        "CLT Art. 74",
+        "Portaria MTE 193/2020"
+      ]
+    },
+    {
+      "id": "clt_vr_004",
+      "name": "Documentação e Comprovação",
+      "description": "Manter documentação adequada para comprovar a concessão e uso do vale refeição",
+      "category": "CLT",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "1943-05-01T00:00:00Z",
+      "parameters": {
+        "prazo_guarda_documentos": 5,
+        "prazo_guarda_unidade": "anos",
+        "documentos_obrigatorios": [
+          "termo_adesao",
+          "comprovante_entrega",
+          "controle_utilizacao",
+          "relatorio_mensal"
+        ]
+      },
+      "evidence": [
+        "Arquivo organizado de documentos",
+        "Termos de adesão assinados",
+        "Comprovantes de entrega",
+        "Relatórios de utilização"
+      ],
+      "penalties": [
+        "Multa por falta de documentação",
+        "Dificuldade em defesa fiscal",
+        "Presunção de irregularidade"
+      ],
+      "references": [
+        "CLT Art. 11",
+        "Lei 6.321/1976",
+        "Instrução Normativa RFB 1416/2013"
+      ]
+    },
+    {
+      "id": "clt_vr_005",
+      "name": "Não Caracterização como Salário",
+      "description": "O vale refeição não deve ter características de salário para manter benefícios fiscais",
+      "category": "CLT",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "1976-04-14T00:00:00Z",
+      "parameters": {
+        "uso_exclusivo_alimentacao": true,
+        "nao_conversivel_dinheiro": true,
+        "fornecedor_credenciado": true,
+        "controle_utilizacao_obrigatorio": true
+      },
+      "evidence": [
+        "Rede credenciada de estabelecimentos",
+        "Controle de uso do cartão/vale",
+        "Relatório de utilização por categoria",
+        "Auditoria de uso adequado"
+      ],
+      "penalties": [
+        "Caracterização como salário in natura",
+        "Incidência de todos os encargos sociais",
+        "Multa e juros retroativos",
+        "Perda de incentivos fiscais"
+      ],
+      "references": [
+        "CLT Art. 458",
+        "Lei 6.321/1976",
+        "Decreto 5/1991",
+        "Portaria MTE 193/2020"
+      ]
+    }
+  ]
+}

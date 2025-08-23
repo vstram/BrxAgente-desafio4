@@ -1,0 +1,237 @@
+{
+  "compliance_rules": [
+    {
+      "id": "int_proc_001",
+      "name": "Procedimento de Concessão de VR",
+      "description": "Processo interno para concessão de vale refeição a novos empregados",
+      "category": "INTERNAL",
+      "type": "PROCEDURAL", 
+      "mandatory": true,
+      "effective_date": "2024-01-01T00:00:00Z",
+      "parameters": {
+        "prazo_concessao_dias": 30,
+        "documentos_necessarios": [
+          "contrato_trabalho_assinado",
+          "termo_adesao_vr",
+          "dados_bancarios",
+          "documento_identidade"
+        ],
+        "aprovacao_necessaria": "gestor_rh",
+        "sistema_registro": "sistema_rh_corporativo"
+      },
+      "evidence": [
+        "Checklist de documentos preenchido",
+        "Termo de adesão assinado e arquivado",
+        "Registro no sistema com timestamp",
+        "Aprovação eletrônica do gestor"
+      ],
+      "penalties": [
+        "Atraso na concessão do benefício",
+        "Insatisfação do empregado",
+        "Não conformidade em auditoria interna",
+        "Revisão de processo necessária"
+      ],
+      "references": [
+        "Manual de Procedimentos RH v2.1",
+        "Política de Benefícios da Empresa",
+        "ISO 9001:2015 - Gestão de Processos"
+      ]
+    },
+    {
+      "id": "int_proc_002",
+      "name": "Controle de Qualidade dos Dados",
+      "description": "Procedimentos para garantir qualidade e integridade dos dados de VR",
+      "category": "INTERNAL", 
+      "type": "PROCEDURAL",
+      "mandatory": true,
+      "effective_date": "2024-01-01T00:00:00Z",
+      "parameters": {
+        "validacao_automatica": true,
+        "dupla_checagem_obrigatoria": true,
+        "campos_criticos": [
+          "valor_vr",
+          "data_admissao", 
+          "data_desligamento",
+          "percentual_desconto"
+        ],
+        "frequencia_auditoria": "mensal",
+        "responsavel_validacao": "analista_folha"
+      },
+      "evidence": [
+        "Log de validações automáticas",
+        "Relatório de dupla checagem",
+        "Lista de correções efetuadas",
+        "Assinatura do responsável pela validação"
+      ],
+      "penalties": [
+        "Erros nos cálculos de VR",
+        "Retrabalho e correções manuais", 
+        "Perda de credibilidade do sistema",
+        "Impacto financeiro por erros"
+      ],
+      "references": [
+        "Manual de Procedimentos RH v2.1",
+        "Política de Qualidade de Dados",
+        "LGPD - Lei 13.709/2018"
+      ]
+    },
+    {
+      "id": "int_sec_001",
+      "name": "Segurança de Dados de VR",
+      "description": "Procedimentos de segurança para proteção de dados relacionados ao vale refeição",
+      "category": "INTERNAL",
+      "type": "SECURITY",
+      "mandatory": true,
+      "effective_date": "2024-01-01T00:00:00Z",
+      "parameters": {
+        "criptografia_obrigatoria": true,
+        "acesso_baseado_perfil": true,
+        "log_acessos_completo": true,
+        "backup_diario": true,
+        "retencao_logs_dias": 365,
+        "classificacao_dados": "confidencial"
+      },
+      "evidence": [
+        "Relatório de configuração de segurança",
+        "Log de acessos dos últimos 90 dias",
+        "Comprovante de backup realizado",
+        "Teste de recuperação de dados"
+      ],
+      "penalties": [
+        "Vazamento de dados pessoais",
+        "Multa LGPD",
+        "Perda de confiança",
+        "Responsabilização criminal"
+      ],
+      "references": [
+        "LGPD - Lei 13.709/2018",
+        "Política de Segurança da Informação",
+        "ISO 27001:2013"
+      ]
+    },
+    {
+      "id": "int_audit_001",
+      "name": "Auditoria Interna Mensal",
+      "description": "Procedimento de auditoria interna mensal dos processos de VR",
+      "category": "INTERNAL",
+      "type": "AUDIT",
+      "mandatory": true,
+      "effective_date": "2024-01-01T00:00:00Z",
+      "parameters": {
+        "frequencia": "mensal",
+        "amostragem_minima": 10,
+        "amostragem_percentual": 5,
+        "areas_verificadas": [
+          "calculo_valores",
+          "documentacao_completa",
+          "prazos_cumpridos",
+          "controles_internos"
+        ],
+        "responsavel": "auditoria_interna"
+      },
+      "evidence": [
+        "Relatório de auditoria assinado",
+        "Planilha de amostragem",
+        "Lista de não conformidades",
+        "Plano de ação para correções"
+      ],
+      "penalties": [
+        "Não conformidades não detectadas",
+        "Acúmulo de problemas",
+        "Falha nos controles internos",
+        "Surpresa em auditoria externa"
+      ],
+      "references": [
+        "Manual de Auditoria Interna",
+        "SOX - Lei Sarbanes-Oxley",
+        "COSO Framework"
+      ]
+    },
+    {
+      "id": "int_report_001",
+      "name": "Relatórios Gerenciais de VR",
+      "description": "Geração obrigatória de relatórios gerenciais sobre vale refeição",
+      "category": "INTERNAL",
+      "type": "REPORTING",
+      "mandatory": true,
+      "effective_date": "2024-01-01T00:00:00Z",
+      "parameters": {
+        "frequencia_mensal": true,
+        "distribuicao_automatica": true,
+        "destinatarios": [
+          "diretoria_rh",
+          "gerencia_folha", 
+          "controladoria",
+          "auditoria_interna"
+        ],
+        "prazo_entrega_dias": 5,
+        "conteudo_obrigatorio": [
+          "total_beneficiarios",
+          "valor_total_pago",
+          "indicadores_compliance",
+          "evolucao_mensal"
+        ]
+      },
+      "evidence": [
+        "Relatório mensal gerado",
+        "Comprovante de envio aos destinatários",
+        "Log de acessos ao relatório",
+        "Feedback dos gestores"
+      ],
+      "penalties": [
+        "Falta de visibilidade gerencial",
+        "Decisões baseadas em dados desatualizados",
+        "Não cumprimento de prazos",
+        "Impacto na governança corporativa"
+      ],
+      "references": [
+        "Manual de Procedimentos RH v2.1",
+        "Política de Relatórios Corporativos", 
+        "Governança Corporativa"
+      ]
+    },
+    {
+      "id": "int_comp_001",
+      "name": "Treinamento em Compliance",
+      "description": "Programa obrigatório de treinamento em compliance para equipe de RH",
+      "category": "INTERNAL",
+      "type": "TRAINING",
+      "mandatory": true,
+      "effective_date": "2024-01-01T00:00:00Z",
+      "parameters": {
+        "frequencia_anual": true,
+        "carga_horaria_minima": 8,
+        "publico_alvo": [
+          "analistas_rh",
+          "analistas_folha",
+          "coordenadores_rh",
+          "gestores_rh"
+        ],
+        "topicos_obrigatorios": [
+          "legislacao_trabalhista_vr",
+          "procedimentos_internos",
+          "controles_compliance",
+          "auditoria_documentacao"
+        ],
+        "aprovacao_minima": 80
+      },
+      "evidence": [
+        "Lista de participantes com assinaturas",
+        "Material de treinamento utilizado",
+        "Avaliação de aprendizado",
+        "Certificado de conclusão"
+      ],
+      "penalties": [
+        "Equipe despreparada",
+        "Erros por desconhecimento",
+        "Não conformidades evitáveis",
+        "Responsabilização por negligência"
+      ],
+      "references": [
+        "Política de Treinamento e Desenvolvimento",
+        "Manual de Compliance Corporativo",
+        "ISO 9001:2015 - Competência e Conscientização"
+      ]
+    }
+  ]
+}

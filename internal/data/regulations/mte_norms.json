@@ -1,0 +1,183 @@
+{
+  "compliance_rules": [
+    {
+      "id": "mte_pat_001",
+      "name": "Adesão ao PAT - Programa de Alimentação do Trabalhador",
+      "description": "Empresas que fornecem vale refeição devem estar inscritas no PAT e seguir suas diretrizes",
+      "category": "MTE",
+      "type": "REGULATORY", 
+      "mandatory": true,
+      "effective_date": "2020-02-18T00:00:00Z",
+      "parameters": {
+        "inscricao_pat_obrigatoria": true,
+        "renovacao_anual": true,
+        "valor_minimo_per_capita": 2.00,
+        "valor_maximo_per_capita": 55.00,
+        "modalidades_aceitas": ["vale_refeicao", "refeicao_coletiva", "cesta_basica"]
+      },
+      "evidence": [
+        "Certificado de inscrição no PAT",
+        "Comprovante de renovação anual", 
+        "Relatório de beneficiários",
+        "Demonstrativo de valores praticados"
+      ],
+      "penalties": [
+        "Cancelamento da inscrição PAT",
+        "Perda de incentivos fiscais",
+        "Multa por descumprimento",
+        "Impedimento de novos incentivos"
+      ],
+      "references": [
+        "Portaria SEPRT/ME 193/2020",
+        "Lei 6.321/1976",
+        "Decreto 5/1991"
+      ]
+    },
+    {
+      "id": "mte_pat_002", 
+      "name": "Controle de Beneficiários PAT",
+      "description": "Manter controle atualizado dos empregados beneficiários do PAT",
+      "category": "MTE",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "2020-02-18T00:00:00Z",
+      "parameters": {
+        "atualizacao_mensal": true,
+        "dados_obrigatorios": [
+          "nome_completo",
+          "cpf", 
+          "data_nascimento",
+          "data_admissao",
+          "salario",
+          "modalidade_beneficio"
+        ],
+        "prazo_inclusao_dias": 30,
+        "prazo_exclusao_dias": 30
+      },
+      "evidence": [
+        "Relatório mensal de beneficiários",
+        "Comprovante de inclusões/exclusões",
+        "Backup dos dados atualizados",
+        "Log de alterações no sistema"
+      ],
+      "penalties": [
+        "Multa por desatualização",
+        "Suspensão de benefícios fiscais",
+        "Auditoria especial MTE",
+        "Correção retroativa de dados"
+      ],
+      "references": [
+        "Portaria SEPRT/ME 193/2020 Art. 12",
+        "Instrução Normativa SEPRT/ME 89/2020"
+      ]
+    },
+    {
+      "id": "mte_pat_003",
+      "name": "Prestação de Contas PAT",
+      "description": "Apresentar prestação de contas anual do PAT ao Ministério do Trabalho",
+      "category": "MTE", 
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "2020-02-18T00:00:00Z",
+      "parameters": {
+        "prazo_entrega": "31 de março",
+        "ano_base": "anterior",
+        "dados_obrigatorios": [
+          "numero_beneficiarios_medio",
+          "valor_total_aplicado", 
+          "valor_incentivo_utilizado",
+          "modalidades_executadas"
+        ],
+        "meio_entrega": "sistema_digital_mte"
+      },
+      "evidence": [
+        "Relatório de prestação de contas protocolado",
+        "Comprovante de recebimento MTE",
+        "Planilhas de cálculo detalhadas",
+        "Documentação de suporte"
+      ],
+      "penalties": [
+        "Multa por atraso na entrega",
+        "Cancelamento da inscrição PAT",
+        "Devolução de incentivos fiscais",
+        "Impedimento de renovação"
+      ],
+      "references": [
+        "Portaria SEPRT/ME 193/2020 Art. 15",
+        "Lei 6.321/1976 Art. 7"
+      ]
+    },
+    {
+      "id": "mte_seg_001",
+      "name": "Segurança e Saúde - Alimentação no Trabalho",
+      "description": "Garantir condições adequadas de alimentação conforme normas de segurança e saúde",
+      "category": "MTE",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "1978-06-08T00:00:00Z",
+      "parameters": {
+        "qualidade_nutricional": true,
+        "estabelecimentos_credenciados": true,
+        "controle_higienico": true,
+        "diversidade_opcoes": true,
+        "valor_nutricional_minimo": "30% das necessidades nutricionais diárias"
+      },
+      "evidence": [
+        "Lista de estabelecimentos credenciados",
+        "Relatório de qualidade nutricional",
+        "Certificados sanitários dos fornecedores",
+        "Pesquisa de satisfação dos empregados"
+      ],
+      "penalties": [
+        "Notificação para adequação",
+        "Multa por descumprimento NR",
+        "Suspensão do benefício",
+        "Responsabilização por danos à saúde"
+      ],
+      "references": [
+        "NR-24 - Condições Sanitárias",
+        "Portaria SEPRT/ME 193/2020",
+        "RDC ANVISA 216/2004"
+      ]
+    },
+    {
+      "id": "mte_trab_001", 
+      "name": "Não Discriminação no Benefício",
+      "description": "O vale refeição deve ser oferecido sem discriminação entre empregados elegíveis",
+      "category": "MTE",
+      "type": "REGULATORY",
+      "mandatory": true,
+      "effective_date": "1988-10-05T00:00:00Z",
+      "parameters": {
+        "criterios_objetivos": true,
+        "aplicacao_uniforme": true,
+        "vedada_discriminacao": [
+          "sexo",
+          "idade", 
+          "cor",
+          "estado_civil",
+          "conviccoes_politicas",
+          "conviccoes_religiosas"
+        ],
+        "excecoes_permitidas": ["cargo_direcao", "jornada_trabalho", "local_trabalho"]
+      },
+      "evidence": [
+        "Política escrita de concessão",
+        "Lista de todos os beneficiários",
+        "Critérios de elegibilidade documentados",
+        "Atas de reunião sobre benefícios"
+      ],
+      "penalties": [
+        "Ação por discriminação",
+        "Multa administrativa",
+        "Obrigação de equalizar benefícios",
+        "Danos morais coletivos"
+      ],
+      "references": [
+        "Constituição Federal Art. 5°",
+        "CLT Art. 461",
+        "Lei 9.029/1995"
+      ]
+    }
+  ]
+}
