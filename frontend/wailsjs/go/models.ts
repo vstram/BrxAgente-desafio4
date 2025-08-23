@@ -308,8 +308,8 @@ export namespace intelligence {
 	    trigger_condition: string;
 	    affected_entities: string[];
 	    time_horizon: string;
-	    seasonality?: models.SeasonalityInfo;
-	    trend_info?: models.VRTrend;
+	    seasonality?: predicoes.SeasonalityInfo;
+	    trend_info?: predicoes.VRTrend;
 	
 	    static createFrom(source: any = {}) {
 	        return new RecommendationContext(source);
@@ -321,8 +321,8 @@ export namespace intelligence {
 	        this.trigger_condition = source["trigger_condition"];
 	        this.affected_entities = source["affected_entities"];
 	        this.time_horizon = source["time_horizon"];
-	        this.seasonality = this.convertValues(source["seasonality"], models.SeasonalityInfo);
-	        this.trend_info = this.convertValues(source["trend_info"], models.VRTrend);
+	        this.seasonality = this.convertValues(source["seasonality"], predicoes.SeasonalityInfo);
+	        this.trend_info = this.convertValues(source["trend_info"], predicoes.VRTrend);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -448,8 +448,8 @@ export namespace intelligence {
 	    sindicato: string;
 	    pattern_type: string;
 	    characteristics: Record<string, number>;
-	    trend?: models.VRTrend;
-	    seasonality?: models.SeasonalityInfo;
+	    trend?: predicoes.VRTrend;
+	    seasonality?: predicoes.SeasonalityInfo;
 	    stability: number;
 	    predictability: number;
 	
@@ -462,8 +462,8 @@ export namespace intelligence {
 	        this.sindicato = source["sindicato"];
 	        this.pattern_type = source["pattern_type"];
 	        this.characteristics = source["characteristics"];
-	        this.trend = this.convertValues(source["trend"], models.VRTrend);
-	        this.seasonality = this.convertValues(source["seasonality"], models.SeasonalityInfo);
+	        this.trend = this.convertValues(source["trend"], predicoes.VRTrend);
+	        this.seasonality = this.convertValues(source["seasonality"], predicoes.SeasonalityInfo);
 	        this.stability = source["stability"];
 	        this.predictability = source["predictability"];
 	    }
@@ -499,7 +499,7 @@ export namespace intelligence {
 	    value: number;
 	    effort: number;
 	    timeline: string;
-	    actions: models.ActionItem[];
+	    actions: predicoes.ActionItem[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Opportunity(source);
@@ -513,7 +513,7 @@ export namespace intelligence {
 	        this.value = source["value"];
 	        this.effort = source["effort"];
 	        this.timeline = source["timeline"];
-	        this.actions = this.convertValues(source["actions"], models.ActionItem);
+	        this.actions = this.convertValues(source["actions"], predicoes.ActionItem);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -541,7 +541,7 @@ export namespace intelligence {
 	    description: string;
 	    probability: number;
 	    impact: string;
-	    mitigation: models.ActionItem[];
+	    mitigation: predicoes.ActionItem[];
 	    source: string;
 	
 	    static createFrom(source: any = {}) {
@@ -555,7 +555,7 @@ export namespace intelligence {
 	        this.description = source["description"];
 	        this.probability = source["probability"];
 	        this.impact = source["impact"];
-	        this.mitigation = this.convertValues(source["mitigation"], models.ActionItem);
+	        this.mitigation = this.convertValues(source["mitigation"], predicoes.ActionItem);
 	        this.source = source["source"];
 	    }
 	
@@ -673,7 +673,7 @@ export namespace intelligence {
 	    priority: string;
 	    title: string;
 	    description: string;
-	    actions: models.ActionItem[];
+	    actions: predicoes.ActionItem[];
 	    impact: number;
 	    timeframe: string;
 	
@@ -687,7 +687,7 @@ export namespace intelligence {
 	        this.priority = source["priority"];
 	        this.title = source["title"];
 	        this.description = source["description"];
-	        this.actions = this.convertValues(source["actions"], models.ActionItem);
+	        this.actions = this.convertValues(source["actions"], predicoes.ActionItem);
 	        this.impact = source["impact"];
 	        this.timeframe = source["timeframe"];
 	    }
@@ -711,9 +711,9 @@ export namespace intelligence {
 		}
 	}
 	export class TrendAnalysisResult {
-	    primary_trend?: models.VRTrend;
-	    secondary_trends: models.VRTrend[];
-	    seasonality?: models.SeasonalityInfo;
+	    primary_trend?: predicoes.VRTrend;
+	    secondary_trends: predicoes.VRTrend[];
+	    seasonality?: predicoes.SeasonalityInfo;
 	    volatility: number;
 	    confidence: number;
 	    recommendations: TrendRecommendation[];
@@ -725,9 +725,9 @@ export namespace intelligence {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.primary_trend = this.convertValues(source["primary_trend"], models.VRTrend);
-	        this.secondary_trends = this.convertValues(source["secondary_trends"], models.VRTrend);
-	        this.seasonality = this.convertValues(source["seasonality"], models.SeasonalityInfo);
+	        this.primary_trend = this.convertValues(source["primary_trend"], predicoes.VRTrend);
+	        this.secondary_trends = this.convertValues(source["secondary_trends"], predicoes.VRTrend);
+	        this.seasonality = this.convertValues(source["seasonality"], predicoes.SeasonalityInfo);
 	        this.volatility = source["volatility"];
 	        this.confidence = source["confidence"];
 	        this.recommendations = this.convertValues(source["recommendations"], TrendRecommendation);
@@ -1010,7 +1010,7 @@ export namespace main {
 
 }
 
-export namespace models {
+export namespace predicoes {
 	
 	export class ActionItem {
 	    id: string;

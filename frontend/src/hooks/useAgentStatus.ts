@@ -222,12 +222,38 @@ export function useAgentStatus(): AgentStatusState & AgentStatusActions {
       // Chamar o backend para obter o status do agente
       const agentStatus = await GetAgentStatus();
       
+      // Função auxiliar para converter time.Time para Date
+      const timeToDate = (timeObj: any): Date => {
+        // Se for uma string, tentar converter diretamente
+        if (typeof timeObj === 'string') {
+          return new Date(timeObj);
+        }
+        // Se for um objeto com segundos e nanossegundos (formato Go)
+        if (timeObj && typeof timeObj === 'object' && 'seconds' in timeObj) {
+          return new Date(timeObj.seconds * 1000 + (timeObj.nanos || 0) / 1000000);
+        }
+        // Se for um objeto com time e valid (formato Go)
+        if (timeObj && typeof timeObj === 'object' && 'time' in timeObj) {
+          return new Date(timeObj.time);
+        }
+        // Se for um número, assumir que é timestamp em milissegundos
+        if (typeof timeObj === 'number') {
+          return new Date(timeObj);
+        }
+        // Se for um objeto Date válido
+        if (timeObj instanceof Date) {
+          return timeObj;
+        }
+        // Por padrão, tentar converter para string e depois para Date
+        return new Date(String(timeObj));
+      };
+      
       // Converter os dados do backend para o formato esperado pelo frontend
       const dashboardData: AgentDashboardData = {
         status: agentStatus.status as AgentStatus,
         recentLogs: (agentStatus.recentLogs || []).map(log => ({
           id: log.id,
-          timestamp: new Date(log.timestamp),
+          timestamp: timeToDate(log.timestamp),
           level: log.level as LogLevel,
           message: log.message,
           source: log.source
@@ -254,19 +280,19 @@ export function useAgentStatus(): AgentStatusState & AgentStatusActions {
             name: step.id,
             description: step.name,
             status: step.status === 'error' ? 'failed' : step.status as 'pending' | 'running' | 'completed' | 'failed',
-            startTime: step.startTime ? new Date(step.startTime) : undefined,
-            endTime: step.endTime ? new Date(step.endTime) : undefined,
+            startTime: step.startTime ? timeToDate(step.startTime) : undefined,
+            endTime: step.endTime ? timeToDate(step.endTime) : undefined,
             duration: step.duration,
             error: step.errorMsg
           })),
-          startTime: new Date(agentStatus.currentWorkflow.startTime),
-          endTime: agentStatus.currentWorkflow.endTime ? new Date(agentStatus.currentWorkflow.endTime) : undefined,
+          startTime: timeToDate(agentStatus.currentWorkflow.startTime),
+          endTime: agentStatus.currentWorkflow.endTime ? timeToDate(agentStatus.currentWorkflow.endTime) : undefined,
           totalDuration: agentStatus.currentWorkflow.endTime ? 
-            new Date(agentStatus.currentWorkflow.endTime).getTime() - new Date(agentStatus.currentWorkflow.startTime).getTime() : undefined,
+            timeToDate(agentStatus.currentWorkflow.endTime).getTime() - timeToDate(agentStatus.currentWorkflow.startTime).getTime() : undefined,
           progress: agentStatus.currentWorkflow.progress
         } : undefined,
         availableWorkflows: agentStatus.availableWorkflows,
-        lastUpdated: agentStatus.lastUpdated
+        lastUpdated: timeToDate(agentStatus.lastUpdated)
       };
       
       setState(prev => ({
