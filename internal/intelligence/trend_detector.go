@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	"BrxAgente-desafio4/internal/models"
+	"BrxAgente-desafio4/internal/predicoes"
 )
 
 // TrendDetector detecta tendências em dados de séries temporais
@@ -26,16 +26,16 @@ type TrendDetectorConfig struct {
 
 // TrendCache armazena tendências calculadas
 type TrendCache struct {
-	Trend         *models.VRTrend
+	Trend         *predicoes.VRTrend
 	CalculatedAt  time.Time
 	ValidityPeriod time.Duration
 }
 
 // TrendAnalysisResult resultado da análise de tendências
 type TrendAnalysisResult struct {
-	PrimaryTrend    *models.VRTrend           `json:"primary_trend"`
-	SecondaryTrends []models.VRTrend          `json:"secondary_trends"`
-	Seasonality     *models.SeasonalityInfo   `json:"seasonality"`
+	PrimaryTrend    *predicoes.VRTrend           `json:"primary_trend"`
+	SecondaryTrends []predicoes.VRTrend          `json:"secondary_trends"`
+	Seasonality     *predicoes.SeasonalityInfo   `json:"seasonality"`
 	Volatility      float64                   `json:"volatility"`
 	Confidence      float64                   `json:"confidence"`
 	Recommendations []TrendRecommendation     `json:"recommendations"`
@@ -45,10 +45,10 @@ type TrendAnalysisResult struct {
 // TrendRecommendation recomendação baseada em tendência
 type TrendRecommendation struct {
 	Type        string                 `json:"type"`
-	Priority    models.Priority        `json:"priority"`
+	Priority    predicoes.Priority        `json:"priority"`
 	Title       string                 `json:"title"`
 	Description string                 `json:"description"`
-	Actions     []models.ActionItem    `json:"actions"`
+	Actions     []predicoes.ActionItem    `json:"actions"`
 	Impact      float64                `json:"impact"`       // impacto esperado (0-1)
 	Timeframe   string                 `json:"timeframe"`    // prazo para implementação
 }
@@ -71,7 +71,7 @@ func NewTrendDetector(config TrendDetectorConfig) *TrendDetector {
 }
 
 // DetectTrends detecta tendências em dados históricos
-func (td *TrendDetector) DetectTrends(data []models.HistoricalVRData, entity string) (*TrendAnalysisResult, error) {
+func (td *TrendDetector) DetectTrends(data []predicoes.HistoricalVRData, entity string) (*TrendAnalysisResult, error) {
 	if len(data) < td.config.MinDataPoints {
 		return nil, fmt.Errorf("dados insuficientes: %d pontos, mínimo: %d", len(data), td.config.MinDataPoints)
 	}
@@ -139,7 +139,7 @@ func (td *TrendDetector) DetectTrends(data []models.HistoricalVRData, entity str
 }
 
 // DetectTrendShifts detecta mudanças bruscas de tendência
-func (td *TrendDetector) DetectTrendShifts(data []models.HistoricalVRData) ([]TrendShift, error) {
+func (td *TrendDetector) DetectTrendShifts(data []predicoes.HistoricalVRData) ([]TrendShift, error) {
 	if len(data) < 6 {
 		return nil, fmt.Errorf("dados insuficientes para detectar mudanças de tendência")
 	}
@@ -174,7 +174,7 @@ func (td *TrendDetector) DetectTrendShifts(data []models.HistoricalVRData) ([]Tr
 }
 
 // PredictTrendContinuation prevê continuação da tendência atual
-func (td *TrendDetector) PredictTrendContinuation(data []models.HistoricalVRData, periodsAhead int) (*TrendPrediction, error) {
+func (td *TrendDetector) PredictTrendContinuation(data []predicoes.HistoricalVRData, periodsAhead int) (*TrendPrediction, error) {
 	if len(data) < td.config.MinDataPoints {
 		return nil, fmt.Errorf("dados insuficientes para predição")
 	}
@@ -232,8 +232,8 @@ func (td *TrendDetector) PredictTrendContinuation(data []models.HistoricalVRData
 
 // Métodos auxiliares internos
 
-func (td *TrendDetector) createTimeSeries(data []models.HistoricalVRData) *models.TimeSeries {
-	ts := models.NewTimeSeries("VR Total", "R$")
+func (td *TrendDetector) createTimeSeries(data []predicoes.HistoricalVRData) *predicoes.TimeSeries {
+	ts := predicoes.NewTimeSeries("VR Total", "R$")
 	for _, d := range data {
 		ts.AddPoint(d.Month, d.TotalVR, map[string]interface{}{
 			"sindicato":         d.Sindicato,
@@ -243,7 +243,7 @@ func (td *TrendDetector) createTimeSeries(data []models.HistoricalVRData) *model
 	return ts
 }
 
-func (td *TrendDetector) detectPrimaryTrend(ts *models.TimeSeries) *models.VRTrend {
+func (td *TrendDetector) detectPrimaryTrend(ts *predicoes.TimeSeries) *predicoes.VRTrend {
 	values := ts.GetValues()
 	
 	// Regressão linear para tendência de longo prazo
@@ -258,7 +258,7 @@ func (td *TrendDetector) detectPrimaryTrend(ts *models.TimeSeries) *models.VRTre
 	// Ajustar confiança baseada no R²
 	confidence := math.Min(r2*1.2, 1.0) // R² ajustado
 	
-	return &models.VRTrend{
+	return &predicoes.VRTrend{
 		Type:        trendType,
 		Strength:    strength,
 		Period:      len(values),
@@ -268,8 +268,8 @@ func (td *TrendDetector) detectPrimaryTrend(ts *models.TimeSeries) *models.VRTre
 	}
 }
 
-func (td *TrendDetector) detectSecondaryTrends(ts *models.TimeSeries) []models.VRTrend {
-	trends := make([]models.VRTrend, 0)
+func (td *TrendDetector) detectSecondaryTrends(ts *predicoes.TimeSeries) []predicoes.VRTrend {
+	trends := make([]predicoes.VRTrend, 0)
 	
 	// Tendência de curto prazo (últimos 3 meses)
 	if len(ts.Points) >= 3 {
@@ -277,7 +277,7 @@ func (td *TrendDetector) detectSecondaryTrends(ts *models.TimeSeries) []models.V
 		slope, _, r2 := td.linearRegression(shortTermValues)
 		
 		if r2 > 0.5 && math.Abs(slope) > td.config.TrendThreshold {
-			trend := models.VRTrend{
+			trend := predicoes.VRTrend{
 				Type:        td.classifyTrendType(slope, shortTermValues),
 				Strength:    td.calculateTrendStrength(slope, shortTermValues),
 				Period:      3,
@@ -295,7 +295,7 @@ func (td *TrendDetector) detectSecondaryTrends(ts *models.TimeSeries) []models.V
 		slope, _, r2 := td.linearRegression(mediumTermValues)
 		
 		if r2 > 0.5 && math.Abs(slope) > td.config.TrendThreshold {
-			trend := models.VRTrend{
+			trend := predicoes.VRTrend{
 				Type:        td.classifyTrendType(slope, mediumTermValues),
 				Strength:    td.calculateTrendStrength(slope, mediumTermValues),
 				Period:      6,
@@ -310,9 +310,9 @@ func (td *TrendDetector) detectSecondaryTrends(ts *models.TimeSeries) []models.V
 	return trends
 }
 
-func (td *TrendDetector) analyzeSeasonality(ts *models.TimeSeries) *models.SeasonalityInfo {
+func (td *TrendDetector) analyzeSeasonality(ts *predicoes.TimeSeries) *predicoes.SeasonalityInfo {
 	if len(ts.Points) < 12 {
-		return &models.SeasonalityInfo{
+		return &predicoes.SeasonalityInfo{
 			IsDetected: false,
 			Confidence: 0.0,
 		}
@@ -327,7 +327,7 @@ func (td *TrendDetector) analyzeSeasonality(ts *models.TimeSeries) *models.Seaso
 	// Identificar padrões
 	peaks, troughs := td.identifySeasonalPeaks(seasonal)
 	
-	return &models.SeasonalityInfo{
+	return &predicoes.SeasonalityInfo{
 		IsDetected:   significance > 0.6, // 60% de confiança mínima
 		Period:       12,
 		Amplitude:    td.calculateSeasonalAmplitude(seasonal),
@@ -338,7 +338,7 @@ func (td *TrendDetector) analyzeSeasonality(ts *models.TimeSeries) *models.Seaso
 	}
 }
 
-func (td *TrendDetector) calculateVolatility(ts *models.TimeSeries) float64 {
+func (td *TrendDetector) calculateVolatility(ts *predicoes.TimeSeries) float64 {
 	values := ts.GetValues()
 	if len(values) < 2 {
 		return 0.0
@@ -369,7 +369,7 @@ func (td *TrendDetector) calculateVolatility(ts *models.TimeSeries) float64 {
 	return math.Sqrt(variance)
 }
 
-func (td *TrendDetector) calculateOverallConfidence(trend *models.VRTrend, seasonality *models.SeasonalityInfo, volatility float64) float64 {
+func (td *TrendDetector) calculateOverallConfidence(trend *predicoes.VRTrend, seasonality *predicoes.SeasonalityInfo, volatility float64) float64 {
 	confidence := trend.Confidence * 0.6 // peso da tendência
 	
 	if seasonality.IsDetected {
@@ -388,48 +388,48 @@ func (td *TrendDetector) calculateOverallConfidence(trend *models.VRTrend, seaso
 	return math.Max(0, math.Min(confidence, 1.0))
 }
 
-func (td *TrendDetector) generateTrendRecommendations(primary *models.VRTrend, secondary []models.VRTrend, seasonality *models.SeasonalityInfo) []TrendRecommendation {
+func (td *TrendDetector) generateTrendRecommendations(primary *predicoes.VRTrend, secondary []predicoes.VRTrend, seasonality *predicoes.SeasonalityInfo) []TrendRecommendation {
 	recommendations := make([]TrendRecommendation, 0)
 
 	// Recomendações baseadas na tendência principal
-	if primary.Type == models.TrendUpward && primary.Confidence > 0.7 {
+	if primary.Type == predicoes.TrendUpward && primary.Confidence > 0.7 {
 		rec := TrendRecommendation{
 			Type:        "budget_planning",
-			Priority:    models.PriorityHigh,
+			Priority:    predicoes.PriorityHigh,
 			Title:       "Ajustar Orçamento para Crescimento",
 			Description: fmt.Sprintf("Tendência de crescimento detectada (%.1f%% confiança). Considerar aumento no orçamento de VR.", primary.Confidence*100),
 			Impact:      primary.Strength,
 			Timeframe:   "2-3 meses",
-			Actions: []models.ActionItem{
+			Actions: []predicoes.ActionItem{
 				{
 					ID:          "budget-adjust-1",
-					Priority:    models.PriorityHigh,
+					Priority:    predicoes.PriorityHigh,
 					Category:    "planning",
 					Title:       "Revisar orçamento mensal",
 					Description: "Aumentar provisão para VR baseado na tendência de crescimento",
-					Status:      models.ActionPending,
+					Status:      predicoes.ActionPending,
 				},
 			},
 		}
 		recommendations = append(recommendations, rec)
 	}
 
-	if primary.Type == models.TrendDownward && primary.Confidence > 0.7 {
+	if primary.Type == predicoes.TrendDownward && primary.Confidence > 0.7 {
 		rec := TrendRecommendation{
 			Type:        "investigation",
-			Priority:    models.PriorityMedium,
+			Priority:    predicoes.PriorityMedium,
 			Title:       "Investigar Causa da Redução",
 			Description: fmt.Sprintf("Tendência de declínio detectada (%.1f%% confiança). Investigar causas possíveis.", primary.Confidence*100),
 			Impact:      primary.Strength,
 			Timeframe:   "1-2 semanas",
-			Actions: []models.ActionItem{
+			Actions: []predicoes.ActionItem{
 				{
 					ID:          "investigate-1",
-					Priority:    models.PriorityMedium,
+					Priority:    predicoes.PriorityMedium,
 					Category:    "analysis",
 					Title:       "Analisar causas do declínio",
 					Description: "Identificar fatores que contribuem para a redução no VR",
-					Status:      models.ActionPending,
+					Status:      predicoes.ActionPending,
 				},
 			},
 		}
@@ -440,19 +440,19 @@ func (td *TrendDetector) generateTrendRecommendations(primary *models.VRTrend, s
 	if seasonality.IsDetected && seasonality.Confidence > 0.6 {
 		rec := TrendRecommendation{
 			Type:        "seasonal_planning",
-			Priority:    models.PriorityMedium,
+			Priority:    predicoes.PriorityMedium,
 			Title:       "Planejamento Sazonal",
 			Description: fmt.Sprintf("Padrão sazonal detectado. Ajustar planejamento para picos em %v e vales em %v.", seasonality.PeakMonths, seasonality.TroughMonths),
 			Impact:      seasonality.Confidence,
 			Timeframe:   "próximos 6 meses",
-			Actions: []models.ActionItem{
+			Actions: []predicoes.ActionItem{
 				{
 					ID:          "seasonal-plan-1",
-					Priority:    models.PriorityMedium,
+					Priority:    predicoes.PriorityMedium,
 					Category:    "planning",
 					Title:       "Criar cronograma sazonal",
 					Description: "Desenvolver plano de ação específico para períodos sazonais",
-					Status:      models.ActionPending,
+					Status:      predicoes.ActionPending,
 				},
 			},
 		}
@@ -484,9 +484,9 @@ const (
 )
 
 type TrendPrediction struct {
-	BaseTrend    *models.VRTrend         `json:"base_trend"`
+	BaseTrend    *predicoes.VRTrend         `json:"base_trend"`
 	Predictions  []TrendPredictionPoint  `json:"predictions"`
-	Seasonality  *models.SeasonalityInfo `json:"seasonality"`
+	Seasonality  *predicoes.SeasonalityInfo `json:"seasonality"`
 	Methodology  string                  `json:"methodology"`
 	Assumptions  []string                `json:"assumptions"`
 	Reliability  float64                 `json:"reliability"`
@@ -542,7 +542,7 @@ func (td *TrendDetector) linearRegression(values []float64) (slope, intercept, r
 	return slope, intercept, math.Max(0, r2)
 }
 
-func (td *TrendDetector) classifyTrendType(slope float64, values []float64) models.TrendType {
+func (td *TrendDetector) classifyTrendType(slope float64, values []float64) predicoes.TrendType {
 	mean := 0.0
 	for _, v := range values {
 		mean += v
@@ -553,11 +553,11 @@ func (td *TrendDetector) classifyTrendType(slope float64, values []float64) mode
 	threshold := td.config.TrendThreshold
 	
 	if math.Abs(normalizedSlope) < threshold {
-		return models.TrendStable
+		return predicoes.TrendStable
 	} else if normalizedSlope > threshold {
-		return models.TrendUpward
+		return predicoes.TrendUpward
 	} else {
-		return models.TrendDownward
+		return predicoes.TrendDownward
 	}
 }
 
@@ -576,7 +576,7 @@ func (td *TrendDetector) calculateTrendStrength(slope float64, values []float64)
 	return math.Min(normalizedSlope, 1.0)
 }
 
-func (td *TrendDetector) describeTrend(trendType models.TrendType, strength, confidence float64) string {
+func (td *TrendDetector) describeTrend(trendType predicoes.TrendType, strength, confidence float64) string {
 	strengthDesc := "fraca"
 	if strength > 0.3 {
 		strengthDesc = "moderada"
@@ -594,18 +594,18 @@ func (td *TrendDetector) describeTrend(trendType models.TrendType, strength, con
 	}
 
 	switch trendType {
-	case models.TrendUpward:
+	case predicoes.TrendUpward:
 		return fmt.Sprintf("Tendência de crescimento %s (confiança %s)", strengthDesc, confidenceDesc)
-	case models.TrendDownward:
+	case predicoes.TrendDownward:
 		return fmt.Sprintf("Tendência de decréscimo %s (confiança %s)", strengthDesc, confidenceDesc)
-	case models.TrendStable:
+	case predicoes.TrendStable:
 		return fmt.Sprintf("Tendência estável (confiança %s)", confidenceDesc)
 	default:
 		return "Tendência não identificada"
 	}
 }
 
-func (td *TrendDetector) extractSeasonalComponent(ts *models.TimeSeries) map[int]float64 {
+func (td *TrendDetector) extractSeasonalComponent(ts *predicoes.TimeSeries) map[int]float64 {
 	monthlyData := make(map[int][]float64)
 	
 	for _, point := range ts.Points {
@@ -701,7 +701,7 @@ func (td *TrendDetector) getCachedTrend(entity string) *TrendCache {
 	return td.cache[entity]
 }
 
-func (td *TrendDetector) updateCache(entity string, trend *models.VRTrend) {
+func (td *TrendDetector) updateCache(entity string, trend *predicoes.VRTrend) {
 	td.cache[entity] = &TrendCache{
 		Trend:          trend,
 		CalculatedAt:   time.Now(),
@@ -722,7 +722,7 @@ func (td *TrendDetector) buildResultFromCache(cached *TrendCache) *TrendAnalysis
 
 // Métodos auxiliares para detecção de mudanças
 
-func (td *TrendDetector) calculateTrendSlope(data []models.HistoricalVRData) float64 {
+func (td *TrendDetector) calculateTrendSlope(data []predicoes.HistoricalVRData) float64 {
 	values := make([]float64, len(data))
 	for i, d := range data {
 		values[i] = d.TotalVR
@@ -744,7 +744,7 @@ func (td *TrendDetector) isSignificantShift(before, after float64) bool {
 	return relativeDiff > 1.0 // mudança > 100% da inclinação média
 }
 
-func (td *TrendDetector) calculateShiftConfidence(before, after []models.HistoricalVRData) float64 {
+func (td *TrendDetector) calculateShiftConfidence(before, after []predicoes.HistoricalVRData) float64 {
 	// Calcular R² para ambos os segmentos
 	valuesBefore := make([]float64, len(before))
 	valuesAfter := make([]float64, len(after))
@@ -801,20 +801,20 @@ func (td *TrendDetector) classifyShiftType(before, after float64) TrendShiftType
 
 // Métodos para predição
 
-func (td *TrendDetector) extractTrendSlope(trend *models.VRTrend) float64 {
+func (td *TrendDetector) extractTrendSlope(trend *predicoes.VRTrend) float64 {
 	// Converter força da tendência em slope normalizado
 	baseSlope := trend.Strength * 0.1 // 10% máximo por período
 	
-	if trend.Type == models.TrendDownward {
+	if trend.Type == predicoes.TrendDownward {
 		return -baseSlope
-	} else if trend.Type == models.TrendUpward {
+	} else if trend.Type == predicoes.TrendUpward {
 		return baseSlope
 	}
 	
 	return 0.0
 }
 
-func (td *TrendDetector) getSeasonalFactor(seasonality *models.SeasonalityInfo, date time.Time) float64 {
+func (td *TrendDetector) getSeasonalFactor(seasonality *predicoes.SeasonalityInfo, date time.Time) float64 {
 	month := int(date.Month())
 	
 	if factor, exists := seasonality.Pattern[month]; exists {
@@ -902,7 +902,7 @@ func (td *TrendDetector) assessPredictionReliability(result *TrendAnalysisResult
 	return math.Min(reliability, 1.0)
 }
 
-func (td *TrendDetector) assessDataQuality(data []models.HistoricalVRData) float64 {
+func (td *TrendDetector) assessDataQuality(data []predicoes.HistoricalVRData) float64 {
 	if len(data) == 0 {
 		return 0.0
 	}

@@ -14,7 +14,7 @@ import (
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
 	"BrxAgente-desafio4/internal/intelligence"
-	"BrxAgente-desafio4/internal/models"
+	"BrxAgente-desafio4/internal/predicoes"
 	"BrxAgente-desafio4/internal/modelo"
 	"BrxAgente-desafio4/internal/security"
 )
@@ -41,7 +41,7 @@ type App struct {
 	trendDetector      *intelligence.TrendDetector
 	forecaster         *intelligence.Forecaster
 	recommendationEngine *intelligence.RecommendationEngine
-	historicalData     []models.HistoricalVRData
+	historicalData     []predicoes.HistoricalVRData
 	dataMu            sync.RWMutex // Mutex para dados históricos
 }
 
@@ -125,7 +125,7 @@ func NewApp() *App {
 		agentStartTime: time.Now(),
 		workflowHistory: make([]WorkflowExecution, 0),
 		systemLogs:    make([]LogEntry, 0),
-		historicalData: make([]models.HistoricalVRData, 0),
+		historicalData: make([]predicoes.HistoricalVRData, 0),
 		
 		// Initialize intelligence systems
 		trendPredictor: intelligence.NewTrendPredictor(intelligence.TrendPredictorConfig{
@@ -838,7 +838,7 @@ func (a *App) SetChatContext() error {
 // ============ Métodos de Análise Preditiva ============
 
 // AddHistoricalData adiciona dados históricos ao sistema
-func (a *App) AddHistoricalData(data models.HistoricalVRData) error {
+func (a *App) AddHistoricalData(data predicoes.HistoricalVRData) error {
 	a.dataMu.Lock()
 	defer a.dataMu.Unlock()
 	
@@ -849,7 +849,7 @@ func (a *App) AddHistoricalData(data models.HistoricalVRData) error {
 }
 
 // GetHistoricalData retorna os dados históricos
-func (a *App) GetHistoricalData() ([]models.HistoricalVRData, error) {
+func (a *App) GetHistoricalData() ([]predicoes.HistoricalVRData, error) {
 	a.dataMu.RLock()
 	defer a.dataMu.RUnlock()
 	
@@ -857,7 +857,7 @@ func (a *App) GetHistoricalData() ([]models.HistoricalVRData, error) {
 }
 
 // PredictTrends executa análise de tendências
-func (a *App) PredictTrends(sindicato string) (*models.Prediction, error) {
+func (a *App) PredictTrends(sindicato string) (*predicoes.Prediction, error) {
 	a.dataMu.RLock()
 	data := a.filterDataBySindicato(a.historicalData, sindicato)
 	a.dataMu.RUnlock()
@@ -873,9 +873,9 @@ func (a *App) PredictTrends(sindicato string) (*models.Prediction, error) {
 	}
 	
 	// Convert to Prediction format
-	prediction := &models.Prediction{
+	prediction := &predicoes.Prediction{
 		ID:         fmt.Sprintf("trend-%s-%d", sindicato, time.Now().Unix()),
-		Type:       models.PredictionTrend,
+		Type:       predicoes.PredictionTrend,
 		Target:     sindicato,
 		Value:      result,
 		Confidence: result.PrimaryTrend.Confidence,
@@ -932,7 +932,7 @@ func (a *App) DetectTrends(sindicato string) (*intelligence.TrendAnalysisResult,
 }
 
 // GenerateForecast gera previsões de consumo
-func (a *App) GenerateForecast(sindicato string, horizon int) (*models.ConsumptionForecast, error) {
+func (a *App) GenerateForecast(sindicato string, horizon int) (*predicoes.ConsumptionForecast, error) {
 	a.dataMu.RLock()
 	data := a.filterDataBySindicato(a.historicalData, sindicato)
 	a.dataMu.RUnlock()
@@ -1047,7 +1047,7 @@ func (a *App) CreateHistoricalDataFromCurrent(sindicato string, month time.Time)
 		return fmt.Errorf("nenhum colaborador encontrado para o sindicato %s", sindicato)
 	}
 	
-	historicalData := models.HistoricalVRData{
+	historicalData := predicoes.HistoricalVRData{
 		Month:            month,
 		Sindicato:        sindicato,
 		TotalVR:          totalVR,
@@ -1062,8 +1062,8 @@ func (a *App) CreateHistoricalDataFromCurrent(sindicato string, month time.Time)
 }
 
 // Helper method to filter data by sindicato
-func (a *App) filterDataBySindicato(data []models.HistoricalVRData, sindicato string) []models.HistoricalVRData {
-	filtered := make([]models.HistoricalVRData, 0)
+func (a *App) filterDataBySindicato(data []predicoes.HistoricalVRData, sindicato string) []predicoes.HistoricalVRData {
+	filtered := make([]predicoes.HistoricalVRData, 0)
 	for _, d := range data {
 		if d.Sindicato == sindicato {
 			filtered = append(filtered, d)

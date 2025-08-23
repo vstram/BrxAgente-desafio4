@@ -6,13 +6,13 @@ import (
 	"sort"
 	"time"
 
-	"BrxAgente-desafio4/internal/models"
+	"BrxAgente-desafio4/internal/predicoes"
 )
 
 // PatternAnalyzer analisa padrões em dados históricos de VR
 type PatternAnalyzer struct {
 	config        PatternAnalyzerConfig
-	patterns      []models.Pattern
+	patterns      []predicoes.Pattern
 	cache         map[string]interface{}
 	lastAnalysis  time.Time
 }
@@ -29,10 +29,10 @@ type PatternAnalyzerConfig struct {
 // ConsumptionPattern representa padrão de consumo identificado
 type ConsumptionPattern struct {
 	Sindicato     string                 `json:"sindicato"`
-	PatternType   models.PatternType     `json:"pattern_type"`
+	PatternType   predicoes.PatternType     `json:"pattern_type"`
 	Characteristics map[string]float64   `json:"characteristics"`
-	Trend         *models.VRTrend        `json:"trend"`
-	Seasonality   *models.SeasonalityInfo `json:"seasonality"`
+	Trend         *predicoes.VRTrend        `json:"trend"`
+	Seasonality   *predicoes.SeasonalityInfo `json:"seasonality"`
 	Stability     float64                `json:"stability"`     // 0-1, estabilidade do padrão
 	Predictability float64               `json:"predictability"` // 0-1, previsibilidade
 }
@@ -44,20 +44,20 @@ type BehaviorPattern struct {
 	Frequency     float64                `json:"frequency"`     // frequência de ocorrência
 	Entities      []string               `json:"entities"`      // colaboradores/sindicatos afetados
 	Correlation   map[string]float64     `json:"correlation"`   // correlação com outras variáveis
-	Impact        models.PatternImpact   `json:"impact"`
+	Impact        predicoes.PatternImpact   `json:"impact"`
 }
 
 // NewPatternAnalyzer cria novo analisador de padrões
 func NewPatternAnalyzer(config PatternAnalyzerConfig) *PatternAnalyzer {
 	return &PatternAnalyzer{
 		config:   config,
-		patterns: make([]models.Pattern, 0),
+		patterns: make([]predicoes.Pattern, 0),
 		cache:    make(map[string]interface{}),
 	}
 }
 
 // AnalyzeConsumptionPatterns analisa padrões de consumo de VR
-func (pa *PatternAnalyzer) AnalyzeConsumptionPatterns(data []models.HistoricalVRData) ([]ConsumptionPattern, error) {
+func (pa *PatternAnalyzer) AnalyzeConsumptionPatterns(data []predicoes.HistoricalVRData) ([]ConsumptionPattern, error) {
 	if len(data) < pa.config.MinDataPoints {
 		return nil, fmt.Errorf("dados insuficientes: %d pontos, mínimo: %d", len(data), pa.config.MinDataPoints)
 	}
@@ -82,9 +82,9 @@ func (pa *PatternAnalyzer) AnalyzeConsumptionPatterns(data []models.HistoricalVR
 }
 
 // DetectSeasonality detecta sazonalidade em séries temporais
-func (pa *PatternAnalyzer) DetectSeasonality(timeSeries models.TimeSeries) (*models.SeasonalityInfo, error) {
+func (pa *PatternAnalyzer) DetectSeasonality(timeSeries predicoes.TimeSeries) (*predicoes.SeasonalityInfo, error) {
 	if len(timeSeries.Points) < 12 {
-		return &models.SeasonalityInfo{
+		return &predicoes.SeasonalityInfo{
 			IsDetected: false,
 			Confidence: 0.0,
 		}, nil
@@ -99,7 +99,7 @@ func (pa *PatternAnalyzer) DetectSeasonality(timeSeries models.TimeSeries) (*mod
 	// Identificar padrões sazonais específicos
 	patterns := pa.identifySeasonalPatterns(seasonality)
 
-	info := &models.SeasonalityInfo{
+	info := &predicoes.SeasonalityInfo{
 		IsDetected:   significance > pa.config.ConfidenceLevel,
 		Period:       12, // mensal
 		Amplitude:    pa.calculateSeasonalAmplitude(seasonality),
@@ -113,8 +113,8 @@ func (pa *PatternAnalyzer) DetectSeasonality(timeSeries models.TimeSeries) (*mod
 }
 
 // IdentifyOutlierPatterns identifica padrões de outliers
-func (pa *PatternAnalyzer) IdentifyOutlierPatterns(data []models.HistoricalVRData) ([]models.OutlierPattern, error) {
-	outlierPatterns := make([]models.OutlierPattern, 0)
+func (pa *PatternAnalyzer) IdentifyOutlierPatterns(data []predicoes.HistoricalVRData) ([]predicoes.OutlierPattern, error) {
+	outlierPatterns := make([]predicoes.OutlierPattern, 0)
 
 	// Agrupar por sindicato para análise individual
 	sindicatoData := pa.groupBySindicato(data)
@@ -134,7 +134,7 @@ func (pa *PatternAnalyzer) IdentifyOutlierPatterns(data []models.HistoricalVRDat
 }
 
 // AnalyzeCrossSindicatoPatterns analisa padrões entre sindicatos
-func (pa *PatternAnalyzer) AnalyzeCrossSindicatoPatterns(data []models.HistoricalVRData) ([]BehaviorPattern, error) {
+func (pa *PatternAnalyzer) AnalyzeCrossSindicatoPatterns(data []predicoes.HistoricalVRData) ([]BehaviorPattern, error) {
 	behaviorPatterns := make([]BehaviorPattern, 0)
 
 	// Análise de correlação entre sindicatos
@@ -154,7 +154,7 @@ func (pa *PatternAnalyzer) AnalyzeCrossSindicatoPatterns(data []models.Historica
 			Frequency:   cluster.Stability,
 			Entities:    cluster.Members,
 			Correlation: cluster.Correlations,
-			Impact: models.PatternImpact{
+			Impact: predicoes.PatternImpact{
 				Level:       pa.assessClusterImpact(cluster),
 				Areas:       []string{"planejamento", "orçamento"},
 				Magnitude:   cluster.Strength,
@@ -170,7 +170,7 @@ func (pa *PatternAnalyzer) AnalyzeCrossSindicatoPatterns(data []models.Historica
 			Description: fmt.Sprintf("Padrão sincronizado: %s", sync.Description),
 			Frequency:   sync.Frequency,
 			Entities:    sync.Entities,
-			Impact: models.PatternImpact{
+			Impact: predicoes.PatternImpact{
 				Level:       sync.Impact,
 				Areas:       []string{"processamento", "recursos"},
 				Magnitude:   sync.Strength,
@@ -184,8 +184,8 @@ func (pa *PatternAnalyzer) AnalyzeCrossSindicatoPatterns(data []models.Historica
 }
 
 // DetectAnomalousPatterns detecta padrões anômalos
-func (pa *PatternAnalyzer) DetectAnomalousPatterns(data []models.HistoricalVRData) ([]models.Pattern, error) {
-	anomalousPatterns := make([]models.Pattern, 0)
+func (pa *PatternAnalyzer) DetectAnomalousPatterns(data []predicoes.HistoricalVRData) ([]predicoes.Pattern, error) {
+	anomalousPatterns := make([]predicoes.Pattern, 0)
 
 	// Detectar mudanças estruturais
 	structuralChanges := pa.detectStructuralChanges(data)
@@ -198,15 +198,15 @@ func (pa *PatternAnalyzer) DetectAnomalousPatterns(data []models.HistoricalVRDat
 
 	// Converter em padrões
 	for _, change := range structuralChanges {
-		pattern := models.Pattern{
+		pattern := predicoes.Pattern{
 			ID:          pa.generatePatternID("structural"),
-			Type:        models.PatternAnomaly,
+			Type:        predicoes.PatternAnomaly,
 			Description: change.Description,
 			Confidence:  change.Confidence,
 			StartDate:   change.StartDate,
 			EndDate:     change.EndDate,
 			Entities:    change.AffectedEntities,
-			Impact: models.PatternImpact{
+			Impact: predicoes.PatternImpact{
 				Level:       change.Impact,
 				Areas:       []string{"estrutural", "planejamento"},
 				Magnitude:   change.Magnitude,
@@ -217,9 +217,9 @@ func (pa *PatternAnalyzer) DetectAnomalousPatterns(data []models.HistoricalVRDat
 	}
 
 	for _, behavior := range atypicalBehaviors {
-		pattern := models.Pattern{
+		pattern := predicoes.Pattern{
 			ID:          pa.generatePatternID("atypical"),
-			Type:        models.PatternBehavior,
+			Type:        predicoes.PatternBehavior,
 			Description: behavior.Description,
 			Confidence:  behavior.Confidence,
 			StartDate:   behavior.StartDate,
@@ -230,15 +230,15 @@ func (pa *PatternAnalyzer) DetectAnomalousPatterns(data []models.HistoricalVRDat
 	}
 
 	for _, correlation := range unusualCorrelations {
-		pattern := models.Pattern{
+		pattern := predicoes.Pattern{
 			ID:          pa.generatePatternID("correlation"),
-			Type:        models.PatternAnomaly,
+			Type:        predicoes.PatternAnomaly,
 			Description: correlation.Description,
 			Confidence:  correlation.Strength,
 			StartDate:   time.Now().AddDate(0, -3, 0), // últimos 3 meses
 			Entities:    correlation.Entities,
-			Impact: models.PatternImpact{
-				Level:       models.ImpactMedium,
+			Impact: predicoes.PatternImpact{
+				Level:       predicoes.ImpactMedium,
 				Areas:       []string{"correlação", "predição"},
 				Magnitude:   correlation.Strength,
 				Description: "Correlação inusitada entre entidades",
@@ -255,8 +255,8 @@ func (pa *PatternAnalyzer) DetectAnomalousPatterns(data []models.HistoricalVRDat
 
 // Métodos auxiliares internos
 
-func (pa *PatternAnalyzer) groupBySindicato(data []models.HistoricalVRData) map[string][]models.HistoricalVRData {
-	groups := make(map[string][]models.HistoricalVRData)
+func (pa *PatternAnalyzer) groupBySindicato(data []predicoes.HistoricalVRData) map[string][]predicoes.HistoricalVRData {
+	groups := make(map[string][]predicoes.HistoricalVRData)
 	
 	for _, d := range data {
 		groups[d.Sindicato] = append(groups[d.Sindicato], d)
@@ -272,7 +272,7 @@ func (pa *PatternAnalyzer) groupBySindicato(data []models.HistoricalVRData) map[
 	return groups
 }
 
-func (pa *PatternAnalyzer) analyzeConsumptionPattern(sindicato string, data []models.HistoricalVRData) (*ConsumptionPattern, error) {
+func (pa *PatternAnalyzer) analyzeConsumptionPattern(sindicato string, data []predicoes.HistoricalVRData) (*ConsumptionPattern, error) {
 	if len(data) < 3 {
 		return nil, fmt.Errorf("dados insuficientes para sindicato %s", sindicato)
 	}
@@ -308,8 +308,8 @@ func (pa *PatternAnalyzer) analyzeConsumptionPattern(sindicato string, data []mo
 	return pattern, nil
 }
 
-func (pa *PatternAnalyzer) createTimeSeriesFromVRData(data []models.HistoricalVRData) *models.TimeSeries {
-	ts := models.NewTimeSeries("VR Total", "R$")
+func (pa *PatternAnalyzer) createTimeSeriesFromVRData(data []predicoes.HistoricalVRData) *predicoes.TimeSeries {
+	ts := predicoes.NewTimeSeries("VR Total", "R$")
 	
 	for _, d := range data {
 		ts.AddPoint(d.Month, d.TotalVR, map[string]interface{}{
@@ -321,7 +321,7 @@ func (pa *PatternAnalyzer) createTimeSeriesFromVRData(data []models.HistoricalVR
 	return ts
 }
 
-func (pa *PatternAnalyzer) detectTrendInVRData(data []models.HistoricalVRData) *models.VRTrend {
+func (pa *PatternAnalyzer) detectTrendInVRData(data []predicoes.HistoricalVRData) *predicoes.VRTrend {
 	values := make([]float64, len(data))
 	for i, d := range data {
 		values[i] = d.TotalVR
@@ -342,22 +342,22 @@ func (pa *PatternAnalyzer) detectTrendInVRData(data []models.HistoricalVRData) *
 	slope := (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX)
 	
 	// Classificar tendência
-	var trendType models.TrendType
+	var trendType predicoes.TrendType
 	avgValue := sumY / n
 	normalizedSlope := math.Abs(slope) / avgValue
 	
 	if normalizedSlope < 0.02 { // menos de 2% de variação
-		trendType = models.TrendStable
+		trendType = predicoes.TrendStable
 	} else if slope > 0 {
-		trendType = models.TrendUpward
+		trendType = predicoes.TrendUpward
 	} else {
-		trendType = models.TrendDownward
+		trendType = predicoes.TrendDownward
 	}
 
 	// Calcular confiança baseada no R²
 	confidence := pa.calculateRSquared(values, slope, sumY/n)
 
-	return &models.VRTrend{
+	return &predicoes.VRTrend{
 		Type:        trendType,
 		Strength:    math.Min(normalizedSlope, 1.0),
 		Period:      len(data),
@@ -390,7 +390,7 @@ func (pa *PatternAnalyzer) calculateRSquared(values []float64, slope, intercept 
 	return 1.0 - (residualSumSquares / totalSumSquares)
 }
 
-func (pa *PatternAnalyzer) calculatePatternStability(data []models.HistoricalVRData) float64 {
+func (pa *PatternAnalyzer) calculatePatternStability(data []predicoes.HistoricalVRData) float64 {
 	if len(data) < 2 {
 		return 0.0
 	}
@@ -417,7 +417,7 @@ func (pa *PatternAnalyzer) calculatePatternStability(data []models.HistoricalVRD
 	return math.Max(0, math.Min(stability, 1.0))
 }
 
-func (pa *PatternAnalyzer) calculatePredictability(data []models.HistoricalVRData, trend *models.VRTrend, seasonality *models.SeasonalityInfo) float64 {
+func (pa *PatternAnalyzer) calculatePredictability(data []predicoes.HistoricalVRData, trend *predicoes.VRTrend, seasonality *predicoes.SeasonalityInfo) float64 {
 	basePredictability := trend.Confidence * 0.6 // peso da tendência
 	
 	if seasonality.IsDetected {
@@ -431,7 +431,7 @@ func (pa *PatternAnalyzer) calculatePredictability(data []models.HistoricalVRDat
 	return math.Max(0, math.Min(predictability, 1.0))
 }
 
-func (pa *PatternAnalyzer) extractConsumptionCharacteristics(data []models.HistoricalVRData) map[string]float64 {
+func (pa *PatternAnalyzer) extractConsumptionCharacteristics(data []predicoes.HistoricalVRData) map[string]float64 {
 	characteristics := make(map[string]float64)
 
 	// Média de VR total
@@ -470,23 +470,23 @@ func (pa *PatternAnalyzer) extractConsumptionCharacteristics(data []models.Histo
 	return characteristics
 }
 
-func (pa *PatternAnalyzer) classifyConsumptionPattern(trend *models.VRTrend, seasonality *models.SeasonalityInfo, stability float64) models.PatternType {
+func (pa *PatternAnalyzer) classifyConsumptionPattern(trend *predicoes.VRTrend, seasonality *predicoes.SeasonalityInfo, stability float64) predicoes.PatternType {
 	if seasonality.IsDetected && seasonality.Confidence > 0.7 {
-		return models.PatternSeasonal
+		return predicoes.PatternSeasonal
 	}
 	
-	if trend.Type != models.TrendStable && trend.Confidence > 0.7 {
-		return models.PatternGrowth
+	if trend.Type != predicoes.TrendStable && trend.Confidence > 0.7 {
+		return predicoes.PatternGrowth
 	}
 	
 	if stability > 0.8 {
-		return models.PatternConsumption
+		return predicoes.PatternConsumption
 	}
 	
-	return models.PatternBehavior
+	return predicoes.PatternBehavior
 }
 
-func (pa *PatternAnalyzer) countAnomalies(data []models.HistoricalVRData) []string {
+func (pa *PatternAnalyzer) countAnomalies(data []predicoes.HistoricalVRData) []string {
 	anomalies := make([]string, 0)
 	for _, d := range data {
 		anomalies = append(anomalies, d.Anomalies...)
@@ -494,7 +494,7 @@ func (pa *PatternAnalyzer) countAnomalies(data []models.HistoricalVRData) []stri
 	return anomalies
 }
 
-func (pa *PatternAnalyzer) describeTrend(trendType models.TrendType, strength float64) string {
+func (pa *PatternAnalyzer) describeTrend(trendType predicoes.TrendType, strength float64) string {
 	strengthDesc := "fraca"
 	if strength > 0.05 {
 		strengthDesc = "moderada"
@@ -504,11 +504,11 @@ func (pa *PatternAnalyzer) describeTrend(trendType models.TrendType, strength fl
 	}
 
 	switch trendType {
-	case models.TrendUpward:
+	case predicoes.TrendUpward:
 		return fmt.Sprintf("Tendência de crescimento %s", strengthDesc)
-	case models.TrendDownward:
+	case predicoes.TrendDownward:
 		return fmt.Sprintf("Tendência de decréscimo %s", strengthDesc)
-	case models.TrendStable:
+	case predicoes.TrendStable:
 		return "Comportamento estável"
 	default:
 		return "Padrão indefinido"
@@ -522,7 +522,7 @@ type seasonalPatterns struct {
 	Troughs []int
 }
 
-func (pa *PatternAnalyzer) extractSeasonalComponent(ts models.TimeSeries) map[int]float64 {
+func (pa *PatternAnalyzer) extractSeasonalComponent(ts predicoes.TimeSeries) map[int]float64 {
 	monthlyData := make(map[int][]float64)
 	
 	// Agrupar por mês
@@ -546,7 +546,7 @@ func (pa *PatternAnalyzer) extractSeasonalComponent(ts models.TimeSeries) map[in
 	return seasonal
 }
 
-func (pa *PatternAnalyzer) testSeasonalSignificance(ts models.TimeSeries, seasonal map[int]float64) float64 {
+func (pa *PatternAnalyzer) testSeasonalSignificance(ts predicoes.TimeSeries, seasonal map[int]float64) float64 {
 	if len(seasonal) < 4 {
 		return 0.0
 	}
@@ -635,7 +635,7 @@ func (pa *PatternAnalyzer) calculateSeasonalAmplitude(seasonal map[int]float64) 
 
 // Métodos para análise de outliers
 
-func (pa *PatternAnalyzer) detectOutliers(data []models.HistoricalVRData) []models.HistoricalVRData {
+func (pa *PatternAnalyzer) detectOutliers(data []predicoes.HistoricalVRData) []predicoes.HistoricalVRData {
 	if len(data) < 4 {
 		return nil
 	}
@@ -662,7 +662,7 @@ func (pa *PatternAnalyzer) detectOutliers(data []models.HistoricalVRData) []mode
 	upperBound := q3 + 1.5*iqr
 	
 	// Identificar outliers
-	var outliers []models.HistoricalVRData
+	var outliers []predicoes.HistoricalVRData
 	for i, value := range values {
 		if value < lowerBound || value > upperBound {
 			outliers = append(outliers, data[i])
@@ -672,8 +672,8 @@ func (pa *PatternAnalyzer) detectOutliers(data []models.HistoricalVRData) []mode
 	return outliers
 }
 
-func (pa *PatternAnalyzer) analyzeOutlierPatterns(sindicato string, outliers, allData []models.HistoricalVRData) []models.OutlierPattern {
-	patterns := make([]models.OutlierPattern, 0)
+func (pa *PatternAnalyzer) analyzeOutlierPatterns(sindicato string, outliers, allData []predicoes.HistoricalVRData) []predicoes.OutlierPattern {
+	patterns := make([]predicoes.OutlierPattern, 0)
 	
 	if len(outliers) == 0 {
 		return patterns
@@ -695,7 +695,7 @@ func (pa *PatternAnalyzer) analyzeOutlierPatterns(sindicato string, outliers, al
 	// Classificar tipo de outlier
 	outType := pa.classifyOutlierType(outliers, allData)
 	
-	pattern := models.OutlierPattern{
+	pattern := predicoes.OutlierPattern{
 		Type:        outType,
 		Frequency:   frequency,
 		Severity:    avgSeverity,
@@ -708,7 +708,7 @@ func (pa *PatternAnalyzer) analyzeOutlierPatterns(sindicato string, outliers, al
 	return patterns
 }
 
-func (pa *PatternAnalyzer) calculateMean(data []models.HistoricalVRData) float64 {
+func (pa *PatternAnalyzer) calculateMean(data []predicoes.HistoricalVRData) float64 {
 	sum := 0.0
 	for _, d := range data {
 		sum += d.TotalVR
@@ -716,9 +716,9 @@ func (pa *PatternAnalyzer) calculateMean(data []models.HistoricalVRData) float64
 	return sum / float64(len(data))
 }
 
-func (pa *PatternAnalyzer) classifyOutlierType(outliers, allData []models.HistoricalVRData) models.OutlierType {
+func (pa *PatternAnalyzer) classifyOutlierType(outliers, allData []predicoes.HistoricalVRData) predicoes.OutlierType {
 	if len(outliers) == 1 {
-		return models.OutlierSpike
+		return predicoes.OutlierSpike
 	}
 	
 	// Verificar se outliers são consecutivos (sustained)
@@ -742,18 +742,18 @@ func (pa *PatternAnalyzer) classifyOutlierType(outliers, allData []models.Histor
 	}
 	
 	if maxConsecutive >= 2 {
-		return models.OutlierSustained
+		return predicoes.OutlierSustained
 	}
 	
 	// Verificar se há padrão cíclico
 	if pa.detectCyclicOutlierPattern(outliers) {
-		return models.OutlierCyclic
+		return predicoes.OutlierCyclic
 	}
 	
-	return models.OutlierSpike
+	return predicoes.OutlierSpike
 }
 
-func (pa *PatternAnalyzer) detectCyclicOutlierPattern(outliers []models.HistoricalVRData) bool {
+func (pa *PatternAnalyzer) detectCyclicOutlierPattern(outliers []predicoes.HistoricalVRData) bool {
 	if len(outliers) < 4 {
 		return false
 	}
@@ -782,7 +782,7 @@ func (pa *PatternAnalyzer) detectCyclicOutlierPattern(outliers []models.Historic
 	return true
 }
 
-func (pa *PatternAnalyzer) describeOutlierPattern(outType models.OutlierType, frequency, severity float64) string {
+func (pa *PatternAnalyzer) describeOutlierPattern(outType predicoes.OutlierType, frequency, severity float64) string {
 	freqDesc := "baixa"
 	if frequency > 0.2 {
 		freqDesc = "moderada"
@@ -800,11 +800,11 @@ func (pa *PatternAnalyzer) describeOutlierPattern(outType models.OutlierType, fr
 	}
 	
 	switch outType {
-	case models.OutlierSpike:
+	case predicoes.OutlierSpike:
 		return fmt.Sprintf("Picos isolados com frequência %s e severidade %s", freqDesc, sevDesc)
-	case models.OutlierSustained:
+	case predicoes.OutlierSustained:
 		return fmt.Sprintf("Valores sustentados fora do padrão com frequência %s e severidade %s", freqDesc, sevDesc)
-	case models.OutlierCyclic:
+	case predicoes.OutlierCyclic:
 		return fmt.Sprintf("Outliers cíclicos com frequência %s e severidade %s", freqDesc, sevDesc)
 	default:
 		return fmt.Sprintf("Padrão de outliers com frequência %s e severidade %s", freqDesc, sevDesc)
@@ -825,7 +825,7 @@ type synchronizedPattern struct {
 	Frequency   float64
 	Entities    []string
 	Strength    float64
-	Impact      models.ImpactLevel
+	Impact      predicoes.ImpactLevel
 }
 
 type structuralChange struct {
@@ -834,7 +834,7 @@ type structuralChange struct {
 	StartDate        time.Time
 	EndDate          *time.Time
 	AffectedEntities []string
-	Impact           models.ImpactLevel
+	Impact           predicoes.ImpactLevel
 	Magnitude        float64
 }
 
@@ -843,7 +843,7 @@ type atypicalBehavior struct {
 	Confidence  float64
 	StartDate   time.Time
 	Entities    []string
-	Impact      models.PatternImpact
+	Impact      predicoes.PatternImpact
 }
 
 type unusualCorrelation struct {
@@ -852,7 +852,7 @@ type unusualCorrelation struct {
 	Entities    []string
 }
 
-func (pa *PatternAnalyzer) calculateCrossSindicatoCorrelations(data []models.HistoricalVRData) map[string]map[string]float64 {
+func (pa *PatternAnalyzer) calculateCrossSindicatoCorrelations(data []predicoes.HistoricalVRData) map[string]map[string]float64 {
 	// Agrupar dados por sindicato
 	sindicatoData := pa.groupBySindicato(data)
 	
@@ -880,7 +880,7 @@ func (pa *PatternAnalyzer) calculateCrossSindicatoCorrelations(data []models.His
 	return correlations
 }
 
-func (pa *PatternAnalyzer) calculateCorrelation(dataA, dataB []models.HistoricalVRData) float64 {
+func (pa *PatternAnalyzer) calculateCorrelation(dataA, dataB []predicoes.HistoricalVRData) float64 {
 	// Encontrar períodos comuns
 	commonPeriods := pa.findCommonPeriods(dataA, dataB)
 	if len(commonPeriods) < 3 {
@@ -900,7 +900,7 @@ func (pa *PatternAnalyzer) calculateCorrelation(dataA, dataB []models.Historical
 	return pa.pearsonCorrelation(valuesA, valuesB)
 }
 
-func (pa *PatternAnalyzer) findCommonPeriods(dataA, dataB []models.HistoricalVRData) []time.Time {
+func (pa *PatternAnalyzer) findCommonPeriods(dataA, dataB []predicoes.HistoricalVRData) []time.Time {
 	periodsA := make(map[string]time.Time)
 	for _, d := range dataA {
 		key := d.Month.Format("2006-01")
@@ -922,7 +922,7 @@ func (pa *PatternAnalyzer) findCommonPeriods(dataA, dataB []models.HistoricalVRD
 	return commonPeriods
 }
 
-func (pa *PatternAnalyzer) getValueForPeriod(data []models.HistoricalVRData, period time.Time) float64 {
+func (pa *PatternAnalyzer) getValueForPeriod(data []predicoes.HistoricalVRData, period time.Time) float64 {
 	key := period.Format("2006-01")
 	for _, d := range data {
 		if d.Month.Format("2006-01") == key {
@@ -1032,21 +1032,21 @@ func (pa *PatternAnalyzer) calculateClusterStrength(correlations map[string]floa
 	return min // força do cluster é determinada pela correlação mais fraca
 }
 
-func (pa *PatternAnalyzer) assessClusterImpact(cluster sindicatoCluster) models.ImpactLevel {
+func (pa *PatternAnalyzer) assessClusterImpact(cluster sindicatoCluster) predicoes.ImpactLevel {
 	if cluster.Strength > 0.8 && len(cluster.Members) > 3 {
-		return models.ImpactHigh
+		return predicoes.ImpactHigh
 	} else if cluster.Strength > 0.6 && len(cluster.Members) > 2 {
-		return models.ImpactMedium
+		return predicoes.ImpactMedium
 	}
-	return models.ImpactLow
+	return predicoes.ImpactLow
 }
 
-func (pa *PatternAnalyzer) findSynchronizedPatterns(data []models.HistoricalVRData) []synchronizedPattern {
+func (pa *PatternAnalyzer) findSynchronizedPatterns(data []predicoes.HistoricalVRData) []synchronizedPattern {
 	// Implementação simplificada - detectar mudanças simultâneas
 	patterns := make([]synchronizedPattern, 0)
 	
 	// Agrupar por período
-	periodData := make(map[string][]models.HistoricalVRData)
+	periodData := make(map[string][]predicoes.HistoricalVRData)
 	for _, d := range data {
 		period := d.Month.Format("2006-01")
 		periodData[period] = append(periodData[period], d)
@@ -1080,7 +1080,7 @@ func (pa *PatternAnalyzer) getPreviousPeriod(period string) string {
 	return prev.Format("2006-01")
 }
 
-func (pa *PatternAnalyzer) detectSynchronizedChange(current, previous []models.HistoricalVRData) *synchronizedPattern {
+func (pa *PatternAnalyzer) detectSynchronizedChange(current, previous []predicoes.HistoricalVRData) *synchronizedPattern {
 	// Mapear dados por sindicato
 	currentMap := make(map[string]float64)
 	previousMap := make(map[string]float64)
@@ -1116,7 +1116,7 @@ func (pa *PatternAnalyzer) detectSynchronizedChange(current, previous []models.H
 			Frequency:   float64(significantChanges) / float64(totalChanges),
 			Entities:    affectedSindicatos,
 			Strength:    float64(significantChanges) / 10.0, // normalizar
-			Impact:      models.ImpactMedium,
+			Impact:      predicoes.ImpactMedium,
 		}
 	}
 	
@@ -1125,7 +1125,7 @@ func (pa *PatternAnalyzer) detectSynchronizedChange(current, previous []models.H
 
 // Métodos para detecção de padrões anômalos
 
-func (pa *PatternAnalyzer) detectStructuralChanges(data []models.HistoricalVRData) []structuralChange {
+func (pa *PatternAnalyzer) detectStructuralChanges(data []predicoes.HistoricalVRData) []structuralChange {
 	changes := make([]structuralChange, 0)
 	
 	// Agrupar por sindicato
@@ -1161,7 +1161,7 @@ type changepoint struct {
 	Magnitude  float64
 }
 
-func (pa *PatternAnalyzer) detectChangepoints(data []models.HistoricalVRData) []changepoint {
+func (pa *PatternAnalyzer) detectChangepoints(data []predicoes.HistoricalVRData) []changepoint {
 	if len(data) < 6 {
 		return nil
 	}
@@ -1196,7 +1196,7 @@ func (pa *PatternAnalyzer) detectChangepoints(data []models.HistoricalVRData) []
 	return changepoints
 }
 
-func (pa *PatternAnalyzer) calculateSegmentMean(data []models.HistoricalVRData) float64 {
+func (pa *PatternAnalyzer) calculateSegmentMean(data []predicoes.HistoricalVRData) float64 {
 	sum := 0.0
 	for _, d := range data {
 		sum += d.TotalVR
@@ -1204,7 +1204,7 @@ func (pa *PatternAnalyzer) calculateSegmentMean(data []models.HistoricalVRData) 
 	return sum / float64(len(data))
 }
 
-func (pa *PatternAnalyzer) calculateChangepointConfidence(data []models.HistoricalVRData, changeIndex int, meanBefore, meanAfter float64) float64 {
+func (pa *PatternAnalyzer) calculateChangepointConfidence(data []predicoes.HistoricalVRData, changeIndex int, meanBefore, meanAfter float64) float64 {
 	// Calcular variância dentro dos segmentos
 	varBefore := pa.calculateSegmentVariance(data[:changeIndex], meanBefore)
 	varAfter := pa.calculateSegmentVariance(data[changeIndex:], meanAfter)
@@ -1223,7 +1223,7 @@ func (pa *PatternAnalyzer) calculateChangepointConfidence(data []models.Historic
 	return math.Min(confidence/10.0, 1.0) // normalizar
 }
 
-func (pa *PatternAnalyzer) calculateSegmentVariance(data []models.HistoricalVRData, mean float64) float64 {
+func (pa *PatternAnalyzer) calculateSegmentVariance(data []predicoes.HistoricalVRData, mean float64) float64 {
 	if len(data) <= 1 {
 		return 0
 	}
@@ -1237,18 +1237,18 @@ func (pa *PatternAnalyzer) calculateSegmentVariance(data []models.HistoricalVRDa
 	return sumSquaredDiffs / float64(len(data)-1)
 }
 
-func (pa *PatternAnalyzer) assessStructuralChangeImpact(magnitude float64) models.ImpactLevel {
+func (pa *PatternAnalyzer) assessStructuralChangeImpact(magnitude float64) predicoes.ImpactLevel {
 	if magnitude > 0.8 {
-		return models.ImpactCritical
+		return predicoes.ImpactCritical
 	} else if magnitude > 0.5 {
-		return models.ImpactHigh
+		return predicoes.ImpactHigh
 	} else if magnitude > 0.3 {
-		return models.ImpactMedium
+		return predicoes.ImpactMedium
 	}
-	return models.ImpactLow
+	return predicoes.ImpactLow
 }
 
-func (pa *PatternAnalyzer) detectAtypicalBehaviors(data []models.HistoricalVRData) []atypicalBehavior {
+func (pa *PatternAnalyzer) detectAtypicalBehaviors(data []predicoes.HistoricalVRData) []atypicalBehavior {
 	behaviors := make([]atypicalBehavior, 0)
 	
 	// Detectar sindicatos com comportamento muito diferente da média
@@ -1265,8 +1265,8 @@ func (pa *PatternAnalyzer) detectAtypicalBehaviors(data []models.HistoricalVRDat
 				Confidence:  pa.calculateBehaviorConfidence(stats, overallStats),
 				StartDate:   vrData[0].Month,
 				Entities:    []string{sindicato},
-				Impact: models.PatternImpact{
-					Level:       models.ImpactMedium,
+				Impact: predicoes.PatternImpact{
+					Level:       predicoes.ImpactMedium,
 					Areas:       []string{"predição", "planejamento"},
 					Magnitude:   pa.calculateBehaviorMagnitude(stats, overallStats),
 					Description: "Comportamento significativamente diferente da média",
@@ -1286,7 +1286,7 @@ type statsData struct {
 	Volatility float64
 }
 
-func (pa *PatternAnalyzer) calculateOverallStats(data []models.HistoricalVRData) statsData {
+func (pa *PatternAnalyzer) calculateOverallStats(data []predicoes.HistoricalVRData) statsData {
 	if len(data) == 0 {
 		return statsData{}
 	}
@@ -1312,7 +1312,7 @@ func (pa *PatternAnalyzer) calculateOverallStats(data []models.HistoricalVRData)
 	}
 }
 
-func (pa *PatternAnalyzer) calculateSindicatoStats(data []models.HistoricalVRData) statsData {
+func (pa *PatternAnalyzer) calculateSindicatoStats(data []predicoes.HistoricalVRData) statsData {
 	return pa.calculateOverallStats(data)
 }
 
@@ -1342,7 +1342,7 @@ func (pa *PatternAnalyzer) calculateBehaviorMagnitude(sindicatoStats, overallSta
 	return math.Abs(sindicatoStats.Mean-overallStats.Mean) / overallStats.Mean
 }
 
-func (pa *PatternAnalyzer) detectUnusualCorrelations(data []models.HistoricalVRData) []unusualCorrelation {
+func (pa *PatternAnalyzer) detectUnusualCorrelations(data []predicoes.HistoricalVRData) []unusualCorrelation {
 	correlations := make([]unusualCorrelation, 0)
 	
 	// Calcular correlações cross-sindicato
@@ -1377,7 +1377,7 @@ func (pa *PatternAnalyzer) generatePatternID(prefix string) string {
 }
 
 // GetCachedPatterns retorna padrões em cache
-func (pa *PatternAnalyzer) GetCachedPatterns() []models.Pattern {
+func (pa *PatternAnalyzer) GetCachedPatterns() []predicoes.Pattern {
 	return pa.patterns
 }
 

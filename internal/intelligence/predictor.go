@@ -6,14 +6,14 @@ import (
 	"sort"
 	"time"
 
-	"BrxAgente-desafio4/internal/models"
+	"BrxAgente-desafio4/internal/predicoes"
 	"BrxAgente-desafio4/internal/modelo"
 )
 
 // TrendPredictor implementa modelos preditivos para tendências
 type TrendPredictor struct {
-	historicalData []models.HistoricalVRData
-	models         map[string]models.PredictionModel
+	historicalData []predicoes.HistoricalVRData
+	models         map[string]predicoes.PredictionModel
 	config         TrendPredictorConfig
 }
 
@@ -28,7 +28,7 @@ type TrendPredictorConfig struct {
 // ConsumptionPredictor especializado em prever consumo de VR
 type ConsumptionPredictor struct {
 	*TrendPredictor
-	seasonalPatterns map[string]*models.SeasonalityInfo
+	seasonalPatterns map[string]*predicoes.SeasonalityInfo
 }
 
 // AnomalyPredictor especializado em prever anomalias
@@ -40,14 +40,14 @@ type AnomalyPredictor struct {
 // ProcessPredictor especializado em otimização de processos
 type ProcessPredictor struct {
 	*TrendPredictor
-	processMetrics map[string]models.ProcessState
+	processMetrics map[string]predicoes.ProcessState
 }
 
 // NewTrendPredictor cria um novo preditor de tendências
 func NewTrendPredictor(config TrendPredictorConfig) *TrendPredictor {
 	return &TrendPredictor{
-		historicalData: make([]models.HistoricalVRData, 0),
-		models:         make(map[string]models.PredictionModel),
+		historicalData: make([]predicoes.HistoricalVRData, 0),
+		models:         make(map[string]predicoes.PredictionModel),
 		config:         config,
 	}
 }
@@ -56,7 +56,7 @@ func NewTrendPredictor(config TrendPredictorConfig) *TrendPredictor {
 func NewConsumptionPredictor(config TrendPredictorConfig) *ConsumptionPredictor {
 	return &ConsumptionPredictor{
 		TrendPredictor:   NewTrendPredictor(config),
-		seasonalPatterns: make(map[string]*models.SeasonalityInfo),
+		seasonalPatterns: make(map[string]*predicoes.SeasonalityInfo),
 	}
 }
 
@@ -76,12 +76,12 @@ func NewAnomalyPredictor(config TrendPredictorConfig) *AnomalyPredictor {
 func NewProcessPredictor(config TrendPredictorConfig) *ProcessPredictor {
 	return &ProcessPredictor{
 		TrendPredictor: NewTrendPredictor(config),
-		processMetrics: make(map[string]models.ProcessState),
+		processMetrics: make(map[string]predicoes.ProcessState),
 	}
 }
 
 // LoadHistoricalData carrega dados históricos para predição
-func (tp *TrendPredictor) LoadHistoricalData(data []models.HistoricalVRData) error {
+func (tp *TrendPredictor) LoadHistoricalData(data []predicoes.HistoricalVRData) error {
 	if len(data) < tp.config.MinDataPoints {
 		return fmt.Errorf("dados insuficientes: %d pontos, mínimo requerido: %d", 
 			len(data), tp.config.MinDataPoints)
@@ -97,7 +97,7 @@ func (tp *TrendPredictor) LoadHistoricalData(data []models.HistoricalVRData) err
 }
 
 // PredictNextMonth prevê o VR para o próximo mês (ConsumptionPredictor)
-func (cp *ConsumptionPredictor) PredictNextMonth(sindicato string) (*models.ConsumptionForecast, error) {
+func (cp *ConsumptionPredictor) PredictNextMonth(sindicato string) (*predicoes.ConsumptionForecast, error) {
 	// Filtrar dados para o sindicato específico
 	sindicatoData := cp.filterBySindicato(sindicato)
 	if len(sindicatoData) < cp.config.MinDataPoints {
@@ -121,12 +121,12 @@ func (cp *ConsumptionPredictor) PredictNextMonth(sindicato string) (*models.Cons
 	nextMonth := time.Now().AddDate(0, 1, 0)
 	nextMonth = time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, 0, nextMonth.Location())
 
-	forecast := &models.ConsumptionForecast{
+	forecast := &predicoes.ConsumptionForecast{
 		Sindicato:   sindicato,
 		Month:       nextMonth,
 		PredictedVR: prediction.Value,
 		Confidence:  prediction.Confidence,
-		Range: models.ForecastRange{
+		Range: predicoes.ForecastRange{
 			Lower: prediction.Value * (1 - prediction.Uncertainty),
 			Upper: prediction.Value * (1 + prediction.Uncertainty),
 		},
@@ -144,7 +144,7 @@ func (cp *ConsumptionPredictor) PredictNextMonth(sindicato string) (*models.Cons
 }
 
 // AssessRisk avalia risco de anomalias para colaborador (AnomalyPredictor)
-func (ap *AnomalyPredictor) AssessRisk(colaborador *modelo.Colaborador) (*models.RiskAssessment, error) {
+func (ap *AnomalyPredictor) AssessRisk(colaborador *modelo.Colaborador) (*predicoes.RiskAssessment, error) {
 	if colaborador == nil {
 		return nil, fmt.Errorf("colaborador não fornecido")
 	}
@@ -156,7 +156,7 @@ func (ap *AnomalyPredictor) AssessRisk(colaborador *modelo.Colaborador) (*models
 	riskScore := ap.aggregateRiskScore(riskFactors)
 	
 	// Determinar nível de risco
-	riskLevel := models.GetRiskLevel(riskScore)
+	riskLevel := predicoes.GetRiskLevel(riskScore)
 	
 	// Calcular probabilidade baseada em histórico
 	probability := ap.calculateProbability(colaborador, riskFactors)
@@ -167,7 +167,7 @@ func (ap *AnomalyPredictor) AssessRisk(colaborador *modelo.Colaborador) (*models
 	// Gerar ações de mitigação
 	mitigation := ap.generateMitigationActions(riskLevel, riskFactors)
 
-	assessment := &models.RiskAssessment{
+	assessment := &predicoes.RiskAssessment{
 		Matricula:     colaborador.Matricula,
 		Sindicato:     colaborador.Sindicato,
 		RiskScore:     riskScore,
@@ -183,7 +183,7 @@ func (ap *AnomalyPredictor) AssessRisk(colaborador *modelo.Colaborador) (*models
 }
 
 // OptimizeSchedule otimiza cronograma de processamento (ProcessPredictor)
-func (pp *ProcessPredictor) OptimizeSchedule(month time.Time) (*models.ProcessOptimization, error) {
+func (pp *ProcessPredictor) OptimizeSchedule(month time.Time) (*predicoes.ProcessOptimization, error) {
 	// Prever volume de dados para o mês
 	dataVolume := pp.predictDataVolume(month)
 	
@@ -202,7 +202,7 @@ func (pp *ProcessPredictor) OptimizeSchedule(month time.Time) (*models.ProcessOp
 	// Criar plano de implementação
 	implementation := pp.createImplementationPlan(improvements)
 
-	optimization := &models.ProcessOptimization{
+	optimization := &predicoes.ProcessOptimization{
 		ProcessID:      fmt.Sprintf("vr-process-%s", month.Format("2006-01")),
 		Month:          month,
 		CurrentState:   currentState,
@@ -224,8 +224,8 @@ type forecastResult struct {
 	Factors     []string
 }
 
-func (cp *ConsumptionPredictor) filterBySindicato(sindicato string) []models.HistoricalVRData {
-	var result []models.HistoricalVRData
+func (cp *ConsumptionPredictor) filterBySindicato(sindicato string) []predicoes.HistoricalVRData {
+	var result []predicoes.HistoricalVRData
 	for _, data := range cp.historicalData {
 		if data.Sindicato == sindicato {
 			result = append(result, data)
@@ -234,8 +234,8 @@ func (cp *ConsumptionPredictor) filterBySindicato(sindicato string) []models.His
 	return result
 }
 
-func (cp *ConsumptionPredictor) extractVRTimeSeries(data []models.HistoricalVRData) *models.TimeSeries {
-	ts := models.NewTimeSeries("VR Total", "R$")
+func (cp *ConsumptionPredictor) extractVRTimeSeries(data []predicoes.HistoricalVRData) *predicoes.TimeSeries {
+	ts := predicoes.NewTimeSeries("VR Total", "R$")
 	for _, d := range data {
 		ts.AddPoint(d.Month, d.TotalVR, map[string]interface{}{
 			"colaboradores": d.NumColaboradores,
@@ -245,11 +245,11 @@ func (cp *ConsumptionPredictor) extractVRTimeSeries(data []models.HistoricalVRDa
 	return ts
 }
 
-func (cp *ConsumptionPredictor) detectTrend(ts *models.TimeSeries) *models.VRTrend {
+func (cp *ConsumptionPredictor) detectTrend(ts *predicoes.TimeSeries) *predicoes.VRTrend {
 	values := ts.GetValues()
 	if len(values) < 3 {
-		return &models.VRTrend{
-			Type:        models.TrendStable,
+		return &predicoes.VRTrend{
+			Type:        predicoes.TrendStable,
 			Strength:    0.0,
 			Confidence:  0.5,
 			Description: "Dados insuficientes para detectar tendência",
@@ -272,15 +272,15 @@ func (cp *ConsumptionPredictor) detectTrend(ts *models.TimeSeries) *models.VRTre
 	slope := (float64(n)*sumXY - sumX*sumY) / (float64(n)*sumX2 - sumX*sumX)
 	
 	// Determinar tipo e força da tendência
-	var trendType models.TrendType
+	var trendType predicoes.TrendType
 	strength := math.Abs(slope) / (sumY / float64(n)) // normalizar pelo valor médio
 	
 	if math.Abs(slope) < 0.01 {
-		trendType = models.TrendStable
+		trendType = predicoes.TrendStable
 	} else if slope > 0 {
-		trendType = models.TrendUpward
+		trendType = predicoes.TrendUpward
 	} else {
-		trendType = models.TrendDownward
+		trendType = predicoes.TrendDownward
 	}
 
 	// Calcular coeficiente de correlação para confiança
@@ -297,7 +297,7 @@ func (cp *ConsumptionPredictor) detectTrend(ts *models.TimeSeries) *models.VRTre
 	correlation := ssXY / math.Sqrt(ssX*ssY)
 	confidence := math.Abs(correlation)
 
-	return &models.VRTrend{
+	return &predicoes.VRTrend{
 		Type:        trendType,
 		Strength:    math.Min(strength, 1.0),
 		Period:      n,
@@ -307,9 +307,9 @@ func (cp *ConsumptionPredictor) detectTrend(ts *models.TimeSeries) *models.VRTre
 	}
 }
 
-func (cp *ConsumptionPredictor) detectSeasonality(ts *models.TimeSeries) *models.SeasonalityInfo {
+func (cp *ConsumptionPredictor) detectSeasonality(ts *predicoes.TimeSeries) *predicoes.SeasonalityInfo {
 	if len(ts.Points) < 12 {
-		return &models.SeasonalityInfo{
+		return &predicoes.SeasonalityInfo{
 			IsDetected: false,
 			Confidence: 0.0,
 		}
@@ -339,7 +339,7 @@ func (cp *ConsumptionPredictor) detectSeasonality(ts *models.TimeSeries) *models
 	}
 
 	if len(monthlyAvgs) < 6 {
-		return &models.SeasonalityInfo{
+		return &predicoes.SeasonalityInfo{
 			IsDetected: false,
 			Confidence: 0.0,
 		}
@@ -370,7 +370,7 @@ func (cp *ConsumptionPredictor) detectSeasonality(ts *models.TimeSeries) *models
 		}
 	}
 
-	return &models.SeasonalityInfo{
+	return &predicoes.SeasonalityInfo{
 		IsDetected:   isDetected,
 		Period:       12,
 		Amplitude:    math.Sqrt(variance),
@@ -381,7 +381,7 @@ func (cp *ConsumptionPredictor) detectSeasonality(ts *models.TimeSeries) *models
 	}
 }
 
-func (cp *ConsumptionPredictor) calculateForecast(ts *models.TimeSeries, trend *models.VRTrend, seasonality *models.SeasonalityInfo) *forecastResult {
+func (cp *ConsumptionPredictor) calculateForecast(ts *predicoes.TimeSeries, trend *predicoes.VRTrend, seasonality *predicoes.SeasonalityInfo) *forecastResult {
 	values := ts.GetValues()
 	if len(values) == 0 {
 		return &forecastResult{
@@ -404,9 +404,9 @@ func (cp *ConsumptionPredictor) calculateForecast(ts *models.TimeSeries, trend *
 	baseValue /= float64(windowSize)
 
 	// Ajustar por tendência
-	if trend.Type == models.TrendUpward {
+	if trend.Type == predicoes.TrendUpward {
 		baseValue *= (1 + trend.Strength*0.1) // crescimento moderado
-	} else if trend.Type == models.TrendDownward {
+	} else if trend.Type == predicoes.TrendDownward {
 		baseValue *= (1 - trend.Strength*0.1) // decrescimento moderado
 	}
 
@@ -433,7 +433,7 @@ func (cp *ConsumptionPredictor) calculateForecast(ts *models.TimeSeries, trend *
 
 	// Calcular incerteza
 	uncertainty := 0.2 // 20% base de incerteza
-	if trend.Type == models.TrendVolatile {
+	if trend.Type == predicoes.TrendVolatile {
 		uncertainty += 0.1
 	}
 	if !seasonality.IsDetected {
@@ -457,7 +457,7 @@ func (cp *ConsumptionPredictor) calculateForecast(ts *models.TimeSeries, trend *
 	}
 }
 
-func (cp *ConsumptionPredictor) describeTrend(trendType models.TrendType, strength, confidence float64) string {
+func (cp *ConsumptionPredictor) describeTrend(trendType predicoes.TrendType, strength, confidence float64) string {
 	strengthDesc := "fraca"
 	if strength > 0.3 {
 		strengthDesc = "moderada"
@@ -475,11 +475,11 @@ func (cp *ConsumptionPredictor) describeTrend(trendType models.TrendType, streng
 	}
 
 	switch trendType {
-	case models.TrendUpward:
+	case predicoes.TrendUpward:
 		return fmt.Sprintf("Tendência de crescimento %s com confiança %s", strengthDesc, confidenceDesc)
-	case models.TrendDownward:
+	case predicoes.TrendDownward:
 		return fmt.Sprintf("Tendência de decréscimo %s com confiança %s", strengthDesc, confidenceDesc)
-	case models.TrendStable:
+	case predicoes.TrendStable:
 		return fmt.Sprintf("Tendência estável com confiança %s", confidenceDesc)
 	default:
 		return "Tendência não identificada"
@@ -488,12 +488,12 @@ func (cp *ConsumptionPredictor) describeTrend(trendType models.TrendType, streng
 
 // Métodos do AnomalyPredictor
 
-func (ap *AnomalyPredictor) calculateRiskFactors(colaborador *modelo.Colaborador) []models.RiskFactor {
-	factors := make([]models.RiskFactor, 0)
+func (ap *AnomalyPredictor) calculateRiskFactors(colaborador *modelo.Colaborador) []predicoes.RiskFactor {
+	factors := make([]predicoes.RiskFactor, 0)
 
 	// Fator: Padrão de ausências
 	ausenciaRisk := ap.calculateAbsenceRisk(colaborador)
-	factors = append(factors, models.RiskFactor{
+	factors = append(factors, predicoes.RiskFactor{
 		Factor:      "padrao_ausencias",
 		Weight:      0.3,
 		Value:       ausenciaRisk,
@@ -503,7 +503,7 @@ func (ap *AnomalyPredictor) calculateRiskFactors(colaborador *modelo.Colaborador
 
 	// Fator: Variação nos valores de VR
 	variacaoRisk := ap.calculateVariationRisk(colaborador)
-	factors = append(factors, models.RiskFactor{
+	factors = append(factors, predicoes.RiskFactor{
 		Factor:      "variacao_vr",
 		Weight:      0.4,
 		Value:       variacaoRisk,
@@ -513,7 +513,7 @@ func (ap *AnomalyPredictor) calculateRiskFactors(colaborador *modelo.Colaborador
 
 	// Fator: Dados incompletos
 	completudeRisk := ap.calculateCompletenessRisk(colaborador)
-	factors = append(factors, models.RiskFactor{
+	factors = append(factors, predicoes.RiskFactor{
 		Factor:      "completude_dados",
 		Weight:      0.3,
 		Value:       completudeRisk,
@@ -577,7 +577,7 @@ func (ap *AnomalyPredictor) calculateCompletenessRisk(colaborador *modelo.Colabo
 	return math.Max(0, 1-completeness)
 }
 
-func (ap *AnomalyPredictor) aggregateRiskScore(factors []models.RiskFactor) float64 {
+func (ap *AnomalyPredictor) aggregateRiskScore(factors []predicoes.RiskFactor) float64 {
 	totalScore := 0.0
 	totalWeight := 0.0
 
@@ -594,7 +594,7 @@ func (ap *AnomalyPredictor) aggregateRiskScore(factors []models.RiskFactor) floa
 	return totalScore / totalWeight
 }
 
-func (ap *AnomalyPredictor) calculateProbability(colaborador *modelo.Colaborador, factors []models.RiskFactor) float64 {
+func (ap *AnomalyPredictor) calculateProbability(colaborador *modelo.Colaborador, factors []predicoes.RiskFactor) float64 {
 	// Calcular probabilidade baseada em fatores de risco
 	baseProb := 0.1 // 10% base
 	
@@ -607,30 +607,30 @@ func (ap *AnomalyPredictor) calculateProbability(colaborador *modelo.Colaborador
 	return math.Min(baseProb, 0.95)
 }
 
-func (ap *AnomalyPredictor) assessImpact(colaborador *modelo.Colaborador, riskScore float64) models.ImpactLevel {
+func (ap *AnomalyPredictor) assessImpact(colaborador *modelo.Colaborador, riskScore float64) predicoes.ImpactLevel {
 	if riskScore < 30 {
-		return models.ImpactLow
+		return predicoes.ImpactLow
 	} else if riskScore < 60 {
-		return models.ImpactMedium
+		return predicoes.ImpactMedium
 	} else if riskScore < 80 {
-		return models.ImpactHigh
+		return predicoes.ImpactHigh
 	}
-	return models.ImpactCritical
+	return predicoes.ImpactCritical
 }
 
-func (ap *AnomalyPredictor) generateMitigationActions(riskLevel models.RiskLevel, factors []models.RiskFactor) []models.ActionItem {
-	actions := make([]models.ActionItem, 0)
-	priority := models.GetPriorityFromRisk(riskLevel)
+func (ap *AnomalyPredictor) generateMitigationActions(riskLevel predicoes.RiskLevel, factors []predicoes.RiskFactor) []predicoes.ActionItem {
+	actions := make([]predicoes.ActionItem, 0)
+	priority := predicoes.GetPriorityFromRisk(riskLevel)
 
 	for _, factor := range factors {
 		if factor.Value > factor.Threshold {
-			action := models.ActionItem{
+			action := predicoes.ActionItem{
 				ID:          fmt.Sprintf("action-%s-%d", factor.Factor, time.Now().Unix()),
 				Priority:    priority,
 				Category:    "risk_mitigation",
 				Title:       fmt.Sprintf("Mitigar risco: %s", factor.Factor),
 				Description: factor.Description,
-				Status:      models.ActionPending,
+				Status:      predicoes.ActionPending,
 			}
 			actions = append(actions, action)
 		}
@@ -653,8 +653,8 @@ func (pp *ProcessPredictor) predictDataVolume(month time.Time) int {
 	return baseVolume
 }
 
-func (pp *ProcessPredictor) estimateCurrentProcessing(dataVolume int) models.ProcessState {
-	return models.ProcessState{
+func (pp *ProcessPredictor) estimateCurrentProcessing(dataVolume int) predicoes.ProcessState {
+	return predicoes.ProcessState{
 		Duration:      time.Duration(dataVolume) * time.Millisecond * 50, // 50ms por colaborador
 		ResourceUsage: map[string]float64{
 			"cpu":    0.7,
@@ -671,7 +671,7 @@ func (pp *ProcessPredictor) estimateCurrentProcessing(dataVolume int) models.Pro
 	}
 }
 
-func (pp *ProcessPredictor) calculateOptimalState(current models.ProcessState, dataVolume int) models.ProcessState {
+func (pp *ProcessPredictor) calculateOptimalState(current predicoes.ProcessState, dataVolume int) predicoes.ProcessState {
 	optimal := current
 	
 	// Otimizar duração (redução de 30%)
@@ -694,15 +694,15 @@ func (pp *ProcessPredictor) calculateOptimalState(current models.ProcessState, d
 	return optimal
 }
 
-func (pp *ProcessPredictor) generateImprovements(current, optimal models.ProcessState) []models.ImprovementSuggestion {
-	improvements := []models.ImprovementSuggestion{
+func (pp *ProcessPredictor) generateImprovements(current, optimal predicoes.ProcessState) []predicoes.ImprovementSuggestion {
+	improvements := []predicoes.ImprovementSuggestion{
 		{
 			Area:        "paralelizacao",
 			Type:        "performance",
 			Description: "Aumentar número de workers paralelos",
 			Impact:      0.7,
 			Effort:      0.3,
-			Priority:    models.PriorityHigh,
+			Priority:    predicoes.PriorityHigh,
 		},
 		{
 			Area:        "batch_processing",
@@ -710,7 +710,7 @@ func (pp *ProcessPredictor) generateImprovements(current, optimal models.Process
 			Description: "Otimizar tamanho dos lotes de processamento",
 			Impact:      0.5,
 			Effort:      0.2,
-			Priority:    models.PriorityMedium,
+			Priority:    predicoes.PriorityMedium,
 		},
 		{
 			Area:        "error_handling",
@@ -718,18 +718,18 @@ func (pp *ProcessPredictor) generateImprovements(current, optimal models.Process
 			Description: "Melhorar tratamento de erros e retry logic",
 			Impact:      0.6,
 			Effort:      0.4,
-			Priority:    models.PriorityMedium,
+			Priority:    predicoes.PriorityMedium,
 		},
 	}
 
 	return improvements
 }
 
-func (pp *ProcessPredictor) calculateGains(current, optimal models.ProcessState) models.OptimizationGains {
+func (pp *ProcessPredictor) calculateGains(current, optimal predicoes.ProcessState) predicoes.OptimizationGains {
 	timeDiff := current.Duration - optimal.Duration
 	timeReduction := float64(timeDiff) / float64(current.Duration) * 100
 
-	return models.OptimizationGains{
+	return predicoes.OptimizationGains{
 		TimeReduction:    timeReduction,
 		ResourceSaving:   15.0, // 15% economia
 		AccuracyIncrease: (optimal.Efficiency - current.Efficiency) * 100,
@@ -737,11 +737,11 @@ func (pp *ProcessPredictor) calculateGains(current, optimal models.ProcessState)
 	}
 }
 
-func (pp *ProcessPredictor) createImplementationPlan(improvements []models.ImprovementSuggestion) models.ImplementationPlan {
-	steps := make([]models.ImplementationStep, 0)
+func (pp *ProcessPredictor) createImplementationPlan(improvements []predicoes.ImprovementSuggestion) predicoes.ImplementationPlan {
+	steps := make([]predicoes.ImplementationStep, 0)
 
 	for i, improvement := range improvements {
-		step := models.ImplementationStep{
+		step := predicoes.ImplementationStep{
 			ID:          fmt.Sprintf("step-%d", i+1),
 			Title:       improvement.Description,
 			Description: fmt.Sprintf("Implementar melhoria em %s", improvement.Area),
@@ -751,7 +751,7 @@ func (pp *ProcessPredictor) createImplementationPlan(improvements []models.Impro
 		steps = append(steps, step)
 	}
 
-	return models.ImplementationPlan{
+	return predicoes.ImplementationPlan{
 		Steps:    steps,
 		Timeline: "2-3 semanas",
 		Resources: []string{

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	"BrxAgente-desafio4/internal/models"
+	"BrxAgente-desafio4/internal/predicoes"
 )
 
 // RecommendationEngine gera recomendações baseadas em análise preditiva
@@ -40,7 +40,7 @@ type RecommendationSuite struct {
 
 // EnhancedRecommendation recomendação aprimorada com mais contexto
 type EnhancedRecommendation struct {
-	models.ActionItem
+	predicoes.ActionItem
 	Context         RecommendationContext    `json:"context"`
 	Evidence        []Evidence               `json:"evidence"`
 	ExpectedImpact  ImpactAssessment         `json:"expected_impact"`
@@ -57,8 +57,8 @@ type RecommendationContext struct {
 	TriggerCondition string                 `json:"trigger_condition"` // condição que disparou
 	AffectedEntities []string               `json:"affected_entities"` // entidades afetadas
 	TimeHorizon      string                 `json:"time_horizon"`      // horizonte temporal
-	Seasonality      *models.SeasonalityInfo `json:"seasonality"`      // contexto sazonal
-	TrendInfo        *models.VRTrend         `json:"trend_info"`       // informação de tendência
+	Seasonality      *predicoes.SeasonalityInfo `json:"seasonality"`      // contexto sazonal
+	TrendInfo        *predicoes.VRTrend         `json:"trend_info"`       // informação de tendência
 }
 
 // Evidence evidência que suporta a recomendação
@@ -149,8 +149,8 @@ type RiskFactor struct {
 	Type        string                 `json:"type"`
 	Description string                 `json:"description"`
 	Probability float64                `json:"probability"`
-	Impact      models.ImpactLevel     `json:"impact"`
-	Mitigation  []models.ActionItem    `json:"mitigation"`
+	Impact      predicoes.ImpactLevel     `json:"impact"`
+	Mitigation  []predicoes.ActionItem    `json:"mitigation"`
 	Source      string                 `json:"source"`
 }
 
@@ -162,7 +162,7 @@ type Opportunity struct {
 	Value       float64          `json:"value"`
 	Effort      float64          `json:"effort"`
 	Timeline    string           `json:"timeline"`
-	Actions     []models.ActionItem `json:"actions"`
+	Actions     []predicoes.ActionItem `json:"actions"`
 }
 
 // ActionPlan plano de ação consolidado
@@ -210,7 +210,7 @@ func NewRecommendationEngine(config RecommendationConfig) *RecommendationEngine 
 }
 
 // GenerateRecommendations gera recomendações completas
-func (re *RecommendationEngine) GenerateRecommendations(data []models.HistoricalVRData, sindicato string) (*RecommendationSuite, error) {
+func (re *RecommendationEngine) GenerateRecommendations(data []predicoes.HistoricalVRData, sindicato string) (*RecommendationSuite, error) {
 	if len(data) < 3 {
 		return nil, fmt.Errorf("dados insuficientes para gerar recomendações")
 	}
@@ -278,7 +278,7 @@ func (re *RecommendationEngine) GenerateRecommendations(data []models.Historical
 
 // Métodos de análise específicos
 
-func (re *RecommendationEngine) analyzeTrendsForRecommendations(data []models.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []RiskFactor, []Opportunity) {
+func (re *RecommendationEngine) analyzeTrendsForRecommendations(data []predicoes.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []RiskFactor, []Opportunity) {
 	recommendations := make([]EnhancedRecommendation, 0)
 	riskFactors := make([]RiskFactor, 0)
 	opportunities := make([]Opportunity, 0)
@@ -295,15 +295,15 @@ func (re *RecommendationEngine) analyzeTrendsForRecommendations(data []models.Hi
 	}
 
 	// Recomendações baseadas em tendências de crescimento
-	if trend.Type == models.TrendUpward && trend.Strength > 0.3 {
+	if trend.Type == predicoes.TrendUpward && trend.Strength > 0.3 {
 		rec := EnhancedRecommendation{
-			ActionItem: models.ActionItem{
+			ActionItem: predicoes.ActionItem{
 				ID:          fmt.Sprintf("trend-growth-%s", sindicato),
-				Priority:    models.PriorityHigh,
+				Priority:    predicoes.PriorityHigh,
 				Category:    "budget_planning",
 				Title:       "Ajustar Orçamento para Crescimento",
 				Description: fmt.Sprintf("Tendência de crescimento forte detectada (%.1f%% confiança)", trend.Confidence*100),
-				Status:      models.ActionPending,
+				Status:      predicoes.ActionPending,
 			},
 			Context: RecommendationContext{
 				SourceAnalysis:   "trend_analysis",
@@ -374,15 +374,15 @@ func (re *RecommendationEngine) analyzeTrendsForRecommendations(data []models.Hi
 	}
 
 	// Recomendações para tendências de declínio
-	if trend.Type == models.TrendDownward && trend.Strength > 0.2 {
+	if trend.Type == predicoes.TrendDownward && trend.Strength > 0.2 {
 		rec := EnhancedRecommendation{
-			ActionItem: models.ActionItem{
+			ActionItem: predicoes.ActionItem{
 				ID:          fmt.Sprintf("trend-decline-%s", sindicato),
-				Priority:    models.PriorityHigh,
+				Priority:    predicoes.PriorityHigh,
 				Category:    "investigation",
 				Title:       "Investigar Causa do Declínio",
 				Description: fmt.Sprintf("Tendência de declínio detectada (%.1f%% confiança)", trend.Confidence*100),
-				Status:      models.ActionPending,
+				Status:      predicoes.ActionPending,
 			},
 			Context: RecommendationContext{
 				SourceAnalysis:   "trend_analysis",
@@ -401,7 +401,7 @@ func (re *RecommendationEngine) analyzeTrendsForRecommendations(data []models.Hi
 			Type:        "operational",
 			Description: "Declínio continuado pode afetar orçamento",
 			Probability: trend.Confidence,
-			Impact:      models.ImpactMedium,
+			Impact:      predicoes.ImpactMedium,
 			Source:      "trend_analysis",
 		}
 		riskFactors = append(riskFactors, risk)
@@ -410,7 +410,7 @@ func (re *RecommendationEngine) analyzeTrendsForRecommendations(data []models.Hi
 	return recommendations, riskFactors, opportunities
 }
 
-func (re *RecommendationEngine) analyzeSeasonalityForRecommendations(data []models.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []Opportunity) {
+func (re *RecommendationEngine) analyzeSeasonalityForRecommendations(data []predicoes.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []Opportunity) {
 	recommendations := make([]EnhancedRecommendation, 0)
 	opportunities := make([]Opportunity, 0)
 
@@ -423,13 +423,13 @@ func (re *RecommendationEngine) analyzeSeasonalityForRecommendations(data []mode
 
 	if seasonality.Confidence > re.config.MinConfidence {
 		rec := EnhancedRecommendation{
-			ActionItem: models.ActionItem{
+			ActionItem: predicoes.ActionItem{
 				ID:          fmt.Sprintf("seasonal-%s", sindicato),
-				Priority:    models.PriorityMedium,
+				Priority:    predicoes.PriorityMedium,
 				Category:    "planning",
 				Title:       "Implementar Planejamento Sazonal",
 				Description: fmt.Sprintf("Padrão sazonal detectado (picos: %v, vales: %v)", seasonality.PeakMonths, seasonality.TroughMonths),
-				Status:      models.ActionPending,
+				Status:      predicoes.ActionPending,
 			},
 			Context: RecommendationContext{
 				SourceAnalysis:   "seasonality_analysis",
@@ -457,7 +457,7 @@ func (re *RecommendationEngine) analyzeSeasonalityForRecommendations(data []mode
 	return recommendations, opportunities
 }
 
-func (re *RecommendationEngine) analyzeForecastForRecommendations(data []models.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []RiskFactor) {
+func (re *RecommendationEngine) analyzeForecastForRecommendations(data []predicoes.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []RiskFactor) {
 	recommendations := make([]EnhancedRecommendation, 0)
 	riskFactors := make([]RiskFactor, 0)
 
@@ -478,13 +478,13 @@ func (re *RecommendationEngine) analyzeForecastForRecommendations(data []models.
 
 	if change > 0.1 { // aumento > 10%
 		rec := EnhancedRecommendation{
-			ActionItem: models.ActionItem{
+			ActionItem: predicoes.ActionItem{
 				ID:          fmt.Sprintf("forecast-increase-%s", sindicato),
-				Priority:    models.PriorityMedium,
+				Priority:    predicoes.PriorityMedium,
 				Category:    "forecast_planning",
 				Title:       "Preparar para Aumento Previsto",
 				Description: fmt.Sprintf("Previsão indica aumento de %.1f%% no próximo período", change*100),
-				Status:      models.ActionPending,
+				Status:      predicoes.ActionPending,
 			},
 			Context: RecommendationContext{
 				SourceAnalysis:   "forecast_analysis",
@@ -503,7 +503,7 @@ func (re *RecommendationEngine) analyzeForecastForRecommendations(data []models.
 			Type:        "forecast",
 			Description: fmt.Sprintf("Previsão indica declínio de %.1f%%", math.Abs(change)*100),
 			Probability: baseForecast.Confidence,
-			Impact:      models.ImpactMedium,
+			Impact:      predicoes.ImpactMedium,
 			Source:      "forecast_analysis",
 		}
 		riskFactors = append(riskFactors, risk)
@@ -512,7 +512,7 @@ func (re *RecommendationEngine) analyzeForecastForRecommendations(data []models.
 	return recommendations, riskFactors
 }
 
-func (re *RecommendationEngine) analyzeAnomaliesForRecommendations(data []models.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []RiskFactor) {
+func (re *RecommendationEngine) analyzeAnomaliesForRecommendations(data []predicoes.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []RiskFactor) {
 	recommendations := make([]EnhancedRecommendation, 0)
 	riskFactors := make([]RiskFactor, 0)
 
@@ -524,13 +524,13 @@ func (re *RecommendationEngine) analyzeAnomaliesForRecommendations(data []models
 
 	if recentAnomalies > 2 { // mais de 2 anomalias recentes
 		rec := EnhancedRecommendation{
-			ActionItem: models.ActionItem{
+			ActionItem: predicoes.ActionItem{
 				ID:          fmt.Sprintf("anomaly-review-%s", sindicato),
-				Priority:    models.PriorityHigh,
+				Priority:    predicoes.PriorityHigh,
 				Category:    "quality_control",
 				Title:       "Revisar Controle de Qualidade",
 				Description: fmt.Sprintf("%d anomalias detectadas nos últimos 3 meses", recentAnomalies),
-				Status:      models.ActionPending,
+				Status:      predicoes.ActionPending,
 			},
 			Context: RecommendationContext{
 				SourceAnalysis:   "anomaly_analysis",
@@ -547,7 +547,7 @@ func (re *RecommendationEngine) analyzeAnomaliesForRecommendations(data []models
 			Type:        "quality",
 			Description: "Anomalias frequentes podem indicar problemas sistêmicos",
 			Probability: 0.7,
-			Impact:      models.ImpactMedium,
+			Impact:      predicoes.ImpactMedium,
 			Source:      "anomaly_analysis",
 		}
 		riskFactors = append(riskFactors, risk)
@@ -556,7 +556,7 @@ func (re *RecommendationEngine) analyzeAnomaliesForRecommendations(data []models
 	return recommendations, riskFactors
 }
 
-func (re *RecommendationEngine) analyzeProcessOptimization(data []models.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []Opportunity) {
+func (re *RecommendationEngine) analyzeProcessOptimization(data []predicoes.HistoricalVRData, sindicato string) ([]EnhancedRecommendation, []Opportunity) {
 	recommendations := make([]EnhancedRecommendation, 0)
 	opportunities := make([]Opportunity, 0)
 
@@ -570,13 +570,13 @@ func (re *RecommendationEngine) analyzeProcessOptimization(data []models.Histori
 	// Se processamento de muitos colaboradores, recomendar otimização
 	if avgCollaborators > 500 {
 		rec := EnhancedRecommendation{
-			ActionItem: models.ActionItem{
+			ActionItem: predicoes.ActionItem{
 				ID:          fmt.Sprintf("process-opt-%s", sindicato),
-				Priority:    models.PriorityMedium,
+				Priority:    predicoes.PriorityMedium,
 				Category:    "optimization",
 				Title:       "Otimizar Processamento",
 				Description: fmt.Sprintf("Volume alto de colaboradores (%.0f em média) pode ser otimizado", avgCollaborators),
-				Status:      models.ActionPending,
+				Status:      predicoes.ActionPending,
 			},
 			Context: RecommendationContext{
 				SourceAnalysis:   "process_analysis",
@@ -604,8 +604,8 @@ func (re *RecommendationEngine) analyzeProcessOptimization(data []models.Histori
 
 // Métodos auxiliares
 
-func (re *RecommendationEngine) filterBySindicato(data []models.HistoricalVRData, sindicato string) []models.HistoricalVRData {
-	filtered := make([]models.HistoricalVRData, 0)
+func (re *RecommendationEngine) filterBySindicato(data []predicoes.HistoricalVRData, sindicato string) []predicoes.HistoricalVRData {
+	filtered := make([]predicoes.HistoricalVRData, 0)
 	for _, d := range data {
 		if d.Sindicato == sindicato {
 			filtered = append(filtered, d)
@@ -614,8 +614,8 @@ func (re *RecommendationEngine) filterBySindicato(data []models.HistoricalVRData
 	return filtered
 }
 
-func (re *RecommendationEngine) createTimeSeries(data []models.HistoricalVRData) *models.TimeSeries {
-	ts := models.NewTimeSeries("VR Total", "R$")
+func (re *RecommendationEngine) createTimeSeries(data []predicoes.HistoricalVRData) *predicoes.TimeSeries {
+	ts := predicoes.NewTimeSeries("VR Total", "R$")
 	for _, d := range data {
 		ts.AddPoint(d.Month, d.TotalVR, nil)
 	}
@@ -626,11 +626,11 @@ func (re *RecommendationEngine) prioritizeRecommendations(recommendations []Enha
 	// Ordenar por prioridade e confiança
 	sort.Slice(recommendations, func(i, j int) bool {
 		// Primeiro por prioridade
-		priorityOrder := map[models.Priority]int{
-			models.PriorityCritical: 4,
-			models.PriorityHigh:     3,
-			models.PriorityMedium:   2,
-			models.PriorityLow:      1,
+		priorityOrder := map[predicoes.Priority]int{
+			predicoes.PriorityCritical: 4,
+			predicoes.PriorityHigh:     3,
+			predicoes.PriorityMedium:   2,
+			predicoes.PriorityLow:      1,
 		}
 		
 		if priorityOrder[recommendations[i].Priority] != priorityOrder[recommendations[j].Priority] {
@@ -697,7 +697,7 @@ func (re *RecommendationEngine) createSummary(recommendations []EnhancedRecommen
 	// Riscos críticos
 	criticalRisks := make([]string, 0)
 	for _, risk := range risks {
-		if risk.Impact == models.ImpactHigh || risk.Impact == models.ImpactCritical {
+		if risk.Impact == predicoes.ImpactHigh || risk.Impact == predicoes.ImpactCritical {
 			criticalRisks = append(criticalRisks, risk.Description)
 		}
 	}

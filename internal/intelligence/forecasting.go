@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	"BrxAgente-desafio4/internal/models"
+	"BrxAgente-desafio4/internal/predicoes"
 )
 
 // Forecaster implementa modelos de previsão para VR
@@ -30,8 +30,8 @@ type ForecastConfig struct {
 
 // ForecastModel interface para modelos de previsão
 type ForecastModel interface {
-	Train(data []models.HistoricalVRData) error
-	Predict(horizon int) (*models.ConsumptionForecast, error)
+	Train(data []predicoes.HistoricalVRData) error
+	Predict(horizon int) (*predicoes.ConsumptionForecast, error)
 	GetAccuracy() float64
 	GetName() string
 }
@@ -67,8 +67,8 @@ type LinearRegressionModel struct {
 
 // EnsembleForecast resultado de previsão ensemble
 type EnsembleForecast struct {
-	WeightedForecast   *models.ConsumptionForecast `json:"weighted_forecast"`
-	IndividualForecasts map[string]*models.ConsumptionForecast `json:"individual_forecasts"`
+	WeightedForecast   *predicoes.ConsumptionForecast `json:"weighted_forecast"`
+	IndividualForecasts map[string]*predicoes.ConsumptionForecast `json:"individual_forecasts"`
 	ModelWeights       map[string]float64          `json:"model_weights"`
 	EnsembleAccuracy   float64                     `json:"ensemble_accuracy"`
 	ConsensusLevel     float64                     `json:"consensus_level"`
@@ -128,7 +128,7 @@ func (f *Forecaster) RegisterModel(model ForecastModel) {
 }
 
 // ForecastConsumption prevê consumo de VR
-func (f *Forecaster) ForecastConsumption(data []models.HistoricalVRData, sindicato string, horizon int) (*EnsembleForecast, error) {
+func (f *Forecaster) ForecastConsumption(data []predicoes.HistoricalVRData, sindicato string, horizon int) (*EnsembleForecast, error) {
 	if len(data) < 3 {
 		return nil, fmt.Errorf("dados insuficientes para previsão")
 	}
@@ -143,7 +143,7 @@ func (f *Forecaster) ForecastConsumption(data []models.HistoricalVRData, sindica
 	f.ensureDefaultModels(sindicato)
 
 	// Treinar todos os modelos
-	modelForecasts := make(map[string]*models.ConsumptionForecast)
+	modelForecasts := make(map[string]*predicoes.ConsumptionForecast)
 	modelWeights := make(map[string]float64)
 
 	for name, model := range f.models {
@@ -183,7 +183,7 @@ func (f *Forecaster) ForecastConsumption(data []models.HistoricalVRData, sindica
 }
 
 // ValidateModels valida modelos usando dados históricos
-func (f *Forecaster) ValidateModels(data []models.HistoricalVRData, sindicato string) ([]ForecastValidation, error) {
+func (f *Forecaster) ValidateModels(data []predicoes.HistoricalVRData, sindicato string) ([]ForecastValidation, error) {
 	if len(data) < f.config.ValidationPeriod+3 {
 		return nil, fmt.Errorf("dados insuficientes para validação")
 	}
@@ -210,7 +210,7 @@ func (f *Forecaster) ValidateModels(data []models.HistoricalVRData, sindicato st
 }
 
 // GenerateScenarios gera cenários de previsão
-func (f *Forecaster) GenerateScenarios(data []models.HistoricalVRData, sindicato string) (*ForecastScenarios, error) {
+func (f *Forecaster) GenerateScenarios(data []predicoes.HistoricalVRData, sindicato string) (*ForecastScenarios, error) {
 	// Cenário base
 	baseForecast, err := f.ForecastConsumption(data, sindicato, f.config.DefaultHorizon)
 	if err != nil {
@@ -239,7 +239,7 @@ func NewSimpleMovingAverageModel(window int, sindicato string) *SimpleMovingAver
 	}
 }
 
-func (sma *SimpleMovingAverageModel) Train(data []models.HistoricalVRData) error {
+func (sma *SimpleMovingAverageModel) Train(data []predicoes.HistoricalVRData) error {
 	if len(data) < sma.window {
 		return fmt.Errorf("dados insuficientes para janela de %d", sma.window)
 	}
@@ -259,7 +259,7 @@ func (sma *SimpleMovingAverageModel) Train(data []models.HistoricalVRData) error
 	return nil
 }
 
-func (sma *SimpleMovingAverageModel) Predict(horizon int) (*models.ConsumptionForecast, error) {
+func (sma *SimpleMovingAverageModel) Predict(horizon int) (*predicoes.ConsumptionForecast, error) {
 	if len(sma.lastValues) == 0 {
 		return nil, fmt.Errorf("modelo não foi treinado")
 	}
@@ -275,12 +275,12 @@ func (sma *SimpleMovingAverageModel) Predict(horizon int) (*models.ConsumptionFo
 	nextMonth := time.Now().AddDate(0, 1, 0)
 	nextMonth = time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, 0, nextMonth.Location())
 
-	forecast := &models.ConsumptionForecast{
+	forecast := &predicoes.ConsumptionForecast{
 		Sindicato:   sma.sindicato,
 		Month:       nextMonth,
 		PredictedVR: predictedValue,
 		Confidence:  sma.accuracy,
-		Range: models.ForecastRange{
+		Range: predicoes.ForecastRange{
 			Lower: predictedValue * 0.9, // ±10%
 			Upper: predictedValue * 1.1,
 		},
@@ -354,7 +354,7 @@ func NewExponentialSmoothingModel(alpha float64, sindicato string) *ExponentialS
 	}
 }
 
-func (esm *ExponentialSmoothingModel) Train(data []models.HistoricalVRData) error {
+func (esm *ExponentialSmoothingModel) Train(data []predicoes.HistoricalVRData) error {
 	if len(data) < 2 {
 		return fmt.Errorf("dados insuficientes")
 	}
@@ -388,7 +388,7 @@ func (esm *ExponentialSmoothingModel) Train(data []models.HistoricalVRData) erro
 	return nil
 }
 
-func (esm *ExponentialSmoothingModel) Predict(horizon int) (*models.ConsumptionForecast, error) {
+func (esm *ExponentialSmoothingModel) Predict(horizon int) (*predicoes.ConsumptionForecast, error) {
 	if esm.level == 0 {
 		return nil, fmt.Errorf("modelo não foi treinado")
 	}
@@ -404,12 +404,12 @@ func (esm *ExponentialSmoothingModel) Predict(horizon int) (*models.ConsumptionF
 
 	nextMonth = time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, 0, nextMonth.Location())
 
-	forecast := &models.ConsumptionForecast{
+	forecast := &predicoes.ConsumptionForecast{
 		Sindicato:   esm.sindicato,
 		Month:       nextMonth,
 		PredictedVR: predictedValue,
 		Confidence:  esm.accuracy,
-		Range: models.ForecastRange{
+		Range: predicoes.ForecastRange{
 			Lower: predictedValue * 0.85, // ±15%
 			Upper: predictedValue * 1.15,
 		},
@@ -434,7 +434,7 @@ func (esm *ExponentialSmoothingModel) GetName() string {
 	return esm.name
 }
 
-func (esm *ExponentialSmoothingModel) calculateSeasonalComponents(data []models.HistoricalVRData) {
+func (esm *ExponentialSmoothingModel) calculateSeasonalComponents(data []predicoes.HistoricalVRData) {
 	monthlyData := make(map[int][]float64)
 
 	for _, d := range data {
@@ -479,7 +479,7 @@ func NewLinearRegressionModel(sindicato string) *LinearRegressionModel {
 	}
 }
 
-func (lrm *LinearRegressionModel) Train(data []models.HistoricalVRData) error {
+func (lrm *LinearRegressionModel) Train(data []predicoes.HistoricalVRData) error {
 	if len(data) < 2 {
 		return fmt.Errorf("dados insuficientes")
 	}
@@ -525,7 +525,7 @@ func (lrm *LinearRegressionModel) Train(data []models.HistoricalVRData) error {
 	return nil
 }
 
-func (lrm *LinearRegressionModel) Predict(horizon int) (*models.ConsumptionForecast, error) {
+func (lrm *LinearRegressionModel) Predict(horizon int) (*predicoes.ConsumptionForecast, error) {
 	if lrm.accuracy == 0 {
 		return nil, fmt.Errorf("modelo não foi treinado")
 	}
@@ -540,12 +540,12 @@ func (lrm *LinearRegressionModel) Predict(horizon int) (*models.ConsumptionForec
 	nextMonth := time.Now().AddDate(0, 1, 0)
 	nextMonth = time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, 0, nextMonth.Location())
 
-	forecast := &models.ConsumptionForecast{
+	forecast := &predicoes.ConsumptionForecast{
 		Sindicato:   lrm.sindicato,
 		Month:       nextMonth,
 		PredictedVR: predictedValue,
 		Confidence:  lrm.accuracy,
-		Range: models.ForecastRange{
+		Range: predicoes.ForecastRange{
 			Lower: predictedValue * 0.8, // ±20%
 			Upper: predictedValue * 1.2,
 		},
@@ -572,8 +572,8 @@ func (lrm *LinearRegressionModel) GetName() string {
 
 // Métodos auxiliares do Forecaster
 
-func (f *Forecaster) filterBySindicato(data []models.HistoricalVRData, sindicato string) []models.HistoricalVRData {
-	filtered := make([]models.HistoricalVRData, 0)
+func (f *Forecaster) filterBySindicato(data []predicoes.HistoricalVRData, sindicato string) []predicoes.HistoricalVRData {
+	filtered := make([]predicoes.HistoricalVRData, 0)
 	for _, d := range data {
 		if d.Sindicato == sindicato {
 			filtered = append(filtered, d)
@@ -598,7 +598,7 @@ func (f *Forecaster) ensureDefaultModels(sindicato string) {
 	}
 }
 
-func (f *Forecaster) calculateEnsembleForecast(forecasts map[string]*models.ConsumptionForecast, weights map[string]float64, sindicato string, horizon int) *models.ConsumptionForecast {
+func (f *Forecaster) calculateEnsembleForecast(forecasts map[string]*predicoes.ConsumptionForecast, weights map[string]float64, sindicato string, horizon int) *predicoes.ConsumptionForecast {
 	if len(forecasts) == 0 {
 		return nil
 	}
@@ -644,12 +644,12 @@ func (f *Forecaster) calculateEnsembleForecast(forecasts map[string]*models.Cons
 	nextMonth := time.Now().AddDate(0, 1, 0)
 	nextMonth = time.Date(nextMonth.Year(), nextMonth.Month(), 1, 0, 0, 0, 0, nextMonth.Location())
 
-	ensembleForecast := &models.ConsumptionForecast{
+	ensembleForecast := &predicoes.ConsumptionForecast{
 		Sindicato:   sindicato,
 		Month:       nextMonth,
 		PredictedVR: weightedSum,
 		Confidence:  weightedConfidence,
-		Range: models.ForecastRange{
+		Range: predicoes.ForecastRange{
 			Lower: lowerSum,
 			Upper: upperSum,
 		},
@@ -663,7 +663,7 @@ func (f *Forecaster) calculateEnsembleForecast(forecasts map[string]*models.Cons
 	return ensembleForecast
 }
 
-func (f *Forecaster) calculateConsensusLevel(forecasts map[string]*models.ConsumptionForecast) float64 {
+func (f *Forecaster) calculateConsensusLevel(forecasts map[string]*predicoes.ConsumptionForecast) float64 {
 	if len(forecasts) <= 1 {
 		return 1.0
 	}
@@ -713,7 +713,7 @@ func (f *Forecaster) calculateEnsembleAccuracy(weights map[string]float64) float
 	return weightedAccuracy / totalWeight
 }
 
-func (f *Forecaster) validateModel(model ForecastModel, trainingData, testData []models.HistoricalVRData) ForecastValidation {
+func (f *Forecaster) validateModel(model ForecastModel, trainingData, testData []predicoes.HistoricalVRData) ForecastValidation {
 	// Treinar modelo
 	err := model.Train(trainingData)
 	if err != nil {
@@ -803,13 +803,13 @@ func (f *Forecaster) calculateMAPE(percentErrors []float64) float64 {
 // Estruturas para cenários
 
 type ForecastScenarios struct {
-	Base         *models.ConsumptionForecast `json:"base"`
-	Optimistic   *models.ConsumptionForecast `json:"optimistic"`
-	Pessimistic  *models.ConsumptionForecast `json:"pessimistic"`
-	Conservative *models.ConsumptionForecast `json:"conservative"`
+	Base         *predicoes.ConsumptionForecast `json:"base"`
+	Optimistic   *predicoes.ConsumptionForecast `json:"optimistic"`
+	Pessimistic  *predicoes.ConsumptionForecast `json:"pessimistic"`
+	Conservative *predicoes.ConsumptionForecast `json:"conservative"`
 }
 
-func (f *Forecaster) generateOptimisticScenario(baseForecast *models.ConsumptionForecast) *models.ConsumptionForecast {
+func (f *Forecaster) generateOptimisticScenario(baseForecast *predicoes.ConsumptionForecast) *predicoes.ConsumptionForecast {
 	optimistic := *baseForecast
 	optimistic.PredictedVR *= 1.15 // +15%
 	optimistic.Range.Lower *= 1.10
@@ -818,7 +818,7 @@ func (f *Forecaster) generateOptimisticScenario(baseForecast *models.Consumption
 	return &optimistic
 }
 
-func (f *Forecaster) generatePessimisticScenario(baseForecast *models.ConsumptionForecast) *models.ConsumptionForecast {
+func (f *Forecaster) generatePessimisticScenario(baseForecast *predicoes.ConsumptionForecast) *predicoes.ConsumptionForecast {
 	pessimistic := *baseForecast
 	pessimistic.PredictedVR *= 0.85 // -15%
 	pessimistic.Range.Lower *= 0.80
@@ -827,7 +827,7 @@ func (f *Forecaster) generatePessimisticScenario(baseForecast *models.Consumptio
 	return &pessimistic
 }
 
-func (f *Forecaster) generateConservativeScenario(baseForecast *models.ConsumptionForecast) *models.ConsumptionForecast {
+func (f *Forecaster) generateConservativeScenario(baseForecast *predicoes.ConsumptionForecast) *predicoes.ConsumptionForecast {
 	conservative := *baseForecast
 	conservative.PredictedVR *= 0.95 // -5% (conservador)
 	conservative.Range.Lower *= 0.90
