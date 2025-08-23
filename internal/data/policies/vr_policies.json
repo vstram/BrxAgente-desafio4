@@ -1,0 +1,146 @@
+{
+  "policies": [
+    {
+      "id": "vr_001",
+      "title": "Elegibilidade para Vale Refeição",
+      "content": "Têm direito ao Vale Refeição todos os colaboradores com carga horária igual ou superior a 6 horas diárias, exceto diretores, estagiários, aprendizes e colaboradores em período de experiência com menos de 30 dias.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["elegibilidade", "carga-horaria", "tipos-colaborador"],
+      "metadata": {
+        "department": "RH",
+        "approval_level": "diretoria"
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "benefits"]
+    },
+    {
+      "id": "vr_002",
+      "title": "Valor Base do Vale Refeição",
+      "content": "O valor base do Vale Refeição é de R$ 30,00 por dia útil trabalhado, sendo 80% subsidiado pela empresa e 20% descontado do colaborador.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["valor", "subsidio", "desconto"],
+      "metadata": {
+        "valor_base": "30.00",
+        "percentual_empresa": "80",
+        "percentual_colaborador": "20"
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria Financeira",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "financeiro"]
+    },
+    {
+      "id": "vr_003",
+      "title": "Exclusões de Vale Refeição",
+      "content": "Estão excluídos do benefício de Vale Refeição: diretores estatutários, estagiários, aprendizes menores de 18 anos, colaboradores com jornada inferior a 6h/dia, terceirizados e consultores externos.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["exclusoes", "tipos-colaborador"],
+      "metadata": {
+        "tipos_excluidos": ["diretores", "estagiarios", "aprendizes", "terceirizados", "consultores"]
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "exclusoes"]
+    },
+    {
+      "id": "vr_004",
+      "title": "Cálculo para Datas Quebradas - Admissão",
+      "content": "Colaboradores admitidos até o dia 15 do mês têm direito ao VR integral do mês. Admissões após o dia 15 recebem 50% do valor mensal calculado.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["admissao", "data-quebrada", "calculo-proporcional"],
+      "metadata": {
+        "limite_integral": "15",
+        "percentual_pos_limite": "50"
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "admissao"]
+    },
+    {
+      "id": "vr_005",
+      "title": "Cálculo para Datas Quebradas - Desligamento",
+      "content": "Colaboradores desligados recebem VR proporcional aos dias trabalhados no mês. O comunicado de desligamento deve ser feito até o dia 15 para processamento no mês corrente, caso contrário será processado no mês seguinte.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["desligamento", "data-quebrada", "comunicado"],
+      "metadata": {
+        "limite_comunicado": "15",
+        "calculo": "proporcional"
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "desligamento"]
+    },
+    {
+      "id": "vr_006",
+      "title": "Tratamento de Afastamentos",
+      "content": "Afastamentos superiores a 15 dias corridos eliminam o direito ao VR no período. Afastamentos de até 15 dias mantêm o direito proporcional aos dias efetivamente trabalhados.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["afastamento", "dias-trabalhados"],
+      "metadata": {
+        "limite_dias": "15",
+        "tipo_afastamento": "todos"
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "afastamentos"]
+    },
+    {
+      "id": "vr_007",
+      "title": "Tratamento de Férias",
+      "content": "Colaboradores em férias não recebem Vale Refeição no período, uma vez que o benefício é destinado exclusivamente aos dias efetivamente trabalhados.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["ferias", "dias-trabalhados"],
+      "metadata": {
+        "durante_ferias": "false"
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "ferias"]
+    },
+    {
+      "id": "vr_008",
+      "title": "Consideração de Feriados",
+      "content": "Feriados nacionais, estaduais e municipais não são considerados para cálculo de VR. O sistema deve considerar o calendário oficial de feriados da localidade da empresa.",
+      "source": "Manual de Recursos Humanos v2.1",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["feriados", "calendario", "dias-uteis"],
+      "metadata": {
+        "tipos_feriados": ["nacionais", "estaduais", "municipais"]
+      },
+      "type": "policy",
+      "version": "2.1",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "feriados"]
+    }
+  ]
+}

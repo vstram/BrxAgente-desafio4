@@ -1,0 +1,220 @@
+{
+  "business_rules": [
+    {
+      "id": "br_001",
+      "title": "Validação de Consistência de Datas",
+      "content": "Todas as datas de admissão devem ser anteriores às datas de desligamento. Datas futuras não são permitidas, exceto para programação de desligamentos.",
+      "source": "Sistema BrxAgente - Regras de Validação",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["validacao", "datas", "consistencia"],
+      "metadata": {
+        "sistema": "BrxAgente",
+        "modulo": "validacao"
+      },
+      "type": "business_rule",
+      "priority": 1,
+      "conditions": [
+        "data_admissao != null",
+        "data_desligamento != null"
+      ],
+      "actions": [
+        "verificar data_admissao < data_desligamento",
+        "verificar datas não são futuras (exceto desligamentos programados)"
+      ],
+      "exceptions": [
+        "desligamentos programados podem ter data futura"
+      ],
+      "related_rules": ["br_002", "br_003"]
+    },
+    {
+      "id": "br_002",
+      "title": "Cálculo de Dias Úteis por Sindicato",
+      "content": "O cálculo de dias úteis deve considerar o calendário específico de cada sindicato, incluindo feriados setoriais e datas específicas de paralisação.",
+      "source": "Sistema BrxAgente - Regras de Negócio",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["calculo", "sindicato", "dias-uteis"],
+      "metadata": {
+        "impacto": "calculo_vr",
+        "frequencia": "mensal"
+      },
+      "type": "business_rule",
+      "priority": 2,
+      "conditions": [
+        "colaborador.sindicato != null",
+        "periodo_calculo definido"
+      ],
+      "actions": [
+        "carregar calendário do sindicato",
+        "excluir feriados específicos",
+        "calcular dias úteis efetivos"
+      ],
+      "exceptions": [
+        "colaboradores sem sindicato usam calendário padrão"
+      ],
+      "related_rules": ["br_001", "br_004"]
+    },
+    {
+      "id": "br_003",
+      "title": "Tratamento de Dados Incompletos",
+      "content": "Colaboradores com dados incompletos ou inconsistentes devem ser marcados para revisão manual e não devem ser incluídos no cálculo automático.",
+      "source": "Sistema BrxAgente - Regras de Qualidade",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["qualidade", "dados-incompletos", "revisao"],
+      "metadata": {
+        "acao": "revisao_manual",
+        "prioridade": "alta"
+      },
+      "type": "business_rule",
+      "priority": 1,
+      "conditions": [
+        "campos_obrigatorios_ausentes OR",
+        "datas_inconsistentes OR",
+        "valores_fora_padrao"
+      ],
+      "actions": [
+        "marcar para revisão manual",
+        "gerar alerta detalhado",
+        "excluir do processamento automático"
+      ],
+      "exceptions": [
+        "campos opcionais podem estar vazios"
+      ],
+      "related_rules": ["br_001", "br_005"]
+    },
+    {
+      "id": "br_004",
+      "title": "Detecção de Anomalias em Valores",
+      "content": "Valores de VR que desviem mais de 200% da média histórica do colaborador devem ser sinalizados como anomalias e revisados.",
+      "source": "Sistema BrxAgente - Detecção de Anomalias",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["anomalia", "valores", "desvio"],
+      "metadata": {
+        "threshold_percentual": "200",
+        "base_calculo": "media_historica"
+      },
+      "type": "business_rule",
+      "priority": 3,
+      "conditions": [
+        "valor_calculado_vr > 0",
+        "historico_colaborador disponível"
+      ],
+      "actions": [
+        "calcular média histórica últimos 6 meses",
+        "verificar desvio percentual",
+        "sinalizar se > 200% da média"
+      ],
+      "exceptions": [
+        "colaboradores recém-admitidos (< 3 meses)",
+        "mudanças de carga horária documentadas"
+      ],
+      "related_rules": ["br_002", "br_006"]
+    },
+    {
+      "id": "br_005",
+      "title": "Priorização de Fontes de Dados",
+      "content": "Em caso de conflito entre planilhas, a prioridade é: 1) Desligamentos, 2) Admissões, 3) Afastamentos, 4) Férias, 5) Base principal.",
+      "source": "Sistema BrxAgente - Resolução de Conflitos",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["conflito", "priorizacao", "fontes"],
+      "metadata": {
+        "ordem_prioridade": "desligamentos,admissoes,afastamentos,ferias,base"
+      },
+      "type": "business_rule",
+      "priority": 2,
+      "conditions": [
+        "mesmo_colaborador em múltiplas planilhas",
+        "dados conflitantes encontrados"
+      ],
+      "actions": [
+        "aplicar ordem de prioridade",
+        "documentar resolução do conflito",
+        "manter log de decisões"
+      ],
+      "exceptions": [
+        "dados claramente incorretos são desconsiderados independente da prioridade"
+      ],
+      "related_rules": ["br_003", "br_007"]
+    },
+    {
+      "id": "br_006",
+      "title": "Limites Mínimos e Máximos",
+      "content": "O valor mínimo de VR é R$ 10,00 e o máximo é R$ 50,00 por dia. Valores fora desta faixa devem ser rejeitados automaticamente.",
+      "source": "Sistema BrxAgente - Validação de Limites",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["limites", "validacao", "valores"],
+      "metadata": {
+        "valor_minimo": "10.00",
+        "valor_maximo": "50.00",
+        "unidade": "por_dia"
+      },
+      "type": "business_rule",
+      "priority": 1,
+      "conditions": [
+        "valor_vr_calculado != null"
+      ],
+      "actions": [
+        "verificar valor_vr >= 10.00",
+        "verificar valor_vr <= 50.00",
+        "rejeitar se fora dos limites"
+      ],
+      "exceptions": [
+        "valores especiais aprovados pela diretoria"
+      ],
+      "related_rules": ["br_004", "br_008"]
+    },
+    {
+      "id": "br_007",
+      "title": "Auditoria de Processamento",
+      "content": "Toda operação de cálculo deve ser auditada com timestamp, usuário responsável, dados de entrada e resultado obtido.",
+      "source": "Sistema BrxAgente - Auditoria",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["auditoria", "log", "rastreabilidade"],
+      "metadata": {
+        "nivel_detalhe": "completo",
+        "retencao_dias": "365"
+      },
+      "type": "business_rule",
+      "priority": 1,
+      "conditions": [
+        "operacao_calculo iniciada"
+      ],
+      "actions": [
+        "registrar timestamp início/fim",
+        "registrar usuário responsável",
+        "salvar dados de entrada",
+        "registrar resultado obtido"
+      ],
+      "exceptions": [
+        "operações de consulta não precisam auditoria completa"
+      ],
+      "related_rules": ["br_005", "br_008"]
+    },
+    {
+      "id": "br_008",
+      "title": "Notificação de Exceções Críticas",
+      "content": "Exceções que impedem o processamento completo devem gerar notificações imediatas para o responsável pelo sistema.",
+      "source": "Sistema BrxAgente - Monitoramento",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["notificacao", "excecoes", "monitoramento"],
+      "metadata": {
+        "canal": "email",
+        "urgencia": "alta"
+      },
+      "type": "business_rule",
+      "priority": 1,
+      "conditions": [
+        "excecao_critica detectada",
+        "processamento_interrompido"
+      ],
+      "actions": [
+        "enviar notificação imediata",
+        "incluir detalhes do erro",
+        "sugerir ações corretivas"
+      ],
+      "exceptions": [
+        "exceções já conhecidas e documentadas podem ter notificação diferida"
+      ],
+      "related_rules": ["br_006", "br_007"]
+    }
+  ]
+}

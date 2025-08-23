@@ -1,0 +1,55 @@
+{
+  "regulations": [
+    {
+      "id": "clt_001",
+      "title": "CLT - Alimentação do Trabalhador",
+      "content": "A Consolidação das Leis do Trabalho estabelece que o fornecimento de alimentação não constitui salário, desde que atenda aos requisitos do Programa de Alimentação do Trabalhador (PAT).",
+      "source": "CLT - Art. 458",
+      "effective_date": "1943-05-01T00:00:00Z",
+      "categories": ["clt", "alimentacao", "pat"],
+      "metadata": {
+        "artigo": "458",
+        "lei": "CLT"
+      },
+      "type": "regulation",
+      "authority": "Governo Federal",
+      "law_number": "Decreto-Lei 5.452/1943",
+      "jurisdiction": "federal",
+      "mandatory": true
+    },
+    {
+      "id": "pat_001",
+      "title": "PAT - Programa de Alimentação do Trabalhador",
+      "content": "O PAT visa melhorar as condições nutricionais dos trabalhadores, com repercussões positivas para a produtividade e redução de acidentes. Estabelece valores máximos e mínimos para o benefício.",
+      "source": "Lei 6.321/1976 e Portaria MTE 193/2020",
+      "effective_date": "1976-04-14T00:00:00Z",
+      "categories": ["pat", "valores", "nutricao"],
+      "metadata": {
+        "lei_base": "6.321/1976",
+        "portaria_atual": "193/2020"
+      },
+      "type": "regulation",
+      "authority": "Ministério do Trabalho e Emprego",
+      "law_number": "Lei 6.321/1976",
+      "jurisdiction": "federal",
+      "mandatory": true
+    },
+    {
+      "id": "receita_001",
+      "title": "Receita Federal - Isenção Tributária VR",
+      "content": "O vale-refeição fornecido pela empresa aos empregados não constitui rendimento tributável, desde que atenda às condições do PAT e não exceda os limites estabelecidos.",
+      "source": "RIR/1999 - Art. 458",
+      "effective_date": "1999-01-01T00:00:00Z",
+      "categories": ["tributacao", "isencao", "pat"],
+      "metadata": {
+        "regulamento": "RIR/1999",
+        "artigo": "458"
+      },
+      "type": "regulation",
+      "authority": "Receita Federal do Brasil",
+      "law_number": "Decreto 3.000/1999",
+      "jurisdiction": "federal",
+      "mandatory": true
+    }
+  ]
+}
