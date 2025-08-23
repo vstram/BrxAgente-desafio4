@@ -1,0 +1,179 @@
+# Configuração de Performance - BrxAgente-desafio4
+# Este arquivo controla todas as configurações relacionadas à otimização de performance
+
+# Configurações de Cache
+cache:
+  # Cache LLM
+  llm:
+    max_size: 1000          # Número máximo de entradas
+    ttl_hours: 24           # Time to live em horas
+    similarity_threshold: 0.7  # Threshold para busca de similaridade (0.0-1.0)
+    
+  # Cache de Dados
+  data:
+    max_size_mb: 512        # Tamanho máximo em MB
+    ttl_hours: 12           # Time to live em horas
+    cleanup_interval_min: 30 # Intervalo de limpeza em minutos
+
+  # Cache Inteligente Combinado
+  smart:
+    optimization_interval_min: 15  # Intervalo de otimização automática em minutos
+    health_check_interval_min: 5   # Intervalo de verificação de saúde em minutos
+    warmup_enabled: true           # Habilita pré-aquecimento do cache
+    warmup_data_file: "cache/warmup_data.json"  # Arquivo com dados para warmup
+
+# Configurações de Processamento Paralelo
+parallel:
+  # Worker Pool
+  worker_pool:
+    default_size: 8           # Número padrão de workers (0 = NumCPU)
+    queue_size: 1000         # Tamanho da fila de tarefas
+    task_timeout_sec: 300    # Timeout para tarefas em segundos
+    
+  # Processamento em Lotes
+  batch:
+    size: 100                # Tamanho padrão do lote
+    max_concurrent: 4        # Máximo de lotes processando simultaneamente
+    timeout_sec: 600         # Timeout para processamento de lote em segundos
+    retry_attempts: 3        # Número de tentativas em caso de erro
+    
+  # Pipeline de Processamento
+  pipeline:
+    buffer_size: 200         # Tamanho do buffer entre estágios
+    stage_timeout_sec: 120   # Timeout por estágio em segundos
+    
+# Configurações de Monitoramento
+monitoring:
+  # Métricas
+  metrics:
+    collection_interval_sec: 10    # Intervalo de coleta em segundos
+    history_retention_hours: 24    # Tempo de retenção do histórico
+    system_metrics_enabled: true   # Habilita coleta de métricas do sistema
+    
+  # Profiling Automático
+  profiling:
+    enabled: false                 # Habilita profiling automático
+    output_dir: "./profiles"       # Diretório de saída dos profiles
+    cpu_threshold_percent: 80      # Threshold de CPU para iniciar profiling
+    memory_threshold_mb: 500       # Threshold de memória para profile
+    memory_interval_min: 10        # Intervalo para profiles de memória
+    
+  # Sistema de Alertas
+  alerts:
+    enabled: true                  # Habilita sistema de alertas
+    check_interval_sec: 30         # Intervalo de verificação de alertas
+    history_limit: 1000           # Limite de alertas no histórico
+    
+    # Thresholds para alertas padrão
+    thresholds:
+      memory_warning_mb: 300       # Aviso de memória em MB
+      memory_critical_mb: 500      # Crítico de memória em MB
+      cpu_warning_percent: 70      # Aviso de CPU em %
+      cpu_critical_percent: 85     # Crítico de CPU em %
+      error_rate_warning: 2        # Taxa de erro para aviso em %
+      error_rate_critical: 5       # Taxa de erro crítica em %
+      cache_hit_warning: 60        # Hit ratio do cache para aviso em %
+      processing_time_warning_sec: 5   # Tempo de processamento para aviso
+      processing_time_critical_sec: 10 # Tempo de processamento crítico
+
+# Configurações de Stress Testing
+stress_testing:
+  # Parâmetros para testes de carga
+  load_test:
+    duration_min: 5              # Duração do teste em minutos
+    concurrent_users: 50         # Usuários simultâneos
+    ramp_up_sec: 30             # Tempo de ramp-up em segundos
+    
+  # Limites de performance para testes
+  performance_targets:
+    max_processing_time_sec: 300      # Tempo máximo para processar 1000 colaboradores
+    min_throughput_per_sec: 50        # Throughput mínimo (colaboradores/segundo)
+    max_memory_usage_mb: 1000         # Uso máximo de memória durante processamento
+    max_error_rate_percent: 1         # Taxa máxima de erro em %
+    min_cache_hit_ratio: 0.8          # Hit ratio mínimo do cache
+    
+  # Dataset para testes
+  test_data:
+    colaboradores_count: 10000        # Número de colaboradores para teste
+    sindicatos_count: 20             # Número de sindicatos diferentes
+    simulate_errors: true            # Simular erros ocasionais
+    error_rate_percent: 0.5          # Taxa de erro simulada em %
+
+# Configurações de Otimização Automática
+optimization:
+  # Auto-tuning
+  auto_tuning:
+    enabled: true                    # Habilita otimização automática
+    learning_period_hours: 24        # Período de aprendizado em horas
+    adjustment_interval_hours: 6     # Intervalo entre ajustes em horas
+    
+  # Parâmetros adaptativos
+  adaptive:
+    worker_pool_scaling: true        # Permite escalar worker pool automaticamente
+    cache_size_scaling: true         # Permite ajustar tamanho do cache
+    batch_size_optimization: true    # Otimiza tamanho dos lotes automaticamente
+    
+    # Limites para ajustes automáticos
+    min_workers: 2                   # Mínimo de workers
+    max_workers: 16                  # Máximo de workers
+    min_cache_size: 100              # Tamanho mínimo do cache
+    max_cache_size: 2000            # Tamanho máximo do cache
+    min_batch_size: 50               # Tamanho mínimo do lote
+    max_batch_size: 500              # Tamanho máximo do lote
+
+# Configurações específicas por ambiente
+environments:
+  development:
+    cache:
+      llm:
+        max_size: 100
+        ttl_hours: 1
+      data:
+        max_size_mb: 100
+    parallel:
+      worker_pool:
+        default_size: 2
+      batch:
+        size: 50
+        max_concurrent: 2
+    monitoring:
+      profiling:
+        enabled: true
+        
+  testing:
+    cache:
+      llm:
+        max_size: 200
+        ttl_hours: 2
+      data:
+        max_size_mb: 200
+    parallel:
+      worker_pool:
+        default_size: 4
+      batch:
+        size: 75
+    stress_testing:
+      test_data:
+        colaboradores_count: 1000
+        
+  production:
+    cache:
+      llm:
+        max_size: 2000
+        ttl_hours: 48
+      data:
+        max_size_mb: 1024
+    parallel:
+      worker_pool:
+        default_size: 0  # Usa NumCPU
+      batch:
+        size: 200
+        max_concurrent: 8
+    monitoring:
+      profiling:
+        enabled: false  # Desabilitado em produção por padrão
+      alerts:
+        enabled: true
+    optimization:
+      auto_tuning:
+        enabled: true
