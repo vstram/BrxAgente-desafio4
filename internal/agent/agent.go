@@ -162,8 +162,28 @@ func (a *VRAgent) Ask(question string) (string, error) {
 	var response string
 	var err error
 	
-	// Sempre usar fallback para chat service - mais estável
-	response, err = a.chatService.Ask(question, "", []chat.Message{})
+	// Usar diretamente AskOllama ou AskOpenAI para evitar recursão infinita
+	// (não usar a.chatService.Ask que pode chamar o próprio agente novamente)
+	contextData := a.chatService.GetContextDataAsString()
+	systemPrompt := fmt.Sprintf(`Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
+
+Seu trabalho é responder perguntas sobre os dados de colaboradores que foram PROCESSADOS pelo sistema de cálculo de VR/VA.
+
+Contexto dos dados processados:
+%s
+
+IMPORTANTE: 
+- "Colaboradores processados" = colaboradores que tiveram seus dados de VR/VA calculados pelo sistema
+- Todos os colaboradores mostrados no contexto JÁ FORAM PROCESSADOS pelo sistema
+- Use os dados fornecidos para responder as perguntas de forma clara e objetiva
+- Seja preciso com números e cálculos`, contextData)
+	
+	// Tentar Ollama primeiro, depois OpenAI se configurado
+	response, err = a.chatService.AskOllama(question, systemPrompt)
+	if err != nil {
+		// Se Ollama falhar, tentar OpenAI
+		response, err = a.chatService.AskOpenAI(question, []chat.Message{})
+	}
 	
 	if err != nil {
 		a.status.ErrorCount++
