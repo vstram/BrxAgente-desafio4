@@ -332,6 +332,62 @@ func FormatAnomalyReportForHuman(report *AnomalyReport) string {
 
 */
 
+// FormatAnomalyReportForHuman formata relatório para leitura humana
+func FormatAnomalyReportForHuman(report *AnomalyReport) string {
+	if report == nil {
+		return "Nenhum relatório de anomalias disponível"
+	}
+	
+	output := fmt.Sprintf("📊 RELATÓRIO DE ANOMALIAS\n")
+	output += fmt.Sprintf("═══════════════════════════\n\n")
+	output += fmt.Sprintf("📅 Data: %s\n", report.GeneratedAt.Format("02/01/2006 15:04"))
+	output += fmt.Sprintf("📁 Registros analisados: %d\n", report.TotalRecords)
+	output += fmt.Sprintf("🚨 Anomalias encontradas: %d\n", report.TotalAnomalies)
+	output += fmt.Sprintf("📈 Score geral: %.1f/100\n", report.Summary.OverallScore)
+	output += fmt.Sprintf("⚠️  Nível de risco: %s\n\n", report.Summary.RiskLevel)
+	
+	if report.TotalAnomalies == 0 {
+		output += "✅ Nenhuma anomalia detectada - dados estão dentro dos padrões esperados.\n"
+		return output
+	}
+	
+	// Distribuição por severidade
+	if len(report.AnomaliesBySeverity) > 0 {
+		output += fmt.Sprintf("🔴 DISTRIBUIÇÃO POR SEVERIDADE\n")
+		output += fmt.Sprintf("─────────────────────────\n")
+		for severity, count := range report.AnomaliesBySeverity {
+			if count > 0 {
+				emoji := getSeverityEmoji(severity)
+				output += fmt.Sprintf("%s %s: %d\n", emoji, severity, count)
+			}
+		}
+		output += fmt.Sprintf("\n")
+	}
+	
+	// Distribuição por tipo
+	if len(report.AnomaliesByType) > 0 {
+		output += fmt.Sprintf("📊 DISTRIBUIÇÃO POR TIPO\n")
+		output += fmt.Sprintf("─────────────────────────\n")
+		for anomalyType, count := range report.AnomaliesByType {
+			if count > 0 {
+				emoji := getTypeEmoji(string(anomalyType))
+				output += fmt.Sprintf("%s %s: %d\n", emoji, anomalyType, count)
+			}
+		}
+	}
+	
+	// Recomendações
+	if len(report.Summary.RecommendedActions) > 0 {
+		output += fmt.Sprintf("\n💡 RECOMENDAÇÕES\n")
+		output += fmt.Sprintf("────────────────\n")
+		for i, action := range report.Summary.RecommendedActions {
+			output += fmt.Sprintf("%d. %s\n", i+1, action)
+		}
+	}
+	
+	return output
+}
+
 // Helper functions para formatação
 func getSeverityEmoji(severity string) string {
 	switch severity {

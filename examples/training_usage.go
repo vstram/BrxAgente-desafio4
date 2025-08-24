@@ -1,11 +1,12 @@
-package examples
+package main
 
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
-	"github.com/vstram/BrxAgente-desafio4/internal/training"
+	"BrxAgente-desafio4/internal/training"
 )
 
 // TrainingUsageExample demonstra como usar o sistema de treinamento

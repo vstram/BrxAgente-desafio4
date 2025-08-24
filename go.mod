@@ -9,6 +9,7 @@ require (
 	github.com/tmc/langchaingo v0.1.12
 	github.com/wailsapp/wails/v2 v2.10.2
 	github.com/xuri/excelize/v2 v2.9.1
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
