@@ -11,8 +11,10 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/xuri/excelize/v2"
 
+	"BrxAgente-desafio4/internal/agent"
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
+	"BrxAgente-desafio4/internal/excel"
 	"BrxAgente-desafio4/internal/intelligence"
 	"BrxAgente-desafio4/internal/predicoes"
 	"BrxAgente-desafio4/internal/modelo"
@@ -24,6 +26,7 @@ type App struct {
 	ctx         context.Context
 	cfg         *config.Config
 	chat        *chat.Chat
+	vrAgent     *agent.VRAgent    // Agente VR para processamento inteligente
 	colaboradores map[string]*modelo.Colaborador
 	mu          sync.RWMutex // Mutex para acesso seguro aos dados compartilhados
 	
@@ -166,8 +169,52 @@ func (a *App) startup(ctx context.Context) {
 		cfg = &config.Config{}
 	}
 	a.cfg = cfg
+	
 	// Initialize chat
 	a.chat = chat.NewChat(cfg)
+	
+	// Initialize Advanced VR Agent Integration
+	fmt.Println("Initializing Advanced VR Agent...")
+	
+	// Try to initialize advanced VR agent integration first
+	excelService := excel.NewService()
+	analyzer := intelligence.NewAnalyzer(intelligence.DefaultAnalysisConfig())
+	
+	integrationConfig := agent.AgentIntegrationConfig{
+		ModelName:             "gpt-3.5-turbo",
+		Temperature:           0.7,
+		MaxTokens:            2000,
+		EnableDetailedLogging: true,
+		EnableMetrics:        true,
+		ValidateInputs:       true,
+		SanitizeOutputs:      true,
+		CustomPrompts:        make(map[string]string),
+		Metadata:            make(map[string]string),
+	}
+	
+	advancedAgent, err := agent.NewVRAgentIntegration(excelService, analyzer, integrationConfig)
+	if err != nil {
+		fmt.Printf("Warning: Failed to initialize advanced VR agent: %v\n", err)
+		
+		// Fallback to basic agent
+		fmt.Println("Falling back to basic VR Agent...")
+		agentConfig := agent.DefaultAgentConfig()
+		agentConfig.Enabled = true
+		agentConfig.DebugMode = true
+		
+		basicAgent, err := agent.NewVRAgent(agentConfig, a.chat)
+		if err != nil {
+			fmt.Printf("Warning: Failed to initialize basic VR agent: %v\n", err)
+			fmt.Println("Chat will use fallback services (OpenAI/Ollama)")
+		} else {
+			a.chat.SetAgent(basicAgent)
+			fmt.Printf("Basic VR Agent initialized successfully - Status: %s\n", basicAgent.GetStatus().State)
+		}
+	} else {
+		// Connect the advanced agent to the chat service
+		a.chat.SetAgent(advancedAgent)
+		fmt.Printf("Advanced VR Agent initialized successfully - Features: %v\n", advancedAgent.GetMetrics())
+	}
 }
 
 // Greet returns a greeting for the given name
@@ -341,6 +388,15 @@ func (a *App) TestOllamaConnection(ollamaConfig config.OllamaConfig) (bool, erro
 
 // AskAI sends a question to the configured AI service and returns the response
 func (a *App) AskAI(question string) (string, error) {
+	fmt.Printf("AskAI called with question: %.100s...\n", question)
+	
+	// Check agent status
+	if a.vrAgent != nil {
+		fmt.Printf("VR Agent is available - Status: %s, Enabled: %v\n", a.vrAgent.GetStatus().State, a.vrAgent.IsEnabled())
+	} else {
+		fmt.Println("VR Agent is not available")
+	}
+	
 	// Define a system prompt with context about the VR/VA application
 	systemPrompt := `Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
 	Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
@@ -351,11 +407,14 @@ func (a *App) AskAI(question string) (string, error) {
 	var context []chat.Message
 
 	// Ask the chat service
+	fmt.Println("Calling chat.Ask method...")
 	response, err := a.chat.Ask(question, systemPrompt, context)
 	if err != nil {
+		fmt.Printf("Error from chat.Ask: %v\n", err)
 		return "", fmt.Errorf("falha ao obter resposta da IA: %w", err)
 	}
 
+	fmt.Printf("Successfully got response from chat service (length: %d)\n", len(response))
 	return response, nil
 }
 

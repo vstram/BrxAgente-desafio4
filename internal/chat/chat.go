@@ -320,6 +320,7 @@ func (c *Chat) Ask(question string, systemPrompt string, context []Message) (str
 
 	// Try agent first if configured and enabled
 	if c.agent != nil && c.agent.IsEnabled() {
+		fmt.Printf("Ask: Trying VR Agent...\n")
 		response, err := c.agent.Ask(question)
 		if err == nil {
 			fmt.Printf("Ask: Resposta obtida via agente\n")
@@ -327,28 +328,41 @@ func (c *Chat) Ask(question string, systemPrompt string, context []Message) (str
 		}
 		// If agent fails, log the error and fallback to other services
 		fmt.Printf("Warning: Agent request failed, fallback to other services: %v\n", err)
+	} else if c.agent != nil {
+		fmt.Printf("Ask: Agent is available but disabled\n")
+	} else {
+		fmt.Printf("Ask: No agent configured\n")
 	}
 
 	// Try OpenAI first if configured
 	if c.cfg.OpenAIKey != "" {
+		fmt.Printf("Ask: Trying OpenAI...\n")
 		response, err := c.AskOpenAI(question, context)
 		if err == nil {
+			fmt.Printf("Ask: Resposta obtida via OpenAI\n")
 			return response, nil
 		}
 		// If OpenAI fails, log the error and try Ollama
 		fmt.Printf("Warning: OpenAI request failed: %v\n", err)
+	} else {
+		fmt.Printf("Ask: OpenAI not configured\n")
 	}
 
 	// Try Ollama if configured
 	if c.cfg.OllamaConfig.BaseURL != "" && c.cfg.OllamaConfig.Model != "" {
+		fmt.Printf("Ask: Trying Ollama...\n")
 		response, err := c.AskOllama(question, systemPrompt)
 		if err == nil {
+			fmt.Printf("Ask: Resposta obtida via Ollama\n")
 			return response, nil
 		}
-		// If Ollama fails, return the error
-		return "", fmt.Errorf("falha ao obter resposta de ambos os serviços de IA: %w", err)
+		// If Ollama fails, return a user-friendly error
+		fmt.Printf("Warning: Ollama request failed: %v\n", err)
+		return "", fmt.Errorf("falha ao obter resposta dos serviços de IA configurados. Verifique suas configurações de OpenAI ou Ollama")
+	} else {
+		fmt.Printf("Ask: Ollama not configured\n")
 	}
 
-	// If neither is configured, return an error
-	return "", fmt.Errorf("nenhum serviço de IA configurado (OpenAI ou Ollama)")
+	// If nothing is configured, return a helpful message
+	return "", fmt.Errorf("nenhum serviço de IA foi configurado. Por favor, configure OpenAI (chave de API) ou Ollama (URL e modelo) nas configurações")
 }

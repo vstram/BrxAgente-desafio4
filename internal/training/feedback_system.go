@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -184,8 +185,6 @@ func (fs *FeedbackSystem) updateMetrics() {
 
 	var totalRating float64
 	var accuracySum float64
-	var consistencySum float64
-	var completenessSum float64
 
 	for _, fb := range fs.feedback {
 		totalRating += float64(fb.UserRating)

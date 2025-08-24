@@ -59,11 +59,13 @@ function Chat() {
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (err: any) {
-      // Add error message
+      console.error('Chat error:', err);
+      
+      // Add error message with better handling
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `Desculpe, ocorreu um erro: ${err.message}`,
+        content: `Desculpe, ocorreu um erro: ${err?.message || err?.toString() || 'Erro desconhecido'}`,
         timestamp: new Date(),
       };
 
@@ -73,7 +75,7 @@ function Chat() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -155,7 +157,7 @@ function Chat() {
               <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Digite sua pergunta..."
                 disabled={isLoading}
                 rows={3}

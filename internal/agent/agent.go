@@ -457,11 +457,11 @@ func (a *VRAgent) registerDefaultWorkflows() error {
 		return fmt.Errorf("erro ao registrar workflow simple-validation: %w", err)
 	}
 	
-	// Registrar workflow com detecção de anomalias
-	validatedVR := intelligence.NewValidatedVRWorkflow(a.analyzer)
-	if err := a.orchestrator.RegisterWorkflow(validatedVR); err != nil {
-		return fmt.Errorf("erro ao registrar workflow validated-vr-processing: %w", err)
-	}
+	// TODO: Registrar workflow com detecção de anomalias quando implementado
+	// validatedVR := intelligence.NewValidatedVRWorkflow(a.analyzer)
+	// if err := a.orchestrator.RegisterWorkflow(validatedVR); err != nil {
+	//     return fmt.Errorf("erro ao registrar workflow validated-vr-processing: %w", err)
+	// }
 	
 	// Registrar outros workflows futuros aqui
 	// TODO: Implementar workflow processar-vr-mensal quando as ferramentas estiverem prontas

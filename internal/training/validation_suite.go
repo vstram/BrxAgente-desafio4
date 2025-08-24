@@ -539,8 +539,8 @@ func (vs *ValidationSuite) evaluateQualityCriteria(response string, criteria map
 	for criterion, expected := range criteria {
 		switch criterion {
 		case "cites_source":
-			hasSou¬rce := strings.Contains(responseLower, "política") || strings.Contains(responseLower, "vr-")
-			if hasSou¬rce == expected {
+			hasSource := strings.Contains(responseLower, "política") || strings.Contains(responseLower, "vr-")
+			if hasSource == expected {
 				passed++
 			}
 		case "provides_calculation":
