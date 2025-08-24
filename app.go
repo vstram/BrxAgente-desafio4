@@ -397,11 +397,16 @@ func (a *App) AskAI(question string) (string, error) {
 		fmt.Println("VR Agent is not available")
 	}
 	
-	// Define a system prompt with context about the VR/VA application
-	systemPrompt := `Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
-	Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
-	Os dados dos colaboradores são identificados exclusivamente por uma MATRICULA, por razões de confidencialidade.
-	Seja claro, preciso e objetivo em suas respostas.`
+	// Get system prompt with consolidated data context
+	systemPrompt, err := a.GetSystemPrompt()
+	if err != nil {
+		fmt.Printf("Warning: Failed to get system prompt with context: %v\n", err)
+		// Fallback to basic prompt
+		systemPrompt = `Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
+		Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
+		Os dados dos colaboradores são identificados exclusivamente por uma MATRICULA, por razões de confidencialidade.
+		Seja claro, preciso e objetivo em suas respostas.`
+	}
 
 	// Create empty context for now
 	var context []chat.Message
