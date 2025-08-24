@@ -3,3 +3,6 @@ node_modules
 frontend/dist
 /.qwen/settings.json
 *.exe
+
+# Arquivo binário da aplicação
+BrxAgente-desafio4
