@@ -3,9 +3,6 @@ package intelligence
 import (
 	"fmt"
 	"log"
-	"time"
-
-	"BrxAgente-desafio4/internal/workflows"
 )
 
 // Analyzer é o analisador principal que coordena a detecção de anomalias
@@ -85,6 +82,8 @@ func (a *Analyzer) GetStats() map[string]interface{} {
 }
 
 // AnomalyDetectionStep implementa um step de workflow para detecção de anomalias
+// COMENTADO TEMPORARIAMENTE PARA EVITAR DEPENDÊNCIA CIRCULAR COM WORKFLOWS
+/*
 type AnomalyDetectionStep struct {
 	*workflows.BaseStep
 	analyzer *Analyzer
@@ -100,9 +99,11 @@ func NewAnomalyDetectionStep(analyzer *Analyzer) *AnomalyDetectionStep {
 		),
 		analyzer: analyzer,
 	}
-}
+}*/
 
-// Execute executa o step de detecção de anomalias
+/*
+// SEÇÃO COMENTADA TEMPORARIAMENTE PARA EVITAR DEPENDÊNCIA CIRCULAR COM WORKFLOWS
+// Execute executa o step de detecção de anomalias  
 func (s *AnomalyDetectionStep) Execute(ctx *workflows.WorkflowContext) error {
 	ctx.Logger.Info("Executando detecção de anomalias")
 	
@@ -328,6 +329,8 @@ func FormatAnomalyReportForHuman(report *AnomalyReport) string {
 	
 	return output
 }
+
+*/
 
 // Helper functions para formatação
 func getSeverityEmoji(severity string) string {
