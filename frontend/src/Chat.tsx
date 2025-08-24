@@ -170,13 +170,36 @@ function Chat() {
                     }
                   </p>
                   <p>Posso ajudar você a entender os resultados do processamento de VR/VA.</p>
-                  <p>Exemplos de perguntas:</p>
-                  <ul>
-                    <li>Quantos colaboradores foram processados?</li>
-                    <li>Qual o valor total de VR concedido?</li>
-                    <li>Quais colaboradores estão com desligamento neste mês?</li>
-                  </ul>
-                  <p><small>💡 Use o botão {isAgentEnabled ? '🧠' : '💬'} no cabeçalho para alternar entre os modos.</small></p>
+                  
+                  {isAgentEnabled ? (
+                    // Modo Avançado - Funcionalidades IA
+                    <>
+                      <p><strong>🧠 Funcionalidades Avançadas do Agente IA (usando LangChainGO):</strong></p>
+                      <p><small>💡 Use o botão {isAgentEnabled ? '🧠' : '💬'} no cabeçalho para alternar entre os modos Básico/Avançado.</small></p>
+                      <ul>
+                        <li><strong>Análise Inteligente de Padrões:</strong> Detecta automaticamente anomalias e inconsistências nos dados de VR/VA</li>
+                        <li><strong>Respostas Contextuais:</strong> Compreende perguntas complexas e fornece análises detalhadas com base no histórico</li>
+                        <li><strong>Recomendações Proativas:</strong> Sugere ações e melhorias baseadas na análise dos dados processados</li>
+                      </ul>
+                      <p>Exemplos de perguntas avançadas:</p>
+                      <ul>
+                        <li>Identifique anomalias nos valores de VR por sindicato</li>
+                        <li>Compare a distribuição de dias úteis entre os sindicatos</li>
+                        <li>Que recomendações você tem para otimizar os custos de VR?</li>
+                      </ul>
+                    </>
+                  ) : (
+                    // Modo Básico - Funcionalidades padrão
+                    <>
+                      <p>Exemplos de perguntas:</p>
+                      <ul>
+                        <li>Quantos colaboradores foram processados?</li>
+                        <li>Qual o valor total de VR concedido?</li>
+                        <li>Quais colaboradores estão com desligamento neste mês?</li>
+                      </ul>
+                    </>
+                  )}
+                  
                 </div>
               ) : (
                 messages.map((message) => (
