@@ -14,7 +14,6 @@ import (
 	"BrxAgente-desafio4/internal/agent"
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
-	"BrxAgente-desafio4/internal/excel"
 	"BrxAgente-desafio4/internal/intelligence"
 	"BrxAgente-desafio4/internal/predicoes"
 	"BrxAgente-desafio4/internal/modelo"
@@ -173,47 +172,20 @@ func (a *App) startup(ctx context.Context) {
 	// Initialize chat
 	a.chat = chat.NewChat(cfg)
 	
-	// Initialize Advanced VR Agent Integration
-	fmt.Println("Initializing Advanced VR Agent...")
+	// Initialize Basic VR Agent for optimal performance
+	fmt.Println("Initializing VR Agent...")
 	
-	// Try to initialize advanced VR agent integration first
-	excelService := excel.NewService()
-	analyzer := intelligence.NewAnalyzer(intelligence.DefaultAnalysisConfig())
+	agentConfig := agent.DefaultAgentConfig()
+	agentConfig.Enabled = true
+	agentConfig.DebugMode = false // Reduce overhead for faster processing
 	
-	integrationConfig := agent.AgentIntegrationConfig{
-		ModelName:             "gpt-3.5-turbo",
-		Temperature:           0.7,
-		MaxTokens:            2000,
-		EnableDetailedLogging: true,
-		EnableMetrics:        true,
-		ValidateInputs:       true,
-		SanitizeOutputs:      true,
-		CustomPrompts:        make(map[string]string),
-		Metadata:            make(map[string]string),
-	}
-	
-	advancedAgent, err := agent.NewVRAgentIntegration(excelService, analyzer, integrationConfig)
+	basicAgent, err := agent.NewVRAgent(agentConfig, a.chat)
 	if err != nil {
-		fmt.Printf("Warning: Failed to initialize advanced VR agent: %v\n", err)
-		
-		// Fallback to basic agent
-		fmt.Println("Falling back to basic VR Agent...")
-		agentConfig := agent.DefaultAgentConfig()
-		agentConfig.Enabled = true
-		agentConfig.DebugMode = true
-		
-		basicAgent, err := agent.NewVRAgent(agentConfig, a.chat)
-		if err != nil {
-			fmt.Printf("Warning: Failed to initialize basic VR agent: %v\n", err)
-			fmt.Println("Chat will use fallback services (OpenAI/Ollama)")
-		} else {
-			a.chat.SetAgent(basicAgent)
-			fmt.Printf("Basic VR Agent initialized successfully - Status: %s\n", basicAgent.GetStatus().State)
-		}
+		fmt.Printf("Warning: Failed to initialize VR agent: %v\n", err)
+		fmt.Println("Chat will use fallback services (OpenAI/Ollama)")
 	} else {
-		// Connect the advanced agent to the chat service
-		a.chat.SetAgent(advancedAgent)
-		fmt.Printf("Advanced VR Agent initialized successfully - Features: %v\n", advancedAgent.GetMetrics())
+		a.chat.SetAgent(basicAgent)
+		fmt.Println("VR Agent initialized successfully")
 	}
 }
 
@@ -508,9 +480,6 @@ func (a *App) GetAgentStatus() (*AgentStatus, error) {
 		totalWorkflows = 1 // Representa processamento atual
 		successfulWorkflows = 1
 		totalReports = 1
-		
-		// Simular log de processamento real
-		a.addSystemLog("INFO", "Dashboard", fmt.Sprintf("Dados consolidados: %d colaboradores processados", realCollaborators))
 	}
 	
 	uptime := time.Since(a.agentStartTime).Milliseconds()
@@ -1046,21 +1015,21 @@ func (a *App) addWorkflowToHistory(workflow *WorkflowInfo, status string) {
 func (a *App) SetChatContext() error {
 	a.mu.RLock()
 	collaborators := len(a.colaboradores)
+	colaboradoresData := a.colaboradores
 	a.mu.RUnlock()
 	
 	// Print debug information
 	fmt.Printf("SetChatContext: Enviando %d colaboradores para o chat\n", collaborators)
 	
 	// Send the data to the chat service
-	a.mu.RLock()
-	if err := a.chat.SetContextData(a.colaboradores); err != nil {
-		a.mu.RUnlock()
+	if err := a.chat.SetContextData(colaboradoresData); err != nil {
 		return fmt.Errorf("falha ao definir o contexto do chat: %w", err)
 	}
-	a.mu.RUnlock()
 	
-	// Update agent metrics to reflect real processing
-	a.updateAgentMetricsFromProcessing(collaborators)
+	// Update agent metrics to reflect real processing (non-blocking)
+	go func() {
+		a.updateAgentMetricsFromProcessing(collaborators)
+	}()
 	
 	// Print success message
 	fmt.Println("SetChatContext: Dados enviados com sucesso para o chat")
