@@ -9,36 +9,36 @@ import (
 
 type DocumentationGenerator struct {
 	complianceChecker *ComplianceChecker
-	riskAssessor     *RiskAssessor
-	auditTrail       *AuditTrail
+	riskAssessor      *RiskAssessor
+	auditTrail        *AuditTrail
 }
 
 func NewDocumentationGenerator(checker *ComplianceChecker, assessor *RiskAssessor, audit *AuditTrail) *DocumentationGenerator {
 	return &DocumentationGenerator{
 		complianceChecker: checker,
-		riskAssessor:     assessor,
-		auditTrail:       audit,
+		riskAssessor:      assessor,
+		auditTrail:        audit,
 	}
 }
 
 type ComplianceReport struct {
-	GeneratedAt      time.Time            `json:"generated_at"`
-	Period           DateRange            `json:"period"`
-	Summary          ComplianceSummary    `json:"summary"`
-	Violations       []ComplianceViolation `json:"violations"`
-	RiskAssessments  []RiskAssessment     `json:"risk_assessments"`
-	Recommendations  []string             `json:"recommendations"`
-	AuditTrail       []AuditEntry         `json:"audit_trail"`
-	Metadata         ReportMetadata       `json:"metadata"`
+	GeneratedAt     time.Time             `json:"generated_at"`
+	Period          DateRange             `json:"period"`
+	Summary         ComplianceSummary     `json:"summary"`
+	Violations      []ComplianceViolation `json:"violations"`
+	RiskAssessments []RiskAssessment      `json:"risk_assessments"`
+	Recommendations []string              `json:"recommendations"`
+	AuditTrail      []AuditEntry          `json:"audit_trail"`
+	Metadata        ReportMetadata        `json:"metadata"`
 }
 
 type ComplianceSummary struct {
-	TotalEmployees        int                        `json:"total_employees"`
-	ComplianceRate        float64                   `json:"compliance_rate"`
-	ViolationsBySeverity  map[ViolationSeverity]int `json:"violations_by_severity"`
-	RisksByLevel          map[RiskLevel]int         `json:"risks_by_level"`
-	TopRiskCategories     []string                  `json:"top_risk_categories"`
-	ImprovementTrends     []TrendData              `json:"improvement_trends"`
+	TotalEmployees       int                       `json:"total_employees"`
+	ComplianceRate       float64                   `json:"compliance_rate"`
+	ViolationsBySeverity map[ViolationSeverity]int `json:"violations_by_severity"`
+	RisksByLevel         map[RiskLevel]int         `json:"risks_by_level"`
+	TopRiskCategories    []string                  `json:"top_risk_categories"`
+	ImprovementTrends    []TrendData               `json:"improvement_trends"`
 }
 
 type DateRange struct {
@@ -47,12 +47,12 @@ type DateRange struct {
 }
 
 type ReportMetadata struct {
-	Version         string            `json:"version"`
-	GeneratedBy     string            `json:"generated_by"`
-	ReportType      string            `json:"report_type"`
-	Scope           string            `json:"scope"`
-	DataSources     []string          `json:"data_sources"`
-	QualityMetrics  map[string]float64 `json:"quality_metrics"`
+	Version        string             `json:"version"`
+	GeneratedBy    string             `json:"generated_by"`
+	ReportType     string             `json:"report_type"`
+	Scope          string             `json:"scope"`
+	DataSources    []string           `json:"data_sources"`
+	QualityMetrics map[string]float64 `json:"quality_metrics"`
 }
 
 type TrendData struct {
@@ -66,11 +66,11 @@ func (d *DocumentationGenerator) GenerateComplianceReport(employeeData []map[str
 		GeneratedAt: time.Now(),
 		Period:      period,
 		Metadata: ReportMetadata{
-			Version:     "1.0",
-			GeneratedBy: "BrxAgente Compliance Assistant",
-			ReportType:  "Compliance Assessment Report",
-			Scope:       "Vale Refeição (VR) Compliance",
-			DataSources: []string{"Employee Database", "Audit Trail", "Risk Assessment"},
+			Version:        "1.0",
+			GeneratedBy:    "BrxAgente Compliance Assistant",
+			ReportType:     "Compliance Assessment Report",
+			Scope:          "Vale Refeição (VR) Compliance",
+			DataSources:    []string{"Employee Database", "Audit Trail", "Risk Assessment"},
 			QualityMetrics: make(map[string]float64),
 		},
 	}
@@ -134,7 +134,7 @@ func (d *DocumentationGenerator) generateSummary(employeeData []map[string]inter
 	for _, violation := range violations {
 		employeesWithViolations[violation.EntityID] = true
 	}
-	
+
 	compliantEmployees := len(employeeData) - len(employeesWithViolations)
 	if len(employeeData) > 0 {
 		summary.ComplianceRate = (float64(compliantEmployees) / float64(len(employeeData))) * 100
@@ -186,14 +186,14 @@ func (d *DocumentationGenerator) generateRecommendations(violations []Compliance
 	}
 
 	if criticalViolations > 0 {
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			fmt.Sprintf("🚨 URGENTE: Resolver %d violação(ões) crítica(s) imediatamente", criticalViolations))
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			"Implementar controles de emergência para violações críticas")
 	}
 
 	if highViolations > 0 {
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			fmt.Sprintf("⚠️ ALTA PRIORIDADE: Planejar resolução de %d violação(ões) de alta severidade", highViolations))
 	}
 
@@ -210,12 +210,12 @@ func (d *DocumentationGenerator) generateRecommendations(violations []Compliance
 	}
 
 	if criticalRiskCount > 0 {
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			fmt.Sprintf("🔴 Revisar %d funcionário(s) com risco crítico", criticalRiskCount))
 	}
 
 	if highRiskCount > 0 {
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			fmt.Sprintf("🟡 Monitorar %d funcionário(s) com risco alto", highRiskCount))
 	}
 
@@ -223,7 +223,7 @@ func (d *DocumentationGenerator) generateRecommendations(violations []Compliance
 	recommendations = append(recommendations, "📊 Implementar monitoramento contínuo de compliance")
 	recommendations = append(recommendations, "📚 Realizar treinamento de compliance para equipe")
 	recommendations = append(recommendations, "🔍 Estabelecer auditorias regulares mensais")
-	
+
 	if len(violations) > 0 {
 		recommendations = append(recommendations, "📝 Documentar procedimentos de correção de não conformidades")
 	}
@@ -272,8 +272,8 @@ func (d *DocumentationGenerator) GenerateMarkdownReport(report *ComplianceReport
 	// Header
 	md.WriteString(fmt.Sprintf("# Relatório de Compliance - Vale Refeição\n\n"))
 	md.WriteString(fmt.Sprintf("**Data de Geração:** %s\n", report.GeneratedAt.Format("02/01/2006 15:04:05")))
-	md.WriteString(fmt.Sprintf("**Período:** %s a %s\n\n", 
-		report.Period.StartDate.Format("02/01/2006"), 
+	md.WriteString(fmt.Sprintf("**Período:** %s a %s\n\n",
+		report.Period.StartDate.Format("02/01/2006"),
 		report.Period.EndDate.Format("02/01/2006")))
 
 	// Executive Summary
@@ -353,7 +353,7 @@ func (d *DocumentationGenerator) GenerateMarkdownReport(report *ComplianceReport
 
 	// Footer
 	md.WriteString("---\n")
-	md.WriteString(fmt.Sprintf("*Relatório gerado por: %s v%s*\n", 
+	md.WriteString(fmt.Sprintf("*Relatório gerado por: %s v%s*\n",
 		report.Metadata.GeneratedBy, report.Metadata.Version))
 
 	return md.String()
@@ -406,13 +406,13 @@ func (d *DocumentationGenerator) metricToString(metric string) string {
 
 func (d *DocumentationGenerator) GenerateAuditReport(startDate, endDate time.Time) *AuditReport {
 	entries := d.auditTrail.GetEntriesByDateRange(startDate, endDate)
-	
+
 	report := &AuditReport{
-		GeneratedAt: time.Now(),
-		Period:      DateRange{StartDate: startDate, EndDate: endDate},
+		GeneratedAt:  time.Now(),
+		Period:       DateRange{StartDate: startDate, EndDate: endDate},
 		TotalEntries: len(entries),
-		Entries:     entries,
-		Summary:     d.generateAuditSummary(entries),
+		Entries:      entries,
+		Summary:      d.generateAuditSummary(entries),
 	}
 
 	return report

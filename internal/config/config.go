@@ -17,7 +17,7 @@ type Config struct {
 
 	// Ollama configuration
 	OllamaConfig OllamaConfig `json:"ollama_config,omitempty"`
-	
+
 	// Agent configuration
 	AgentConfig AgentConfig `json:"agent_config,omitempty"`
 }
@@ -26,17 +26,17 @@ type Config struct {
 type AgentConfig struct {
 	// Se o agente está habilitado
 	Enabled bool `json:"enabled"`
-	
+
 	// Configurações do modelo LLM
 	Model       string  `json:"model"`
 	Temperature float64 `json:"temperature"`
 	MaxTokens   int     `json:"max_tokens"`
-	
+
 	// Configurações de performance
 	WorkerPoolSize int  `json:"worker_pool_size"`
 	CacheEnabled   bool `json:"cache_enabled"`
 	CacheSize      int  `json:"cache_size"`
-	
+
 	// Ferramentas habilitadas
 	ToolsEnabled []string `json:"tools_enabled"`
 }
@@ -184,18 +184,18 @@ func ValidateAgentConfig(config AgentConfig) error {
 	if config.Temperature < 0.0 || config.Temperature > 2.0 {
 		return fmt.Errorf("temperature must be between 0.0 and 2.0")
 	}
-	
+
 	if config.MaxTokens <= 0 {
 		return fmt.Errorf("max_tokens must be greater than 0")
 	}
-	
+
 	if config.WorkerPoolSize <= 0 {
 		return fmt.Errorf("worker_pool_size must be greater than 0")
 	}
-	
+
 	if config.CacheSize < 0 {
 		return fmt.Errorf("cache_size cannot be negative")
 	}
-	
+
 	return nil
 }

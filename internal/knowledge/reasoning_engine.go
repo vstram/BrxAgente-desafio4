@@ -27,24 +27,24 @@ func NewReasoningEngine(kb *KnowledgeBaseManager, pe *PolicyEngine, cm *Citation
 type ScenarioType string
 
 const (
-	ScenarioSimpleQuery      ScenarioType = "simple_query"
+	ScenarioSimpleQuery        ScenarioType = "simple_query"
 	ScenarioComplexCalculation ScenarioType = "complex_calculation"
-	ScenarioWhatIf           ScenarioType = "what_if"
+	ScenarioWhatIf             ScenarioType = "what_if"
 	ScenarioConflictResolution ScenarioType = "conflict_resolution"
-	ScenarioComplianceCheck   ScenarioType = "compliance_check"
+	ScenarioComplianceCheck    ScenarioType = "compliance_check"
 )
 
 // AnalyzeComplexScenario analisa um cenário complexo com raciocínio avançado
 func (re *ReasoningEngine) AnalyzeComplexScenario(scenario map[string]interface{}) (*ConsultationResult, error) {
 	startTime := time.Now()
-	
+
 	// Identificar tipo de cenário
 	scenarioType := re.identifyScenarioType(scenario)
-	
+
 	// Executar análise específica baseada no tipo
 	var result *ConsultationResult
 	var err error
-	
+
 	switch scenarioType {
 	case ScenarioSimpleQuery:
 		result, err = re.handleSimpleQuery(scenario)
@@ -59,15 +59,15 @@ func (re *ReasoningEngine) AnalyzeComplexScenario(scenario map[string]interface{
 	default:
 		result, err = re.policyEngine.AnalyzeScenario(scenario)
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Enriquecer resultado com análise avançada
 	result = re.enrichResult(result, scenario, scenarioType)
 	result.ProcessingTime = time.Since(startTime)
-	
+
 	return result, nil
 }
 
@@ -80,48 +80,48 @@ func (re *ReasoningEngine) identifyScenarioType(scenario map[string]interface{})
 			queryStr = strings.ToLower(str)
 		}
 	}
-	
+
 	// Detectar "E se" scenarios
 	if strings.Contains(queryStr, "e se") || strings.Contains(queryStr, "what if") ||
-	   strings.Contains(queryStr, "caso") || strings.Contains(queryStr, "supondo") {
+		strings.Contains(queryStr, "caso") || strings.Contains(queryStr, "supondo") {
 		return ScenarioWhatIf
 	}
-	
+
 	// Detectar cálculos complexos
 	if re.hasMultipleFactors(scenario) {
 		return ScenarioComplexCalculation
 	}
-	
+
 	// Detectar verificação de compliance
 	if strings.Contains(queryStr, "conforme") || strings.Contains(queryStr, "legal") ||
-	   strings.Contains(queryStr, "regulament") || strings.Contains(queryStr, "lei") {
+		strings.Contains(queryStr, "regulament") || strings.Contains(queryStr, "lei") {
 		return ScenarioComplianceCheck
 	}
-	
+
 	// Detectar resolução de conflitos
 	if strings.Contains(queryStr, "conflito") || strings.Contains(queryStr, "contradi") ||
-	   strings.Contains(queryStr, "diferent") {
+		strings.Contains(queryStr, "diferent") {
 		return ScenarioConflictResolution
 	}
-	
+
 	return ScenarioSimpleQuery
 }
 
 // hasMultipleFactors verifica se o cenário possui múltiplos fatores
 func (re *ReasoningEngine) hasMultipleFactors(scenario map[string]interface{}) bool {
 	factorCount := 0
-	
+
 	factors := []string{
 		"data_admissao", "data_desligamento", "afastamento", "ferias",
 		"tipo_colaborador", "sindicato", "carga_horaria", "dias_uteis",
 	}
-	
+
 	for _, factor := range factors {
 		if _, exists := scenario[factor]; exists {
 			factorCount++
 		}
 	}
-	
+
 	return factorCount >= 3
 }
 
@@ -134,22 +134,22 @@ func (re *ReasoningEngine) handleSimpleQuery(scenario map[string]interface{}) (*
 // handleComplexCalculation processa cálculos complexos com múltiplos fatores
 func (re *ReasoningEngine) handleComplexCalculation(scenario map[string]interface{}) (*ConsultationResult, error) {
 	startTime := time.Now()
-	
+
 	// Identificar todos os fatores relevantes
 	factors := re.identifyRelevantFactors(scenario)
-	
+
 	// Executar análise multi-dimensional
 	analysis := re.performMultiDimensionalAnalysis(scenario, factors)
-	
+
 	// Gerar passos de raciocínio detalhados
 	reasoningSteps := re.generateComplexReasoningSteps(scenario, factors, analysis)
-	
+
 	// Calcular resultado final
 	finalResult := re.calculateComplexResult(analysis)
-	
+
 	// Avaliar confiança baseada na complexidade
 	confidence := re.calculateComplexConfidence(analysis, factors)
-	
+
 	result := &ConsultationResult{
 		Query:          re.extractQuery(scenario),
 		Answer:         finalResult,
@@ -158,20 +158,20 @@ func (re *ReasoningEngine) handleComplexCalculation(scenario map[string]interfac
 		Sources:        re.extractSourcesFromAnalysis(analysis),
 		ProcessingTime: time.Since(startTime),
 	}
-	
+
 	return result, nil
 }
 
 // handleWhatIfScenario processa cenários hipotéticos "E se"
 func (re *ReasoningEngine) handleWhatIfScenario(scenario map[string]interface{}) (*ConsultationResult, error) {
 	startTime := time.Now()
-	
+
 	// Identificar as variáveis hipotéticas
 	hypotheticalVars := re.extractHypotheticalVariables(scenario)
-	
+
 	// Gerar múltiplos cenários baseados nas variáveis
 	scenarios := re.generateAlternativeScenarios(scenario, hypotheticalVars)
-	
+
 	// Analisar cada cenário alternativo
 	scenarioResults := make(map[string]*ConsultationResult)
 	for name, altScenario := range scenarios {
@@ -181,13 +181,13 @@ func (re *ReasoningEngine) handleWhatIfScenario(scenario map[string]interface{})
 		}
 		scenarioResults[name] = result
 	}
-	
+
 	// Comparar resultados e gerar análise
 	comparison := re.compareScenarioResults(scenarioResults)
-	
+
 	// Gerar recomendações baseadas na comparação
 	recommendations := re.generateWhatIfRecommendations(comparison)
-	
+
 	result := &ConsultationResult{
 		Query:           re.extractQuery(scenario),
 		Answer:          re.formatWhatIfAnswer(comparison),
@@ -196,24 +196,24 @@ func (re *ReasoningEngine) handleWhatIfScenario(scenario map[string]interface{})
 		Recommendations: recommendations,
 		ProcessingTime:  time.Since(startTime),
 	}
-	
+
 	return result, nil
 }
 
 // handleConflictResolution resolve conflitos entre regras
 func (re *ReasoningEngine) handleConflictResolution(scenario map[string]interface{}) (*ConsultationResult, error) {
 	startTime := time.Now()
-	
+
 	// Encontrar regras potencialmente conflitantes
 	applicableRules, _ := re.findApplicableRules(scenario)
 	conflicts := re.detectDetailedConflicts(applicableRules)
-	
+
 	// Resolver conflitos usando hierarquia de prioridades
 	resolutions := re.resolveConflicts(conflicts)
-	
+
 	// Gerar explicação da resolução
 	explanation := re.explainConflictResolution(conflicts, resolutions)
-	
+
 	result := &ConsultationResult{
 		Query:          re.extractQuery(scenario),
 		Answer:         explanation,
@@ -222,33 +222,33 @@ func (re *ReasoningEngine) handleConflictResolution(scenario map[string]interfac
 		Ambiguities:    re.extractAmbiguitiesFromConflicts(conflicts),
 		ProcessingTime: time.Since(startTime),
 	}
-	
+
 	return result, nil
 }
 
 // handleComplianceCheck verifica conformidade com regulamentações
 func (re *ReasoningEngine) handleComplianceCheck(scenario map[string]interface{}) (*ConsultationResult, error) {
 	startTime := time.Now()
-	
+
 	// Identificar regulamentações aplicáveis
 	regulations := re.findApplicableRegulations(scenario)
-	
+
 	// Verificar conformidade para cada regulamentação
 	complianceResults := make(map[string]bool)
 	complianceDetails := make(map[string]string)
-	
+
 	for _, regulation := range regulations {
 		isCompliant, details := re.checkComplianceWithRegulation(scenario, regulation)
 		complianceResults[regulation.ID] = isCompliant
 		complianceDetails[regulation.ID] = details
 	}
-	
+
 	// Gerar relatório de conformidade
 	complianceReport := re.generateComplianceReport(complianceResults, complianceDetails, regulations)
-	
+
 	// Calcular confiança baseada na clareza das regulamentações
 	confidence := re.calculateComplianceConfidence(regulations)
-	
+
 	result := &ConsultationResult{
 		Query:          re.extractQuery(scenario),
 		Answer:         complianceReport,
@@ -257,7 +257,7 @@ func (re *ReasoningEngine) handleComplianceCheck(scenario map[string]interface{}
 		Sources:        re.extractRegulationCitations(regulations),
 		ProcessingTime: time.Since(startTime),
 	}
-	
+
 	return result, nil
 }
 
@@ -266,78 +266,78 @@ func (re *ReasoningEngine) handleComplianceCheck(scenario map[string]interface{}
 // identifyRelevantFactors identifica fatores relevantes para o cálculo
 func (re *ReasoningEngine) identifyRelevantFactors(scenario map[string]interface{}) map[string]interface{} {
 	factors := make(map[string]interface{})
-	
+
 	relevantKeys := []string{
 		"data_admissao", "data_desligamento", "afastamento", "ferias",
 		"tipo_colaborador", "sindicato", "carga_horaria", "dias_uteis",
 		"valor_base", "percentual_empresa", "percentual_colaborador",
 	}
-	
+
 	for _, key := range relevantKeys {
 		if value, exists := scenario[key]; exists {
 			factors[key] = value
 		}
 	}
-	
+
 	return factors
 }
 
 // performMultiDimensionalAnalysis executa análise considerando múltiplas dimensões
 func (re *ReasoningEngine) performMultiDimensionalAnalysis(scenario map[string]interface{}, factors map[string]interface{}) map[string]interface{} {
 	analysis := make(map[string]interface{})
-	
+
 	// Analisar elegibilidade
 	eligibility := re.analyzeEligibility(factors)
 	analysis["eligibility"] = eligibility
-	
+
 	// Analisar impacto temporal (admissões, desligamentos)
 	temporalImpact := re.analyzeTemporalImpact(factors)
 	analysis["temporal_impact"] = temporalImpact
-	
+
 	// Analisar impacto de afastamentos/férias
 	absenceImpact := re.analyzeAbsenceImpact(factors)
 	analysis["absence_impact"] = absenceImpact
-	
+
 	// Calcular valor base
 	baseCalculation := re.calculateBaseValue(factors)
 	analysis["base_calculation"] = baseCalculation
-	
+
 	// Analisar ajustes específicos
 	adjustments := re.calculateAdjustments(factors)
 	analysis["adjustments"] = adjustments
-	
+
 	return analysis
 }
 
 // analyzeEligibility analisa elegibilidade detalhadamente
 func (re *ReasoningEngine) analyzeEligibility(factors map[string]interface{}) map[string]interface{} {
 	result := map[string]interface{}{
-		"eligible":    true,
-		"reasons":     []string{},
+		"eligible":     true,
+		"reasons":      []string{},
 		"restrictions": []string{},
 	}
-	
+
 	if tipoColaborador, exists := factors["tipo_colaborador"]; exists {
 		if tipo, ok := tipoColaborador.(string); ok {
 			excludedTypes := []string{"diretor", "estagiario", "aprendiz", "terceirizado"}
 			for _, excluded := range excludedTypes {
 				if strings.Contains(strings.ToLower(tipo), excluded) {
 					result["eligible"] = false
-					result["reasons"] = append(result["reasons"].([]string), 
+					result["reasons"] = append(result["reasons"].([]string),
 						fmt.Sprintf("Tipo de colaborador '%s' não elegível", tipo))
 				}
 			}
 		}
 	}
-	
+
 	if cargaHoraria, exists := factors["carga_horaria"]; exists {
 		if horas, ok := cargaHoraria.(float64); ok && horas < 6.0 {
 			result["eligible"] = false
-			result["reasons"] = append(result["reasons"].([]string), 
+			result["reasons"] = append(result["reasons"].([]string),
 				fmt.Sprintf("Carga horária %.1f horas inferior ao mínimo de 6h", horas))
 		}
 	}
-	
+
 	return result
 }
 
@@ -348,7 +348,7 @@ func (re *ReasoningEngine) analyzeTemporalImpact(factors map[string]interface{})
 		"termination_impact": "none",
 		"proportional":       false,
 	}
-	
+
 	// Analisar admissão
 	if dataAdmissao, exists := factors["data_admissao"]; exists {
 		if dataStr, ok := dataAdmissao.(string); ok {
@@ -359,7 +359,7 @@ func (re *ReasoningEngine) analyzeTemporalImpact(factors map[string]interface{})
 			}
 		}
 	}
-	
+
 	// Analisar desligamento
 	if dataDesligamento, exists := factors["data_desligamento"]; exists {
 		if dataStr, ok := dataDesligamento.(string); ok {
@@ -368,7 +368,7 @@ func (re *ReasoningEngine) analyzeTemporalImpact(factors map[string]interface{})
 			result["proportional"] = true
 		}
 	}
-	
+
 	return result
 }
 
@@ -396,14 +396,14 @@ func (re *ReasoningEngine) calculateTerminationImpact(dataDesligamento string) s
 // analyzeAbsenceImpact analisa impacto de afastamentos e férias
 func (re *ReasoningEngine) analyzeAbsenceImpact(factors map[string]interface{}) map[string]interface{} {
 	result := map[string]interface{}{
-		"has_absences":   false,
-		"absence_days":   0,
-		"vacation_days":  0,
-		"impact_level":   "none",
+		"has_absences":  false,
+		"absence_days":  0,
+		"vacation_days": 0,
+		"impact_level":  "none",
 	}
-	
+
 	totalAbsenceDays := 0
-	
+
 	// Analisar afastamentos
 	if afastamento, exists := factors["afastamento"]; exists {
 		if afastamentoMap, ok := afastamento.(map[string]interface{}); ok {
@@ -414,7 +414,7 @@ func (re *ReasoningEngine) analyzeAbsenceImpact(factors map[string]interface{}) 
 			}
 		}
 	}
-	
+
 	// Analisar férias
 	if ferias, exists := factors["ferias"]; exists {
 		if feriasMap, ok := ferias.(map[string]interface{}); ok {
@@ -424,7 +424,7 @@ func (re *ReasoningEngine) analyzeAbsenceImpact(factors map[string]interface{}) 
 			}
 		}
 	}
-	
+
 	// Determinar nível de impacto
 	if totalAbsenceDays == 0 {
 		result["impact_level"] = "none"
@@ -435,31 +435,31 @@ func (re *ReasoningEngine) analyzeAbsenceImpact(factors map[string]interface{}) 
 	} else {
 		result["impact_level"] = "high"
 	}
-	
+
 	return result
 }
 
 // calculateBaseValue calcula valor base do VR
 func (re *ReasoningEngine) calculateBaseValue(factors map[string]interface{}) map[string]interface{} {
 	valorBase := 30.0 // Valor padrão
-	diasUteis := 22.0  // Dias padrão
-	
+	diasUteis := 22.0 // Dias padrão
+
 	if valor, exists := factors["valor_base"]; exists {
 		if v, ok := valor.(float64); ok {
 			valorBase = v
 		}
 	}
-	
+
 	if dias, exists := factors["dias_uteis"]; exists {
 		if d, ok := dias.(float64); ok {
 			diasUteis = d
 		}
 	}
-	
+
 	valorTotal := valorBase * diasUteis
 	subsidioEmpresa := valorTotal * 0.8
 	descontoColaborador := valorTotal * 0.2
-	
+
 	return map[string]interface{}{
 		"valor_base":           valorBase,
 		"dias_uteis":           diasUteis,
@@ -472,7 +472,7 @@ func (re *ReasoningEngine) calculateBaseValue(factors map[string]interface{}) ma
 // calculateAdjustments calcula ajustes baseados em fatores específicos
 func (re *ReasoningEngine) calculateAdjustments(factors map[string]interface{}) []map[string]interface{} {
 	var adjustments []map[string]interface{}
-	
+
 	// Ajuste por admissão
 	if dataAdmissao, exists := factors["data_admissao"]; exists {
 		if dataStr, ok := dataAdmissao.(string); ok {
@@ -486,7 +486,7 @@ func (re *ReasoningEngine) calculateAdjustments(factors map[string]interface{}) 
 			}
 		}
 	}
-	
+
 	// Ajuste por afastamentos longos
 	if afastamento, exists := factors["afastamento"]; exists {
 		if afastamentoMap, ok := afastamento.(map[string]interface{}); ok {
@@ -499,7 +499,7 @@ func (re *ReasoningEngine) calculateAdjustments(factors map[string]interface{}) 
 			}
 		}
 	}
-	
+
 	return adjustments
 }
 
@@ -509,7 +509,7 @@ func (re *ReasoningEngine) calculateAdjustments(factors map[string]interface{}) 
 func (re *ReasoningEngine) generateComplexReasoningSteps(scenario map[string]interface{}, factors map[string]interface{}, analysis map[string]interface{}) []ReasoningStep {
 	var steps []ReasoningStep
 	stepNum := 1
-	
+
 	// Passo 1: Análise de elegibilidade
 	eligibilityStep := ReasoningStep{
 		Step:        stepNum,
@@ -520,7 +520,7 @@ func (re *ReasoningEngine) generateComplexReasoningSteps(scenario map[string]int
 	}
 	steps = append(steps, eligibilityStep)
 	stepNum++
-	
+
 	// Passo 2: Análise temporal
 	if temporalImpact, exists := analysis["temporal_impact"]; exists {
 		temporalStep := ReasoningStep{
@@ -533,7 +533,7 @@ func (re *ReasoningEngine) generateComplexReasoningSteps(scenario map[string]int
 		steps = append(steps, temporalStep)
 		stepNum++
 	}
-	
+
 	// Passo 3: Análise de ausências
 	if absenceImpact, exists := analysis["absence_impact"]; exists {
 		absenceStep := ReasoningStep{
@@ -546,7 +546,7 @@ func (re *ReasoningEngine) generateComplexReasoningSteps(scenario map[string]int
 		steps = append(steps, absenceStep)
 		stepNum++
 	}
-	
+
 	// Passo 4: Cálculo base
 	if baseCalc, exists := analysis["base_calculation"]; exists {
 		calcStep := ReasoningStep{
@@ -559,7 +559,7 @@ func (re *ReasoningEngine) generateComplexReasoningSteps(scenario map[string]int
 		steps = append(steps, calcStep)
 		stepNum++
 	}
-	
+
 	// Passo 5: Aplicação de ajustes
 	if adjustments, exists := analysis["adjustments"]; exists {
 		if adj, ok := adjustments.([]map[string]interface{}); ok && len(adj) > 0 {
@@ -573,7 +573,7 @@ func (re *ReasoningEngine) generateComplexReasoningSteps(scenario map[string]int
 			steps = append(steps, adjustmentStep)
 		}
 	}
-	
+
 	return steps
 }
 
@@ -596,7 +596,7 @@ func (re *ReasoningEngine) formatEligibilityResult(eligibility interface{}) stri
 func (re *ReasoningEngine) formatTemporalResult(temporal interface{}) string {
 	if tempMap, ok := temporal.(map[string]interface{}); ok {
 		var impacts []string
-		
+
 		if admission, exists := tempMap["admission_impact"]; exists {
 			switch admission {
 			case "full":
@@ -605,13 +605,13 @@ func (re *ReasoningEngine) formatTemporalResult(temporal interface{}) string {
 				impacts = append(impacts, "50% do VR por admissão após dia 15")
 			}
 		}
-		
+
 		if termination, exists := tempMap["termination_impact"]; exists {
 			if termination == "proportional" {
 				impacts = append(impacts, "VR proporcional por desligamento no mês")
 			}
 		}
-		
+
 		if len(impacts) > 0 {
 			return strings.Join(impacts, "; ")
 		}
@@ -626,7 +626,7 @@ func (re *ReasoningEngine) formatAbsenceResult(absence interface{}) string {
 			impactLevel := absMap["impact_level"].(string)
 			absenceDays := absMap["absence_days"].(int)
 			vacationDays := absMap["vacation_days"].(int)
-			
+
 			var parts []string
 			if absenceDays > 0 {
 				if absenceDays > 15 {
@@ -635,11 +635,11 @@ func (re *ReasoningEngine) formatAbsenceResult(absence interface{}) string {
 					parts = append(parts, fmt.Sprintf("Afastamento de %d dias: impacto %s", absenceDays, impactLevel))
 				}
 			}
-			
+
 			if vacationDays > 0 {
 				parts = append(parts, fmt.Sprintf("Férias de %d dias: sem VR no período", vacationDays))
 			}
-			
+
 			return strings.Join(parts, "; ")
 		}
 	}
@@ -654,7 +654,7 @@ func (re *ReasoningEngine) formatCalculationResult(calc interface{}) string {
 		valorTotal := calcMap["valor_total"].(float64)
 		subsidio := calcMap["subsidio_empresa"].(float64)
 		desconto := calcMap["desconto_colaborador"].(float64)
-		
+
 		return fmt.Sprintf("Valor base R$ %.2f × %.0f dias úteis = R$ %.2f (Empresa: R$ %.2f, Desconto: R$ %.2f)",
 			valorBase, diasUteis, valorTotal, subsidio, desconto)
 	}
@@ -664,18 +664,18 @@ func (re *ReasoningEngine) formatCalculationResult(calc interface{}) string {
 // formatAdjustmentResult formata resultado dos ajustes
 func (re *ReasoningEngine) formatAdjustmentResult(adjustments []map[string]interface{}) string {
 	var parts []string
-	
+
 	for _, adj := range adjustments {
 		description := adj["description"].(string)
 		multiplier := adj["multiplier"].(float64)
-		
+
 		if multiplier == 0.0 {
 			parts = append(parts, fmt.Sprintf("%s (elimina direito)", description))
 		} else {
 			parts = append(parts, fmt.Sprintf("%s (fator %.1f)", description, multiplier))
 		}
 	}
-	
+
 	return strings.Join(parts, "; ")
 }
 
@@ -689,7 +689,7 @@ func (re *ReasoningEngine) calculateComplexResult(analysis map[string]interface{
 			}
 		}
 	}
-	
+
 	// Calcular valor final
 	baseValue := 0.0
 	if baseCalc, exists := analysis["base_calculation"]; exists {
@@ -699,7 +699,7 @@ func (re *ReasoningEngine) calculateComplexResult(analysis map[string]interface{
 			}
 		}
 	}
-	
+
 	// Aplicar ajustes
 	finalValue := baseValue
 	if adjustments, exists := analysis["adjustments"]; exists {
@@ -711,14 +711,14 @@ func (re *ReasoningEngine) calculateComplexResult(analysis map[string]interface{
 			}
 		}
 	}
-	
+
 	if finalValue <= 0 {
 		return "Com base na análise, o colaborador não tem direito ao Vale Refeição no período."
 	}
-	
+
 	subsidio := finalValue * 0.8
 	desconto := finalValue * 0.2
-	
+
 	return fmt.Sprintf("Valor final do Vale Refeição: R$ %.2f (Empresa subsidia R$ %.2f, colaborador paga R$ %.2f)",
 		finalValue, subsidio, desconto)
 }
@@ -726,13 +726,13 @@ func (re *ReasoningEngine) calculateComplexResult(analysis map[string]interface{
 // calculateComplexConfidence calcula confiança para análises complexas
 func (re *ReasoningEngine) calculateComplexConfidence(analysis map[string]interface{}, factors map[string]interface{}) float64 {
 	baseConfidence := 0.8
-	
+
 	// Aumentar confiança se temos muitos fatores claros
 	factorCount := len(factors)
 	if factorCount >= 5 {
 		baseConfidence += 0.1
 	}
-	
+
 	// Diminuir confiança se há muitos ajustes (cenário complexo)
 	if adjustments, exists := analysis["adjustments"]; exists {
 		if adj, ok := adjustments.([]map[string]interface{}); ok {
@@ -742,7 +742,7 @@ func (re *ReasoningEngine) calculateComplexConfidence(analysis map[string]interf
 			}
 		}
 	}
-	
+
 	// Garantir que a confiança está entre 0 e 1
 	if baseConfidence > 1.0 {
 		baseConfidence = 1.0
@@ -750,7 +750,7 @@ func (re *ReasoningEngine) calculateComplexConfidence(analysis map[string]interf
 	if baseConfidence < 0.0 {
 		baseConfidence = 0.0
 	}
-	
+
 	return baseConfidence
 }
 
@@ -759,18 +759,18 @@ func (re *ReasoningEngine) enrichResult(result *ConsultationResult, scenario map
 	// Adicionar tópicos relacionados baseados no tipo de cenário
 	relatedTopics := re.generateRelatedTopics(scenarioType, scenario)
 	result.RelatedTopics = append(result.RelatedTopics, relatedTopics...)
-	
+
 	// Adicionar recomendações específicas
 	specificRecommendations := re.generateSpecificRecommendations(scenarioType, scenario, result)
 	result.Recommendations = append(result.Recommendations, specificRecommendations...)
-	
+
 	return result
 }
 
 // generateRelatedTopics gera tópicos relacionados baseados no cenário
 func (re *ReasoningEngine) generateRelatedTopics(scenarioType ScenarioType, scenario map[string]interface{}) []string {
 	var topics []string
-	
+
 	switch scenarioType {
 	case ScenarioComplexCalculation:
 		topics = []string{"cálculos proporcionais", "múltiplos fatores", "datas quebradas", "ajustes temporais"}
@@ -781,19 +781,19 @@ func (re *ReasoningEngine) generateRelatedTopics(scenarioType ScenarioType, scen
 	case ScenarioComplianceCheck:
 		topics = []string{"conformidade regulatória", "legislação trabalhista", "auditoria"}
 	}
-	
+
 	return topics
 }
 
 // generateSpecificRecommendations gera recomendações específicas
 func (re *ReasoningEngine) generateSpecificRecommendations(scenarioType ScenarioType, scenario map[string]interface{}, result *ConsultationResult) []string {
 	var recommendations []string
-	
+
 	// Recomendações baseadas na confiança
 	if result.Confidence < 0.7 {
 		recommendations = append(recommendations, "Revisar manualmente devido à baixa confiança no resultado")
 	}
-	
+
 	// Recomendações específicas por tipo
 	switch scenarioType {
 	case ScenarioComplexCalculation:
@@ -806,7 +806,7 @@ func (re *ReasoningEngine) generateSpecificRecommendations(scenarioType Scenario
 	case ScenarioComplianceCheck:
 		recommendations = append(recommendations, "Manter documentação para auditoria")
 	}
-	
+
 	return recommendations
 }
 
@@ -823,7 +823,7 @@ func (re *ReasoningEngine) extractQuery(scenario map[string]interface{}) string 
 func (re *ReasoningEngine) extractSourcesFromAnalysis(analysis map[string]interface{}) []Citation {
 	// Gerar citações baseadas na análise
 	var citations []Citation
-	
+
 	// Sempre incluir a política base de VR
 	baseCitation := Citation{
 		Source:      "Manual de Recursos Humanos v2.1",
@@ -832,7 +832,7 @@ func (re *ReasoningEngine) extractSourcesFromAnalysis(analysis map[string]interf
 		Section:     "Políticas de Vale Refeição",
 	}
 	citations = append(citations, baseCitation)
-	
+
 	return citations
 }
 
@@ -847,25 +847,25 @@ func (re *ReasoningEngine) extractHypotheticalVariables(scenario map[string]inte
 
 func (re *ReasoningEngine) generateAlternativeScenarios(baseScenario map[string]interface{}, variables map[string][]interface{}) map[string]map[string]interface{} {
 	scenarios := make(map[string]map[string]interface{})
-	
+
 	// Implementação básica - gerar alguns cenários alternativos
 	for varName, values := range variables {
 		for i, value := range values {
 			scenarioName := fmt.Sprintf("%s_%d", varName, i)
 			altScenario := make(map[string]interface{})
-			
+
 			// Copiar cenário base
 			for k, v := range baseScenario {
 				altScenario[k] = v
 			}
-			
+
 			// Modificar variável
 			altScenario[varName] = value
-			
+
 			scenarios[scenarioName] = altScenario
 		}
 	}
-	
+
 	return scenarios
 }
 
@@ -874,11 +874,11 @@ func (re *ReasoningEngine) compareScenarioResults(results map[string]*Consultati
 		"scenarios": len(results),
 		"outcomes":  make(map[string]string),
 	}
-	
+
 	for name, result := range results {
 		comparison["outcomes"].(map[string]string)[name] = result.Answer
 	}
-	
+
 	return comparison
 }
 
@@ -892,7 +892,7 @@ func (re *ReasoningEngine) formatWhatIfAnswer(comparison map[string]interface{})
 
 func (re *ReasoningEngine) generateWhatIfSteps(scenarios map[string]map[string]interface{}, results map[string]*ConsultationResult) []ReasoningStep {
 	var steps []ReasoningStep
-	
+
 	step := ReasoningStep{
 		Step:        1,
 		Description: "Análise de cenários hipotéticos",
@@ -901,7 +901,7 @@ func (re *ReasoningEngine) generateWhatIfSteps(scenarios map[string]map[string]i
 		Confidence:  0.8,
 	}
 	steps = append(steps, step)
-	
+
 	return steps
 }
 
@@ -914,30 +914,30 @@ func (re *ReasoningEngine) findApplicableRules(scenario map[string]interface{}) 
 			query = queryStr
 		}
 	}
-	
+
 	results, err := re.knowledgeBase.Search(query, 20)
 	if err != nil {
 		return []KnowledgeItem{}, err
 	}
-	
+
 	var rules []KnowledgeItem
 	for _, result := range results {
 		rules = append(rules, result.Item)
 	}
-	
+
 	return rules, nil
 }
 
 func (re *ReasoningEngine) detectDetailedConflicts(rules []KnowledgeItem) []ConflictDetection {
 	// Implementação básica de detecção de conflitos
 	var conflicts []ConflictDetection
-	
+
 	for i, rule1 := range rules {
 		for j, rule2 := range rules {
 			if i >= j {
 				continue
 			}
-			
+
 			if re.rulesConflict(rule1, rule2) {
 				conflict := ConflictDetection{
 					Type:          "contradiction",
@@ -950,7 +950,7 @@ func (re *ReasoningEngine) detectDetailedConflicts(rules []KnowledgeItem) []Conf
 			}
 		}
 	}
-	
+
 	return conflicts
 }
 
@@ -958,24 +958,24 @@ func (re *ReasoningEngine) rulesConflict(rule1, rule2 KnowledgeItem) bool {
 	// Implementação básica - melhorar com lógica mais sofisticada
 	content1 := strings.ToLower(rule1.Content)
 	content2 := strings.ToLower(rule2.Content)
-	
+
 	// Procurar por contradições óbvias
 	if (strings.Contains(content1, "não") && !strings.Contains(content2, "não")) ||
-	   (!strings.Contains(content1, "não") && strings.Contains(content2, "não")) {
+		(!strings.Contains(content1, "não") && strings.Contains(content2, "não")) {
 		return true
 	}
-	
+
 	return false
 }
 
 func (re *ReasoningEngine) resolveConflicts(conflicts []ConflictDetection) map[string]string {
 	resolutions := make(map[string]string)
-	
+
 	for _, conflict := range conflicts {
 		// Resolução básica baseada na prioridade
 		resolutions[conflict.Description] = "Priorizar regulamentação sobre política interna"
 	}
-	
+
 	return resolutions
 }
 
@@ -983,20 +983,20 @@ func (re *ReasoningEngine) explainConflictResolution(conflicts []ConflictDetecti
 	if len(conflicts) == 0 {
 		return "Nenhum conflito detectado entre as regras aplicáveis."
 	}
-	
+
 	var explanations []string
 	for _, conflict := range conflicts {
 		if resolution, exists := resolutions[conflict.Description]; exists {
 			explanations = append(explanations, fmt.Sprintf("%s - Resolução: %s", conflict.Description, resolution))
 		}
 	}
-	
+
 	return strings.Join(explanations, "; ")
 }
 
 func (re *ReasoningEngine) generateConflictResolutionSteps(conflicts []ConflictDetection, resolutions map[string]string) []ReasoningStep {
 	var steps []ReasoningStep
-	
+
 	step := ReasoningStep{
 		Step:        1,
 		Description: "Resolução de conflitos entre regras",
@@ -1005,19 +1005,19 @@ func (re *ReasoningEngine) generateConflictResolutionSteps(conflicts []ConflictD
 		Confidence:  0.7,
 	}
 	steps = append(steps, step)
-	
+
 	return steps
 }
 
 func (re *ReasoningEngine) extractAmbiguitiesFromConflicts(conflicts []ConflictDetection) []string {
 	var ambiguities []string
-	
+
 	for _, conflict := range conflicts {
 		if conflict.Severity == "high" {
 			ambiguities = append(ambiguities, fmt.Sprintf("Conflito de alta severidade: %s", conflict.Description))
 		}
 	}
-	
+
 	return ambiguities
 }
 
@@ -1028,14 +1028,14 @@ func (re *ReasoningEngine) findApplicableRegulations(scenario map[string]interfa
 	if err != nil {
 		return []KnowledgeItem{}
 	}
-	
+
 	var regulations []KnowledgeItem
 	for _, result := range results {
 		if result.Item.Type == "regulation" {
 			regulations = append(regulations, result.Item)
 		}
 	}
-	
+
 	return regulations
 }
 
@@ -1056,14 +1056,14 @@ func (re *ReasoningEngine) checkComplianceWithRegulation(scenario map[string]int
 func (re *ReasoningEngine) generateComplianceReport(results map[string]bool, details map[string]string, regulations []KnowledgeItem) string {
 	compliantCount := 0
 	totalCount := len(results)
-	
+
 	var reportParts []string
-	
+
 	for regID, isCompliant := range results {
 		if isCompliant {
 			compliantCount++
 		}
-		
+
 		if detail, exists := details[regID]; exists {
 			status := "CONFORME"
 			if !isCompliant {
@@ -1072,13 +1072,13 @@ func (re *ReasoningEngine) generateComplianceReport(results map[string]bool, det
 			reportParts = append(reportParts, fmt.Sprintf("%s: %s", status, detail))
 		}
 	}
-	
+
 	summary := fmt.Sprintf("Verificação de compliance: %d/%d regulamentações conformes", compliantCount, totalCount)
-	
+
 	if len(reportParts) > 0 {
 		return summary + ". Detalhes: " + strings.Join(reportParts, "; ")
 	}
-	
+
 	return summary
 }
 
@@ -1092,7 +1092,7 @@ func (re *ReasoningEngine) calculateComplianceConfidence(regulations []Knowledge
 
 func (re *ReasoningEngine) generateComplianceSteps(regulations []KnowledgeItem, results map[string]bool, details map[string]string) []ReasoningStep {
 	var steps []ReasoningStep
-	
+
 	step := ReasoningStep{
 		Step:        1,
 		Description: "Verificação de compliance regulatório",
@@ -1101,17 +1101,17 @@ func (re *ReasoningEngine) generateComplianceSteps(regulations []KnowledgeItem, 
 		Confidence:  0.9,
 	}
 	steps = append(steps, step)
-	
+
 	return steps
 }
 
 func (re *ReasoningEngine) extractRegulationCitations(regulations []KnowledgeItem) []Citation {
 	var citations []Citation
-	
+
 	for _, regulation := range regulations {
 		citation := re.citationManager.CreateCitation(regulation)
 		citations = append(citations, citation)
 	}
-	
+
 	return citations
 }

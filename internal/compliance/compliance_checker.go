@@ -3,7 +3,7 @@ package compliance
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,10 +13,10 @@ import (
 
 // ComplianceChecker é o verificador principal de compliance
 type ComplianceChecker struct {
-	rules       []ComplianceRule
-	rulesByID   map[string]ComplianceRule
+	rules           []ComplianceRule
+	rulesByID       map[string]ComplianceRule
 	rulesByCategory map[string][]ComplianceRule
-	loaded      bool
+	loaded          bool
 }
 
 // NewComplianceChecker cria uma nova instância do verificador de compliance
@@ -27,10 +27,10 @@ func NewComplianceChecker(rulesDir string) *ComplianceChecker {
 		rulesByCategory: make(map[string][]ComplianceRule),
 		loaded:          false,
 	}
-	
+
 	// Tentar carregar regras automaticamente
 	checker.LoadRules(rulesDir)
-	
+
 	return checker
 }
 
@@ -39,7 +39,7 @@ func (cc *ComplianceChecker) LoadRules(rulesDir string) error {
 	// Arquivos de regras a serem carregados
 	ruleFiles := []string{
 		"clt_rules.json",
-		"mte_norms.json", 
+		"mte_norms.json",
 		"internal_policies.json",
 	}
 
@@ -64,7 +64,7 @@ func (cc *ComplianceChecker) LoadRules(rulesDir string) error {
 
 // loadRulesFromFile carrega regras de um arquivo JSON específico
 func (cc *ComplianceChecker) loadRulesFromFile(filePath string) ([]ComplianceRule, error) {
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (cc *ComplianceChecker) CheckCompliance(colaboradorData map[string]interfac
 
 	for i, rule := range applicableRules {
 		result.RulesChecked[i] = rule.ID
-		
+
 		violation := cc.checkRule(rule, colaboradorData)
 		if violation != nil {
 			result.Violations = append(result.Violations, *violation)
@@ -141,7 +141,7 @@ func (cc *ComplianceChecker) getApplicableRules(data map[string]interface{}) []C
 
 	// Para VR, aplicar regras CLT, MTE e internas
 	categories := []string{"CLT", "MTE", "INTERNAL"}
-	
+
 	for _, category := range categories {
 		if rules, exists := cc.rulesByCategory[category]; exists {
 			for _, rule := range rules {
@@ -291,7 +291,7 @@ func (cc *ComplianceChecker) checkCLTEligibility(rule ComplianceRule, data map[s
 			Category:    rule.Category,
 			EntityID:    cc.extractEntityID(data),
 			Details: map[string]interface{}{
-				"carga_horaria_atual": cargaHoraria,
+				"carga_horaria_atual":  cargaHoraria,
 				"carga_horaria_minima": cargaMinima,
 			},
 			Impact:      "Concessão indevida de benefício",
@@ -409,7 +409,7 @@ func (cc *ComplianceChecker) checkMTEPATRegistration(rule ComplianceRule, data m
 
 func (cc *ComplianceChecker) checkMTEBeneficiaryControl(rule ComplianceRule, data map[string]interface{}) *ComplianceViolation {
 	controleAtualizado := cc.getBoolValue(data, "controle_beneficiarios_atualizado")
-	
+
 	if !controleAtualizado {
 		return &ComplianceViolation{
 			ID:          uuid.New().String(),
@@ -434,7 +434,7 @@ func (cc *ComplianceChecker) checkMTEBeneficiaryControl(rule ComplianceRule, dat
 
 func (cc *ComplianceChecker) checkMTEAccountability(rule ComplianceRule, data map[string]interface{}) *ComplianceViolation {
 	prestacaoContasEmDia := cc.getBoolValue(data, "prestacao_contas_pat_em_dia")
-	
+
 	if !prestacaoContasEmDia {
 		return &ComplianceViolation{
 			ID:          uuid.New().String(),
@@ -446,7 +446,7 @@ func (cc *ComplianceChecker) checkMTEAccountability(rule ComplianceRule, data ma
 			EntityID:    cc.extractEntityID(data),
 			Details: map[string]interface{}{
 				"prazo_vencimento": "31 de março",
-				"status":          "em_atraso",
+				"status":           "em_atraso",
 			},
 			Impact:      "Cancelamento da inscrição PAT, devolução de incentivos",
 			Remediation: "Enviar prestação de contas urgentemente",
@@ -530,7 +530,7 @@ func (cc *ComplianceChecker) checkMTENonDiscrimination(rule ComplianceRule, data
 func (cc *ComplianceChecker) checkInternalPolicy(rule ComplianceRule, data map[string]interface{}) *ComplianceViolation {
 	// Implementação genérica para políticas internas
 	complianceOK := cc.getBoolValue(data, fmt.Sprintf("compliance_%s", strings.ToLower(rule.ID)))
-	
+
 	if !complianceOK {
 		return &ComplianceViolation{
 			ID:          uuid.New().String(),
@@ -647,7 +647,7 @@ func (cc *ComplianceChecker) generateRecommendations(result *ComplianceResult) {
 	}
 
 	recommendations := make(map[string]bool)
-	
+
 	for _, violation := range result.Violations {
 		if violation.Remediation != "" && !recommendations[violation.Remediation] {
 			result.Recommendations = append(result.Recommendations, violation.Remediation)
@@ -704,7 +704,7 @@ func (cc *ComplianceChecker) GetRulesByCategory(category string) ([]ComplianceRu
 // GetStats retorna estatísticas das regras carregadas
 func (cc *ComplianceChecker) GetStats() map[string]interface{} {
 	stats := map[string]interface{}{
-		"loaded":     cc.loaded,
+		"loaded":      cc.loaded,
 		"total_rules": len(cc.rules),
 	}
 

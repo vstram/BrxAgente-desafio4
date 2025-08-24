@@ -14,17 +14,17 @@ func TestCalcularDiasUteisPorSindicato(t *testing.T) {
 
 	// Test case 1: Colaborador sem férias ou afastamentos
 	colaborador1 := &modelo.Colaborador{
-		Matricula: "001",
-		Ferias:    []modelo.Periodo{},
+		Matricula:    "001",
+		Ferias:       []modelo.Periodo{},
 		Afastamentos: []modelo.Periodo{},
-		Sindicato: "Paraná", // Specify sindicato to test holiday calculation
+		Sindicato:    "Paraná", // Specify sindicato to test holiday calculation
 	}
 
 	diasUteisSindicato := 22 // Exemplo para Paraná
 	expectedDiasUteis := 21  // 22 - 1 feriado nacional (Dia do Trabalho)
 
 	resultado1 := CalcularDiasUteisPorSindicato(colaborador1, diasUteisSindicato, mesReferencia)
-	
+
 	// Deve retornar todos os dias úteis do sindicato menos os feriados
 	if resultado1 != expectedDiasUteis {
 		t.Errorf("Esperava %d dias úteis (22 - 1 feriado), obteve %d", expectedDiasUteis, resultado1)
@@ -33,7 +33,7 @@ func TestCalcularDiasUteisPorSindicato(t *testing.T) {
 	// Test case 2: Colaborador com férias parciais
 	dataInicioFerias := time.Date(2025, 5, 10, 0, 0, 0, 0, time.UTC)
 	dataFimFerias := time.Date(2025, 5, 15, 0, 0, 0, 0, time.UTC)
-	
+
 	colaborador2 := &modelo.Colaborador{
 		Matricula: "002",
 		Sindicato: "Paraná",
@@ -48,7 +48,7 @@ func TestCalcularDiasUteisPorSindicato(t *testing.T) {
 	// Dias descontados por férias: (21 * 6) / 31 ≈ 4.06 => 4 dias descontados
 	// Resultado esperado: 21 - 4 = 17
 	resultado2 := CalcularDiasUteisPorSindicato(colaborador2, diasUteisSindicato, mesReferencia)
-	
+
 	// Verificando se o resultado está próximo do esperado
 	if resultado2 < 16 || resultado2 > 18 {
 		t.Errorf("Esperava aproximadamente 17 dias úteis, obteve %d", resultado2)
@@ -67,7 +67,7 @@ func TestCalcularDiasFerias(t *testing.T) {
 	}
 
 	resultado1 := calcularDiasFerias(colaborador1, diasUteisSindicato, mesReferencia)
-	
+
 	if resultado1 != 0 {
 		t.Errorf("Esperava 0 dias de férias, obteve %d", resultado1)
 	}
@@ -75,7 +75,7 @@ func TestCalcularDiasFerias(t *testing.T) {
 	// Test case 2: Com férias no mês
 	dataInicioFerias := time.Date(2025, 5, 10, 0, 0, 0, 0, time.UTC)
 	dataFimFerias := time.Date(2025, 5, 15, 0, 0, 0, 0, time.UTC)
-	
+
 	colaborador2 := &modelo.Colaborador{
 		Matricula: "002",
 		Ferias: []modelo.Periodo{
@@ -86,7 +86,7 @@ func TestCalcularDiasFerias(t *testing.T) {
 	// 6 dias de férias em um mês de 31 dias
 	// Proporção: (22 * 6) / 31 ≈ 4.26 => 4 dias descontados
 	resultado2 := calcularDiasFerias(colaborador2, diasUteisSindicato, mesReferencia)
-	
+
 	// Verificando se o resultado está próximo do esperado
 	if resultado2 < 3 || resultado2 > 5 {
 		t.Errorf("Esperava aproximadamente 4 dias de férias descontados, obteve %d", resultado2)
@@ -105,7 +105,7 @@ func TestCalcularDiasAfastamentos(t *testing.T) {
 	}
 
 	resultado1 := calcularDiasAfastamentos(colaborador1, diasUteisSindicato, mesReferencia)
-	
+
 	if resultado1 != 0 {
 		t.Errorf("Esperava 0 dias de afastamento, obteve %d", resultado1)
 	}
@@ -113,7 +113,7 @@ func TestCalcularDiasAfastamentos(t *testing.T) {
 	// Test case 2: Com afastamentos no mês
 	dataInicioAfastamento := time.Date(2025, 5, 5, 0, 0, 0, 0, time.UTC)
 	dataFimAfastamento := time.Date(2025, 5, 10, 0, 0, 0, 0, time.UTC)
-	
+
 	colaborador2 := &modelo.Colaborador{
 		Matricula: "002",
 		Afastamentos: []modelo.Periodo{
@@ -124,7 +124,7 @@ func TestCalcularDiasAfastamentos(t *testing.T) {
 	// 6 dias de afastamento em um mês de 31 dias
 	// Proporção: (22 * 6) / 31 ≈ 4.26 => 4 dias descontados
 	resultado2 := calcularDiasAfastamentos(colaborador2, diasUteisSindicato, mesReferencia)
-	
+
 	// Verificando se o resultado está próximo do esperado
 	if resultado2 < 3 || resultado2 > 5 {
 		t.Errorf("Esperava aproximadamente 4 dias de afastamento descontados, obteve %d", resultado2)

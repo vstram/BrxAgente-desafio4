@@ -16,23 +16,23 @@ type ResponseFeedback struct {
 	ID          string    `json:"id"`
 	Question    string    `json:"question"`
 	Response    string    `json:"response"`
-	UserRating  int       `json:"user_rating"`  // 1-5
+	UserRating  int       `json:"user_rating"` // 1-5
 	Corrections string    `json:"corrections"`
 	Feedback    string    `json:"feedback"`
 	Timestamp   time.Time `json:"timestamp"`
-	Source      string    `json:"source"`       // "user", "automated", "expert"
+	Source      string    `json:"source"` // "user", "automated", "expert"
 	Category    string    `json:"category"`
 	Tags        []string  `json:"tags"`
 }
 
 // QualityMetrics representa métricas de qualidade de respostas
 type QualityMetrics struct {
-	TotalResponses    int     `json:"total_responses"`
-	AverageRating     float64 `json:"average_rating"`
-	AccuracyScore     float64 `json:"accuracy_score"`
-	ConsistencyScore  float64 `json:"consistency_score"`
-	CompletenessScore float64 `json:"completeness_score"`
-	ResponseTime      float64 `json:"response_time_avg_seconds"`
+	TotalResponses    int       `json:"total_responses"`
+	AverageRating     float64   `json:"average_rating"`
+	AccuracyScore     float64   `json:"accuracy_score"`
+	ConsistencyScore  float64   `json:"consistency_score"`
+	CompletenessScore float64   `json:"completeness_score"`
+	ResponseTime      float64   `json:"response_time_avg_seconds"`
 	LastUpdated       time.Time `json:"last_updated"`
 }
 
@@ -49,11 +49,11 @@ type LearningPattern struct {
 
 // FeedbackSystem gerencia o sistema de feedback e aprendizado
 type FeedbackSystem struct {
-	feedbackPath string
-	feedback     []ResponseFeedback
-	metrics      QualityMetrics
-	patterns     []LearningPattern
-	mutex        sync.RWMutex
+	feedbackPath     string
+	feedback         []ResponseFeedback
+	metrics          QualityMetrics
+	patterns         []LearningPattern
+	mutex            sync.RWMutex
 	knowledgeManager *KnowledgeManager
 }
 
@@ -114,7 +114,7 @@ func (fs *FeedbackSystem) SaveFeedbackData() error {
 	if err != nil {
 		return fmt.Errorf("erro ao serializar feedback: %v", err)
 	}
-	
+
 	feedbackFile := filepath.Join(fs.feedbackPath, "feedback.json")
 	if err := os.WriteFile(feedbackFile, feedbackData, 0644); err != nil {
 		return fmt.Errorf("erro ao salvar feedback: %v", err)
@@ -125,7 +125,7 @@ func (fs *FeedbackSystem) SaveFeedbackData() error {
 	if err != nil {
 		return fmt.Errorf("erro ao serializar métricas: %v", err)
 	}
-	
+
 	metricsFile := filepath.Join(fs.feedbackPath, "metrics.json")
 	if err := os.WriteFile(metricsFile, metricsData, 0644); err != nil {
 		return fmt.Errorf("erro ao salvar métricas: %v", err)
@@ -136,7 +136,7 @@ func (fs *FeedbackSystem) SaveFeedbackData() error {
 	if err != nil {
 		return fmt.Errorf("erro ao serializar padrões: %v", err)
 	}
-	
+
 	patternsFile := filepath.Join(fs.feedbackPath, "patterns.json")
 	if err := os.WriteFile(patternsFile, patternsData, 0644); err != nil {
 		return fmt.Errorf("erro ao salvar padrões: %v", err)
@@ -166,10 +166,10 @@ func (fs *FeedbackSystem) AddFeedback(feedback ResponseFeedback) error {
 	}
 
 	fs.feedback = append(fs.feedback, feedback)
-	
+
 	// Atualizar métricas
 	fs.updateMetrics()
-	
+
 	// Identificar padrões
 	fs.identifyPatterns()
 
@@ -188,7 +188,7 @@ func (fs *FeedbackSystem) updateMetrics() {
 
 	for _, fb := range fs.feedback {
 		totalRating += float64(fb.UserRating)
-		
+
 		// Calcular accuracy baseado no rating (simplificado)
 		if fb.UserRating >= 4 {
 			accuracySum += 1.0
@@ -212,7 +212,7 @@ func (fs *FeedbackSystem) updateMetrics() {
 func (fs *FeedbackSystem) calculateConsistencyScore() float64 {
 	// Implementação básica - na prática seria mais sofisticada
 	questionGroups := make(map[string][]ResponseFeedback)
-	
+
 	for _, fb := range fs.feedback {
 		// Agrupar por pergunta normalizada
 		normalizedQ := fs.normalizeQuestion(fb.Question)
@@ -221,7 +221,7 @@ func (fs *FeedbackSystem) calculateConsistencyScore() float64 {
 
 	var consistencySum float64
 	groupCount := 0
-	
+
 	for _, group := range questionGroups {
 		if len(group) > 1 {
 			// Calcular variação das respostas no grupo
@@ -255,7 +255,7 @@ func (fs *FeedbackSystem) calculateGroupConsistency(group []ResponseFeedback) fl
 
 	// Calcular similaridade das respostas (implementação básica)
 	var similarities []float64
-	
+
 	for i := 0; i < len(group); i++ {
 		for j := i + 1; j < len(group); j++ {
 			similarity := fs.calculateResponseSimilarity(group[i].Response, group[j].Response)
@@ -280,10 +280,10 @@ func (fs *FeedbackSystem) calculateResponseSimilarity(response1, response2 strin
 	// Implementação muito básica - na prática usaria algoritmos mais sofisticados
 	words1 := strings.Fields(strings.ToLower(response1))
 	words2 := strings.Fields(strings.ToLower(response2))
-	
+
 	common := 0
 	total := len(words1) + len(words2)
-	
+
 	if total == 0 {
 		return 1.0
 	}
@@ -328,16 +328,16 @@ func (fs *FeedbackSystem) identifyPatterns() {
 // extractPattern extrai padrão de problema do feedback
 func (fs *FeedbackSystem) extractPattern(correction string) string {
 	correctionLower := strings.ToLower(correction)
-	
+
 	// Padrões comuns identificados
 	patterns := map[string]string{
-		"fonte":       "Falta citação de fonte",
-		"cálculo":     "Erro no cálculo",
-		"valor":       "Valor incorreto", 
-		"política":    "Política não citada",
-		"exemplo":     "Falta exemplo prático",
-		"confuso":     "Resposta confusa",
-		"incompleto":  "Resposta incompleta",
+		"fonte":      "Falta citação de fonte",
+		"cálculo":    "Erro no cálculo",
+		"valor":      "Valor incorreto",
+		"política":   "Política não citada",
+		"exemplo":    "Falta exemplo prático",
+		"confuso":    "Resposta confusa",
+		"incompleto": "Resposta incompleta",
 	}
 
 	for keyword, patternName := range patterns {
@@ -356,7 +356,7 @@ func (fs *FeedbackSystem) updatePattern(patternName string, frequency int, examp
 		if pattern.Pattern == patternName {
 			fs.patterns[i].Frequency += frequency
 			fs.patterns[i].LastSeen = time.Now()
-			
+
 			// Adicionar novos exemplos (limitar a 5)
 			for _, example := range examples {
 				if len(fs.patterns[i].Examples) < 5 {
@@ -385,12 +385,12 @@ func (fs *FeedbackSystem) updatePattern(patternName string, frequency int, examp
 func (fs *FeedbackSystem) categorizePattern(pattern string) string {
 	categories := map[string]string{
 		"Falta citação de fonte": "Qualidade",
-		"Erro no cálculo":       "Precisão",
-		"Valor incorreto":       "Precisão", 
-		"Política não citada":   "Qualidade",
-		"Falta exemplo prático": "Completude",
-		"Resposta confusa":      "Clareza",
-		"Resposta incompleta":   "Completude",
+		"Erro no cálculo":        "Precisão",
+		"Valor incorreto":        "Precisão",
+		"Política não citada":    "Qualidade",
+		"Falta exemplo prático":  "Completude",
+		"Resposta confusa":       "Clareza",
+		"Resposta incompleta":    "Completude",
 	}
 
 	if category, exists := categories[pattern]; exists {
@@ -403,12 +403,12 @@ func (fs *FeedbackSystem) categorizePattern(pattern string) string {
 func (fs *FeedbackSystem) generateImprovement(pattern string) string {
 	improvements := map[string]string{
 		"Falta citação de fonte": "Sempre incluir referência à política específica (ex: Política VR-001)",
-		"Erro no cálculo":       "Verificar fórmulas e valores antes de responder",
-		"Valor incorreto":       "Conferir tabela de valores por sindicato",
-		"Política não citada":   "Citar política específica relevante à pergunta",
-		"Falta exemplo prático": "Incluir exemplo numérico quando relevante",
-		"Resposta confusa":      "Estruturar resposta de forma mais clara e objetiva",
-		"Resposta incompleta":   "Verificar se todos os aspectos da pergunta foram abordados",
+		"Erro no cálculo":        "Verificar fórmulas e valores antes de responder",
+		"Valor incorreto":        "Conferir tabela de valores por sindicato",
+		"Política não citada":    "Citar política específica relevante à pergunta",
+		"Falta exemplo prático":  "Incluir exemplo numérico quando relevante",
+		"Resposta confusa":       "Estruturar resposta de forma mais clara e objetiva",
+		"Resposta incompleta":    "Verificar se todos os aspectos da pergunta foram abordados",
 	}
 
 	if improvement, exists := improvements[pattern]; exists {
@@ -432,7 +432,7 @@ func (fs *FeedbackSystem) GetLearningPatterns() []LearningPattern {
 	// Ordenar por frequência (mais comum primeiro)
 	patterns := make([]LearningPattern, len(fs.patterns))
 	copy(patterns, fs.patterns)
-	
+
 	sort.Slice(patterns, func(i, j int) bool {
 		return patterns[i].Frequency > patterns[j].Frequency
 	})
@@ -446,7 +446,7 @@ func (fs *FeedbackSystem) GetFeedbackSummary() map[string]interface{} {
 	defer fs.mutex.RUnlock()
 
 	summary := make(map[string]interface{})
-	
+
 	if len(fs.feedback) == 0 {
 		summary["total_feedback"] = 0
 		return summary
@@ -491,19 +491,19 @@ func (fs *FeedbackSystem) GenerateImprovementReport() map[string]interface{} {
 	defer fs.mutex.RUnlock()
 
 	report := make(map[string]interface{})
-	
+
 	// Principais áreas de melhoria
 	topPatterns := fs.getTopPatterns(5)
 	improvements := make([]map[string]interface{}, 0)
-	
+
 	for _, pattern := range topPatterns {
 		improvement := map[string]interface{}{
-			"area":        pattern.Pattern,
-			"frequency":   pattern.Frequency,
-			"impact":      pattern.Category,
-			"suggestion":  pattern.Improvement,
-			"examples":    pattern.Examples,
-			"confidence":  pattern.Confidence,
+			"area":       pattern.Pattern,
+			"frequency":  pattern.Frequency,
+			"impact":     pattern.Category,
+			"suggestion": pattern.Improvement,
+			"examples":   pattern.Examples,
+			"confidence": pattern.Confidence,
 		}
 		improvements = append(improvements, improvement)
 	}
@@ -524,7 +524,7 @@ func (fs *FeedbackSystem) calculateAccuracyTrend() string {
 
 	// Separar feedback em duas metades (mais antigo vs mais recente)
 	mid := len(fs.feedback) / 2
-	
+
 	var oldSum, newSum float64
 	for i := 0; i < mid; i++ {
 		if fs.feedback[i].UserRating >= 4 {
@@ -543,7 +543,7 @@ func (fs *FeedbackSystem) calculateAccuracyTrend() string {
 	if newAvg > oldAvg+0.1 {
 		return "Melhorando"
 	} else if newAvg < oldAvg-0.1 {
-		return "Piorando" 
+		return "Piorando"
 	} else {
 		return "Estável"
 	}

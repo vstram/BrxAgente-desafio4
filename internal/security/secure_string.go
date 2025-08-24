@@ -20,7 +20,7 @@ func NewSecureString(plaintext string) (*SecureString, error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate key: %w", err)
 			}
-			
+
 			// Save the new key
 			if err := SaveKey(key); err != nil {
 				return nil, fmt.Errorf("failed to save key: %w", err)
@@ -29,13 +29,13 @@ func NewSecureString(plaintext string) (*SecureString, error) {
 			return nil, fmt.Errorf("failed to load key: %w", err)
 		}
 	}
-	
+
 	// Encrypt the plaintext
 	encryptedData, err := Encrypt(key, plaintext)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encrypt data: %w", err)
 	}
-	
+
 	return &SecureString{
 		encryptedData: encryptedData,
 	}, nil
@@ -48,13 +48,13 @@ func (s *SecureString) GetValue() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to load key: %w", err)
 	}
-	
+
 	// Decrypt the data
 	plaintext, err := Decrypt(key, s.encryptedData)
 	if err != nil {
 		return "", fmt.Errorf("failed to decrypt data: %w", err)
 	}
-	
+
 	return plaintext, nil
 }
 

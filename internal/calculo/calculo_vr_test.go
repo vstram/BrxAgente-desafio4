@@ -23,14 +23,14 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 
 	t.Run("ColaboradorSemFeriasOuAfastamentos", func(t *testing.T) {
 		colaborador := &modelo.Colaborador{
-			Matricula: "001",
-			Sindicato: "Paraná",
-			Ferias:    []modelo.Periodo{},
+			Matricula:    "001",
+			Sindicato:    "Paraná",
+			Ferias:       []modelo.Periodo{},
 			Afastamentos: []modelo.Periodo{},
 		}
 
 		valor, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
-		
+
 		// Valor esperado: (22 - 1 feriado) dias * R$ 35,00 = 21 * 35 = R$ 735,00
 		valorEsperado := 21.0 * 35.0
 
@@ -47,7 +47,7 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 		// Criar um período de férias de 5 dias em maio
 		dataInicioFerias := time.Date(2025, 5, 10, 0, 0, 0, 0, time.UTC)
 		dataFimFerias := time.Date(2025, 5, 14, 0, 0, 0, 0, time.UTC)
-		
+
 		colaborador := &modelo.Colaborador{
 			Matricula: "002",
 			Sindicato: "Paraná",
@@ -58,7 +58,7 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 		}
 
 		valor, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
-		
+
 		// Cálculo:
 		// Dias úteis totais: 22 - 1 feriado = 21
 		// Dias de férias: 5 dias em maio (31 dias)
@@ -78,14 +78,14 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 
 	t.Run("ColaboradorComSindicatoNaoMapeado", func(t *testing.T) {
 		colaborador := &modelo.Colaborador{
-			Matricula: "003",
-			Sindicato: "Sindicato Inexistente",
-			Ferias:    []modelo.Periodo{},
+			Matricula:    "003",
+			Sindicato:    "Sindicato Inexistente",
+			Ferias:       []modelo.Periodo{},
 			Afastamentos: []modelo.Periodo{},
 		}
 
 		valor, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
-		
+
 		// Como o sindicato não existe, deve retornar 0
 		if err != nil {
 			t.Errorf("Não esperava erro, mas obteve: %v", err)
@@ -99,17 +99,17 @@ func TestCalcularVRPorColaborador(t *testing.T) {
 	t.Run("ColaboradorComAdmissaoNoMeioDoMes", func(t *testing.T) {
 		// Criar um colaborador admitido no dia 16 de maio
 		dataAdmissao := time.Date(2025, 5, 16, 0, 0, 0, 0, time.UTC)
-		
+
 		colaborador := &modelo.Colaborador{
-			Matricula:     "003",
-			Sindicato:     "Paraná",
-			DataAdmissao:  dataAdmissao,
-			Ferias:        []modelo.Periodo{},
-			Afastamentos:  []modelo.Periodo{},
+			Matricula:    "003",
+			Sindicato:    "Paraná",
+			DataAdmissao: dataAdmissao,
+			Ferias:       []modelo.Periodo{},
+			Afastamentos: []modelo.Periodo{},
 		}
 
 		valor, err := CalcularVRPorColaborador(colaborador, valorPorSindicato, diasUteisPorSindicato, mesReferencia)
-		
+
 		// Cálculo:
 		// Dias úteis totais: 22 - 1 feriado = 21
 		// Dias no mês após admissão (16-31): 16 dias

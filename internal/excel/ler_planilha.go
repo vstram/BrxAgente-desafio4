@@ -3,7 +3,7 @@ package excel
 
 import (
 	"github.com/xuri/excelize/v2"
-	
+
 	"BrxAgente-desafio4/internal/modelo"
 )
 
@@ -18,11 +18,12 @@ import (
 //   - error: Erro ocorrido durante a leitura do arquivo, se houver
 //
 // Exemplo de uso:
-//   f, err := LerPlanilha("./files/ATIVOS.xlsx")
-//   if err != nil {
-//       log.Fatal(err)
-//   }
-//   defer f.Close()
+//
+//	f, err := LerPlanilha("./files/ATIVOS.xlsx")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	defer f.Close()
 func LerPlanilha(caminho string) (*excelize.File, error) {
 	// Tentando abrir o arquivo Excel
 	f, err := excelize.OpenFile(caminho)
@@ -34,6 +35,6 @@ func LerPlanilha(caminho string) (*excelize.File, error) {
 			0, // Linha não se aplica neste caso
 		)
 	}
-	
+
 	return f, nil
 }

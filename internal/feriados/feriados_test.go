@@ -59,7 +59,7 @@ func TestObterFeriadosNacionais(t *testing.T) {
 
 func TestObterFeriadosEstaduais(t *testing.T) {
 	ano := 2025
-	
+
 	// Testar feriados estaduais de São Paulo
 	spFeriados := ObterFeriadosEstaduais("SP", ano)
 	if len(spFeriados) == 0 {

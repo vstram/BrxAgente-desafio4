@@ -10,22 +10,22 @@ import (
 type WorkflowContext struct {
 	// Context padrão do Go para cancelamento e timeouts
 	ctx context.Context
-	
+
 	// Dados compartilhados entre steps
 	data  map[string]interface{}
 	mutex sync.RWMutex
-	
+
 	// Metadados de execução
 	WorkflowName string
 	ExecutionID  string
 	StartTime    time.Time
-	
+
 	// Parâmetros de entrada
 	Parameters map[string]interface{}
-	
+
 	// Canal para cancelamento
 	cancelChan chan struct{}
-	
+
 	// Logger para este contexto específico
 	Logger Logger
 }
@@ -43,7 +43,7 @@ func NewWorkflowContext(ctx context.Context, workflowName, executionID string, p
 	if params == nil {
 		params = make(map[string]interface{})
 	}
-	
+
 	return &WorkflowContext{
 		ctx:          ctx,
 		data:         make(map[string]interface{}),
@@ -82,7 +82,7 @@ func (wc *WorkflowContext) GetString(key string) (string, bool) {
 	if !exists {
 		return "", false
 	}
-	
+
 	if str, ok := value.(string); ok {
 		return str, true
 	}
@@ -95,7 +95,7 @@ func (wc *WorkflowContext) GetInt(key string) (int, bool) {
 	if !exists {
 		return 0, false
 	}
-	
+
 	if i, ok := value.(int); ok {
 		return i, true
 	}
@@ -108,7 +108,7 @@ func (wc *WorkflowContext) GetBool(key string) (bool, bool) {
 	if !exists {
 		return false, false
 	}
-	
+
 	if b, ok := value.(bool); ok {
 		return b, true
 	}
@@ -121,7 +121,7 @@ func (wc *WorkflowContext) GetFloat64(key string) (float64, bool) {
 	if !exists {
 		return 0, false
 	}
-	
+
 	if f, ok := value.(float64); ok {
 		return f, true
 	}
@@ -132,7 +132,7 @@ func (wc *WorkflowContext) GetFloat64(key string) (float64, bool) {
 func (wc *WorkflowContext) GetAll() map[string]interface{} {
 	wc.mutex.RLock()
 	defer wc.mutex.RUnlock()
-	
+
 	result := make(map[string]interface{})
 	for k, v := range wc.data {
 		result[k] = v
@@ -205,7 +205,7 @@ func (wc *WorkflowContext) GetParameterString(key string) (string, bool) {
 	if !exists {
 		return "", false
 	}
-	
+
 	if str, ok := value.(string); ok {
 		return str, true
 	}
@@ -218,7 +218,7 @@ func (wc *WorkflowContext) GetParameterInt(key string) (int, bool) {
 	if !exists {
 		return 0, false
 	}
-	
+
 	if i, ok := value.(int); ok {
 		return i, true
 	}
@@ -246,7 +246,7 @@ func (wc *WorkflowContext) GetError(stepName string) (error, bool) {
 	if !exists {
 		return nil, false
 	}
-	
+
 	if err, ok := value.(error); ok {
 		return err, true
 	}
@@ -257,7 +257,7 @@ func (wc *WorkflowContext) GetError(stepName string) (error, bool) {
 func (wc *WorkflowContext) Clone() *WorkflowContext {
 	wc.mutex.RLock()
 	defer wc.mutex.RUnlock()
-	
+
 	newCtx := &WorkflowContext{
 		ctx:          wc.ctx,
 		data:         make(map[string]interface{}),
@@ -268,16 +268,16 @@ func (wc *WorkflowContext) Clone() *WorkflowContext {
 		cancelChan:   make(chan struct{}, 1),
 		Logger:       wc.Logger,
 	}
-	
+
 	// Copiar dados
 	for k, v := range wc.data {
 		newCtx.data[k] = v
 	}
-	
+
 	// Copiar parâmetros
 	for k, v := range wc.Parameters {
 		newCtx.Parameters[k] = v
 	}
-	
+
 	return newCtx
 }

@@ -26,7 +26,7 @@ func NewPolicyConsultantTool(dataDir string) *PolicyConsultantTool {
 	cm := knowledge.NewCitationManager()
 	pe := knowledge.NewPolicyEngine(kb)
 	re := knowledge.NewReasoningEngine(kb, pe, cm)
-	
+
 	tool := &PolicyConsultantTool{
 		knowledgeBase:   kb,
 		policyEngine:    pe,
@@ -34,12 +34,12 @@ func NewPolicyConsultantTool(dataDir string) *PolicyConsultantTool {
 		citationManager: cm,
 		initialized:     false,
 	}
-	
+
 	// Carregar base de conhecimento
 	if err := kb.LoadFromFiles(dataDir); err == nil {
 		tool.initialized = true
 	}
-	
+
 	return tool
 }
 
@@ -82,7 +82,7 @@ func (pct *PolicyConsultantTool) Execute(ctx context.Context, input string) (str
 	if !pct.initialized {
 		return "", fmt.Errorf("ferramenta não foi inicializada corretamente - verifique se os arquivos de dados estão disponíveis")
 	}
-	
+
 	// Parsear input JSON
 	var requestData map[string]interface{}
 	if err := json.Unmarshal([]byte(input), &requestData); err != nil {
@@ -92,30 +92,30 @@ func (pct *PolicyConsultantTool) Execute(ctx context.Context, input string) (str
 			"type":  "simple",
 		}
 	}
-	
+
 	// Validar se tem query
 	query, hasQuery := requestData["query"]
 	if !hasQuery {
 		return "", fmt.Errorf("campo 'query' é obrigatório")
 	}
-	
+
 	_, ok := query.(string)
 	if !ok {
 		return "", fmt.Errorf("campo 'query' deve ser uma string")
 	}
-	
+
 	// Determinar tipo de consulta
 	consultationType := pct.determineConsultationType(requestData)
-	
+
 	// Executar consulta baseada no tipo
 	result, err := pct.executeConsultation(consultationType, requestData)
 	if err != nil {
 		return "", fmt.Errorf("erro durante consulta: %w", err)
 	}
-	
+
 	// Formatar resposta
 	response := pct.formatResponse(result, consultationType)
-	
+
 	return response, nil
 }
 
@@ -127,42 +127,42 @@ func (pct *PolicyConsultantTool) determineConsultationType(requestData map[strin
 			return typeStr
 		}
 	}
-	
+
 	// Determinar automaticamente baseado na query e parâmetros
 	query, _ := requestData["query"].(string)
 	queryLower := strings.ToLower(query)
-	
+
 	// Detectar "E se" ou cenários hipotéticos
 	if strings.Contains(queryLower, "e se") || strings.Contains(queryLower, "what if") ||
-	   strings.Contains(queryLower, "supondo") || strings.Contains(queryLower, "caso") {
+		strings.Contains(queryLower, "supondo") || strings.Contains(queryLower, "caso") {
 		return "whatif"
 	}
-	
+
 	// Detectar verificação de compliance
 	if strings.Contains(queryLower, "conforme") || strings.Contains(queryLower, "legal") ||
-	   strings.Contains(queryLower, "regulament") || strings.Contains(queryLower, "lei") {
+		strings.Contains(queryLower, "regulament") || strings.Contains(queryLower, "lei") {
 		return "compliance"
 	}
-	
+
 	// Detectar resolução de conflitos
 	if strings.Contains(queryLower, "conflito") || strings.Contains(queryLower, "contradi") {
 		return "conflict"
 	}
-	
+
 	// Verificar se tem múltiplos parâmetros para análise complexa
 	paramCount := 0
 	complexParams := []string{"data_admissao", "data_desligamento", "afastamento", "ferias", "tipo_colaborador", "sindicato"}
-	
+
 	for _, param := range complexParams {
 		if _, exists := requestData[param]; exists {
 			paramCount++
 		}
 	}
-	
+
 	if paramCount >= 2 {
 		return "complex"
 	}
-	
+
 	return "simple"
 }
 
@@ -187,13 +187,13 @@ func (pct *PolicyConsultantTool) executeConsultation(consultationType string, re
 // executeSimpleQuery executa uma consulta simples
 func (pct *PolicyConsultantTool) executeSimpleQuery(requestData map[string]interface{}) (*knowledge.ConsultationResult, error) {
 	query := requestData["query"].(string)
-	
+
 	// Buscar na base de conhecimento
 	searchResults, err := pct.knowledgeBase.Search(query, 5)
 	if err != nil {
 		return nil, fmt.Errorf("erro na busca: %w", err)
 	}
-	
+
 	if len(searchResults) == 0 {
 		return &knowledge.ConsultationResult{
 			Query:      query,
@@ -201,16 +201,16 @@ func (pct *PolicyConsultantTool) executeSimpleQuery(requestData map[string]inter
 			Confidence: 0.1,
 		}, nil
 	}
-	
+
 	// Usar o primeiro resultado mais relevante
 	bestResult := searchResults[0]
-	
+
 	// Criar citação
 	citation := pct.citationManager.CreateCitation(bestResult.Item)
-	
+
 	// Formatar resposta baseada no conteúdo encontrado
 	answer := pct.formatSimpleAnswer(bestResult, query)
-	
+
 	return &knowledge.ConsultationResult{
 		Query:         query,
 		Answer:        answer,
@@ -243,30 +243,30 @@ func (pct *PolicyConsultantTool) executeConflictResolution(requestData map[strin
 // formatSimpleAnswer formata resposta para consultas simples
 func (pct *PolicyConsultantTool) formatSimpleAnswer(result knowledge.SearchResult, query string) string {
 	var answer strings.Builder
-	
+
 	// Resposta principal baseada no conteúdo
 	answer.WriteString(result.Item.Content)
-	
+
 	// Adicionar contexto se disponível
 	if result.Context != "" {
 		answer.WriteString(fmt.Sprintf("\n\n**Contexto:** %s", result.Context))
 	}
-	
+
 	// Adicionar fonte
 	answer.WriteString(fmt.Sprintf("\n\n**Fonte:** %s", result.Item.Source))
-	
+
 	// Adicionar destaques se disponíveis
 	if len(result.Highlights) > 0 {
 		answer.WriteString(fmt.Sprintf("\n\n**Trechos relevantes:** %s", strings.Join(result.Highlights, "; ")))
 	}
-	
+
 	return answer.String()
 }
 
 // formatResponse formata a resposta final
 func (pct *PolicyConsultantTool) formatResponse(result *knowledge.ConsultationResult, consultationType string) string {
 	var response strings.Builder
-	
+
 	// Cabeçalho com tipo de consulta
 	switch consultationType {
 	case "simple":
@@ -280,17 +280,17 @@ func (pct *PolicyConsultantTool) formatResponse(result *knowledge.ConsultationRe
 	case "conflict":
 		response.WriteString("## ⚡ Resolução de Conflitos\n\n")
 	}
-	
+
 	// Pergunta original
 	response.WriteString(fmt.Sprintf("**Pergunta:** %s\n\n", result.Query))
-	
+
 	// Resposta principal
 	response.WriteString(fmt.Sprintf("**Resposta:**\n%s\n\n", result.Answer))
-	
+
 	// Nível de confiança
 	confidenceLevel := pct.getConfidenceLevel(result.Confidence)
 	response.WriteString(fmt.Sprintf("**Confiança:** %.0f%% (%s)\n\n", result.Confidence*100, confidenceLevel))
-	
+
 	// Passos de raciocínio (se disponível)
 	if len(result.ReasoningSteps) > 0 {
 		response.WriteString("**Raciocínio:**\n")
@@ -299,7 +299,7 @@ func (pct *PolicyConsultantTool) formatResponse(result *knowledge.ConsultationRe
 		}
 		response.WriteString("\n")
 	}
-	
+
 	// Fontes citadas
 	if len(result.Sources) > 0 {
 		response.WriteString("**Fontes:**\n")
@@ -307,7 +307,7 @@ func (pct *PolicyConsultantTool) formatResponse(result *knowledge.ConsultationRe
 		response.WriteString(citationList)
 		response.WriteString("\n\n")
 	}
-	
+
 	// Ambiguidades (se houver)
 	if len(result.Ambiguities) > 0 {
 		response.WriteString("**⚠️ Ambiguidades identificadas:**\n")
@@ -316,7 +316,7 @@ func (pct *PolicyConsultantTool) formatResponse(result *knowledge.ConsultationRe
 		}
 		response.WriteString("\n")
 	}
-	
+
 	// Recomendações (se houver)
 	if len(result.Recommendations) > 0 {
 		response.WriteString("**💡 Recomendações:**\n")
@@ -325,17 +325,17 @@ func (pct *PolicyConsultantTool) formatResponse(result *knowledge.ConsultationRe
 		}
 		response.WriteString("\n")
 	}
-	
+
 	// Tópicos relacionados
 	if len(result.RelatedTopics) > 0 {
 		response.WriteString(fmt.Sprintf("**Tópicos relacionados:** %s\n\n", strings.Join(result.RelatedTopics, ", ")))
 	}
-	
+
 	// Tempo de processamento
 	if result.ProcessingTime > 0 {
 		response.WriteString(fmt.Sprintf("*Processado em %v*", result.ProcessingTime))
 	}
-	
+
 	return response.String()
 }
 
@@ -376,7 +376,7 @@ func (pct *PolicyConsultantTool) ReloadKnowledgeBase(dataDir string) error {
 		pct.initialized = false
 		return err
 	}
-	
+
 	pct.initialized = true
 	return nil
 }
@@ -396,19 +396,19 @@ func (pct *PolicyConsultantTool) ValidateInput(input string) error {
 	if strings.TrimSpace(input) == "" {
 		return fmt.Errorf("input não pode estar vazio")
 	}
-	
+
 	// Tentar parsear como JSON
 	var data map[string]interface{}
 	if err := json.Unmarshal([]byte(input), &data); err != nil {
 		// Se não é JSON válido, assumir que é texto simples (válido)
 		return nil
 	}
-	
+
 	// Se é JSON, validar se tem campo query
 	if _, hasQuery := data["query"]; !hasQuery {
 		return fmt.Errorf("JSON deve conter o campo 'query'")
 	}
-	
+
 	return nil
 }
 
@@ -421,9 +421,9 @@ func CreatePolicyConsultantLangChainTool(dataDir string) tools.Tool {
 	if dataDir == "" {
 		dataDir = filepath.Join("internal", "data", "policies")
 	}
-	
+
 	pct := NewPolicyConsultantTool(dataDir)
-	
+
 	// Retornar como tools.Tool
 	return pct
 }
@@ -439,7 +439,7 @@ func (pct *PolicyConsultantTool) GetCapabilities() map[string]interface{} {
 			"policy_search", "complex_reasoning", "citation_management",
 			"conflict_resolution", "compliance_checking", "scenario_analysis",
 		},
-		"initialized": pct.initialized,
+		"initialized":     pct.initialized,
 		"knowledge_stats": pct.GetKnowledgeStats(),
 	}
 }

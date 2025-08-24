@@ -11,10 +11,10 @@ import (
 
 // BatchProcessor processador otimizado para grandes lotes de dados
 type BatchProcessor struct {
-	workerPool   *WorkerPool
-	batchSize    int
+	workerPool    *WorkerPool
+	batchSize     int
 	maxConcurrent int
-	timeout      time.Duration
+	timeout       time.Duration
 }
 
 // BatchConfig configuração do processador de lotes
@@ -45,7 +45,7 @@ func (bp *BatchProcessor) ProcessColaboradoresBatch(
 	colaboradores map[string]*modelo.Colaborador,
 	processor func(*modelo.Colaborador) (*modelo.Colaborador, error),
 ) (map[string]*modelo.Colaborador, []error) {
-	
+
 	// Converte map em slice para processamento
 	colaboradoresSlice := make([]*modelo.Colaborador, 0, len(colaboradores))
 	for _, col := range colaboradores {
@@ -54,7 +54,7 @@ func (bp *BatchProcessor) ProcessColaboradoresBatch(
 
 	// Divide em lotes
 	batches := bp.dividirEmLotes(colaboradoresSlice)
-	
+
 	// Processa lotes em paralelo
 	resultados := make(map[string]*modelo.Colaborador)
 	var erros []error
@@ -67,11 +67,11 @@ func (bp *BatchProcessor) ProcessColaboradoresBatch(
 		wg.Add(1)
 		go func(batch []*modelo.Colaborador) {
 			defer wg.Done()
-			semaphore <- struct{}{} // Adquire semáforo
+			semaphore <- struct{}{}        // Adquire semáforo
 			defer func() { <-semaphore }() // Libera semáforo
 
 			batchResults, batchErrors := bp.processColaboradorBatch(batch, processor)
-			
+
 			mutex.Lock()
 			for k, v := range batchResults {
 				resultados[k] = v
@@ -90,12 +90,12 @@ func (bp *BatchProcessor) ProcessFilesBatch(
 	filePaths []string,
 	processor func(string) (interface{}, error),
 ) ([]interface{}, []error) {
-	
+
 	tasks := make([]Task, len(filePaths))
 	for i, filePath := range filePaths {
 		tasks[i] = &FileTask{
-			ID:       fmt.Sprintf("file_%d", i),
-			FilePath: filePath,
+			ID:        fmt.Sprintf("file_%d", i),
+			FilePath:  filePath,
 			Processor: processor,
 		}
 	}
@@ -104,7 +104,7 @@ func (bp *BatchProcessor) ProcessFilesBatch(
 	defer cancel()
 
 	results, errors := bp.workerPool.ProcessBatchWithContext(ctx, tasks)
-	
+
 	// Converte results para interface{} slice
 	processedResults := make([]interface{}, 0, len(results))
 	for _, result := range results {
@@ -121,7 +121,7 @@ func (bp *BatchProcessor) ProcessGenericBatch(
 	data []interface{},
 	processor func(interface{}) (interface{}, error),
 ) ([]interface{}, []error) {
-	
+
 	tasks := make([]Task, len(data))
 	for i, item := range data {
 		tasks[i] = &GenericTask{
@@ -135,7 +135,7 @@ func (bp *BatchProcessor) ProcessGenericBatch(
 	defer cancel()
 
 	results, errors := bp.workerPool.ProcessBatchWithContext(ctx, tasks)
-	
+
 	processedResults := make([]interface{}, 0, len(results))
 	for _, result := range results {
 		if genericResult, ok := result.(*GenericResult); ok {
@@ -149,7 +149,7 @@ func (bp *BatchProcessor) ProcessGenericBatch(
 // dividirEmLotes divide slice de colaboradores em lotes menores
 func (bp *BatchProcessor) dividirEmLotes(colaboradores []*modelo.Colaborador) [][]*modelo.Colaborador {
 	var batches [][]*modelo.Colaborador
-	
+
 	for i := 0; i < len(colaboradores); i += bp.batchSize {
 		end := i + bp.batchSize
 		if end > len(colaboradores) {
@@ -166,7 +166,7 @@ func (bp *BatchProcessor) processColaboradorBatch(
 	batch []*modelo.Colaborador,
 	processor func(*modelo.Colaborador) (*modelo.Colaborador, error),
 ) (map[string]*modelo.Colaborador, []error) {
-	
+
 	resultados := make(map[string]*modelo.Colaborador)
 	var erros []error
 
@@ -185,7 +185,7 @@ func (bp *BatchProcessor) processColaboradorBatch(
 // GetStats retorna estatísticas do processador
 func (bp *BatchProcessor) GetStats() BatchProcessorStats {
 	poolStats := bp.workerPool.GetStats()
-	
+
 	return BatchProcessorStats{
 		WorkerPoolStats: poolStats,
 		BatchSize:       bp.batchSize,
@@ -218,7 +218,7 @@ func (ft *FileTask) Execute(ctx context.Context) (Result, error) {
 	start := time.Now()
 	data, err := ft.Processor(ft.FilePath)
 	duration := time.Since(start)
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +268,7 @@ func (gt *GenericTask) Execute(ctx context.Context) (Result, error) {
 	start := time.Now()
 	result, err := gt.Processor(gt.Data)
 	duration := time.Since(start)
-	
+
 	if err != nil {
 		return nil, err
 	}

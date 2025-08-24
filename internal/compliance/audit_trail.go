@@ -11,8 +11,8 @@ import (
 
 // AuditTrail gerencia a trilha de auditoria do sistema
 type AuditTrail struct {
-	entries      []AuditEntry
-	maxEntries   int
+	entries       []AuditEntry
+	maxEntries    int
 	retentionDays int
 }
 
@@ -44,9 +44,9 @@ func (at *AuditTrail) RecordAction(action, actionType, user, entityID, entityTyp
 }
 
 // RecordActionWithChanges registra uma ação com detalhes de mudanças
-func (at *AuditTrail) RecordActionWithChanges(action, actionType, user, entityID, entityType string, 
+func (at *AuditTrail) RecordActionWithChanges(action, actionType, user, entityID, entityType string,
 	details map[string]interface{}, changes []ChangeLog) *AuditEntry {
-	
+
 	entry := AuditEntry{
 		ID:         uuid.New().String(),
 		Timestamp:  time.Now(),
@@ -65,9 +65,9 @@ func (at *AuditTrail) RecordActionWithChanges(action, actionType, user, entityID
 }
 
 // RecordFailedAction registra uma ação que falhou
-func (at *AuditTrail) RecordFailedAction(action, actionType, user, entityID, entityType string, 
+func (at *AuditTrail) RecordFailedAction(action, actionType, user, entityID, entityType string,
 	details map[string]interface{}, errorMsg string) *AuditEntry {
-	
+
 	entry := AuditEntry{
 		ID:         uuid.New().String(),
 		Timestamp:  time.Now(),
@@ -89,11 +89,11 @@ func (at *AuditTrail) RecordFailedAction(action, actionType, user, entityID, ent
 func (at *AuditTrail) RecordComplianceCheck(user, entityID string, result *ComplianceResult) *AuditEntry {
 	details := map[string]interface{}{
 		"compliance_status": result.Status,
-		"score":            result.Score,
-		"violations_count": len(result.Violations),
-		"rules_checked":    len(result.RulesChecked),
-		"rules_passed":     len(result.RulesPassed),
-		"rules_failed":     len(result.RulesFailed),
+		"score":             result.Score,
+		"violations_count":  len(result.Violations),
+		"rules_checked":     len(result.RulesChecked),
+		"rules_passed":      len(result.RulesPassed),
+		"rules_failed":      len(result.RulesFailed),
 	}
 
 	return at.RecordAction(
@@ -182,7 +182,7 @@ func (at *AuditTrail) RecordDataProcessing(user, processType string, recordsProc
 // addEntry adiciona uma entrada na trilha
 func (at *AuditTrail) addEntry(entry AuditEntry) {
 	at.entries = append(at.entries, entry)
-	
+
 	// Limpar entradas antigas se necessário
 	at.cleanup()
 }
@@ -191,7 +191,7 @@ func (at *AuditTrail) addEntry(entry AuditEntry) {
 func (at *AuditTrail) cleanup() {
 	now := time.Now()
 	cutoffDate := now.AddDate(0, 0, -at.retentionDays)
-	
+
 	// Filtrar entradas dentro do período de retenção
 	validEntries := []AuditEntry{}
 	for _, entry := range at.entries {
@@ -199,7 +199,7 @@ func (at *AuditTrail) cleanup() {
 			validEntries = append(validEntries, entry)
 		}
 	}
-	
+
 	// Limitar número máximo de entradas
 	if len(validEntries) > at.maxEntries {
 		// Manter as mais recentes
@@ -208,43 +208,43 @@ func (at *AuditTrail) cleanup() {
 		})
 		validEntries = validEntries[:at.maxEntries]
 	}
-	
+
 	at.entries = validEntries
 }
 
 // GetEntries retorna entradas filtradas
 func (at *AuditTrail) GetEntries(filter AuditFilter) []AuditEntry {
 	var filtered []AuditEntry
-	
+
 	for _, entry := range at.entries {
 		if at.matchesFilter(entry, filter) {
 			filtered = append(filtered, entry)
 		}
 	}
-	
+
 	// Ordenar por timestamp (mais recente primeiro)
 	sort.Slice(filtered, func(i, j int) bool {
 		return filtered[i].Timestamp.After(filtered[j].Timestamp)
 	})
-	
+
 	// Aplicar limite se especificado
 	if filter.Limit > 0 && len(filtered) > filter.Limit {
 		filtered = filtered[:filter.Limit]
 	}
-	
+
 	return filtered
 }
 
 // AuditFilter define filtros para busca de entradas
 type AuditFilter struct {
-	StartDate   *time.Time
-	EndDate     *time.Time
-	User        string
-	ActionType  string
-	EntityID    string
-	EntityType  string
-	Success     *bool
-	Limit       int
+	StartDate  *time.Time
+	EndDate    *time.Time
+	User       string
+	ActionType string
+	EntityID   string
+	EntityType string
+	Success    *bool
+	Limit      int
 }
 
 // matchesFilter verifica se uma entrada corresponde aos filtros
@@ -253,37 +253,37 @@ func (at *AuditTrail) matchesFilter(entry AuditEntry, filter AuditFilter) bool {
 	if filter.StartDate != nil && entry.Timestamp.Before(*filter.StartDate) {
 		return false
 	}
-	
+
 	// Filtro por data fim
 	if filter.EndDate != nil && entry.Timestamp.After(*filter.EndDate) {
 		return false
 	}
-	
+
 	// Filtro por usuário
 	if filter.User != "" && !strings.Contains(strings.ToLower(entry.User), strings.ToLower(filter.User)) {
 		return false
 	}
-	
+
 	// Filtro por tipo de ação
 	if filter.ActionType != "" && entry.ActionType != filter.ActionType {
 		return false
 	}
-	
+
 	// Filtro por ID da entidade
 	if filter.EntityID != "" && entry.EntityID != filter.EntityID {
 		return false
 	}
-	
+
 	// Filtro por tipo da entidade
 	if filter.EntityType != "" && entry.EntityType != filter.EntityType {
 		return false
 	}
-	
+
 	// Filtro por sucesso
 	if filter.Success != nil && entry.Success != *filter.Success {
 		return false
 	}
-	
+
 	return true
 }
 
@@ -293,10 +293,10 @@ func (at *AuditTrail) GenerateReport(period DateRange, reportType, generatedBy s
 		StartDate: &period.StartDate,
 		EndDate:   &period.EndDate,
 	}
-	
+
 	entries := at.GetEntries(filter)
 	summary := at.generateAuditSummary(entries)
-	
+
 	report := &AuditReport{
 		GeneratedAt:  time.Now(),
 		Period:       period,
@@ -304,7 +304,7 @@ func (at *AuditTrail) GenerateReport(period DateRange, reportType, generatedBy s
 		Summary:      summary,
 		Entries:      entries,
 	}
-	
+
 	return report
 }
 
@@ -315,20 +315,20 @@ func (at *AuditTrail) generateAuditSummary(entries []AuditEntry) AuditSummary {
 		EntriesByAction: make(map[string]int),
 		TopUsers:        []string{},
 	}
-	
+
 	userCount := make(map[string]int)
-	
+
 	for _, entry := range entries {
 		// Contar por nível
 		summary.EntriesByLevel[entry.Level]++
-		
+
 		// Contar por ação
 		summary.EntriesByAction[entry.Action]++
-		
+
 		// Contar usuários
 		userCount[entry.User]++
 	}
-	
+
 	// Get top users
 	type userActivity struct {
 		user  string
@@ -338,7 +338,7 @@ func (at *AuditTrail) generateAuditSummary(entries []AuditEntry) AuditSummary {
 	for user, count := range userCount {
 		users = append(users, userActivity{user, count})
 	}
-	
+
 	// Sort by activity
 	for i := 0; i < len(users)-1; i++ {
 		for j := i + 1; j < len(users); j++ {
@@ -355,15 +355,14 @@ func (at *AuditTrail) generateAuditSummary(entries []AuditEntry) AuditSummary {
 		}
 		summary.TopUsers = append(summary.TopUsers, fmt.Sprintf("%s (%d)", user.user, user.count))
 	}
-	
+
 	return summary
 }
-
 
 // GetStatistics retorna estatísticas da trilha de auditoria
 func (at *AuditTrail) GetStatistics() map[string]interface{} {
 	totalEntries := len(at.entries)
-	
+
 	if totalEntries == 0 {
 		return map[string]interface{}{
 			"total_entries": 0,
@@ -371,15 +370,15 @@ func (at *AuditTrail) GetStatistics() map[string]interface{} {
 			"newest_entry":  nil,
 		}
 	}
-	
+
 	// Encontrar entrada mais antiga e mais nova
 	oldest := at.entries[0].Timestamp
 	newest := at.entries[0].Timestamp
-	
+
 	actionTypes := make(map[string]int)
 	users := make(map[string]int)
 	successCount := 0
-	
+
 	for _, entry := range at.entries {
 		if entry.Timestamp.Before(oldest) {
 			oldest = entry.Timestamp
@@ -387,34 +386,34 @@ func (at *AuditTrail) GetStatistics() map[string]interface{} {
 		if entry.Timestamp.After(newest) {
 			newest = entry.Timestamp
 		}
-		
+
 		actionTypes[entry.ActionType]++
 		users[entry.User]++
-		
+
 		if entry.Success {
 			successCount++
 		}
 	}
-	
+
 	stats := map[string]interface{}{
-		"total_entries":    totalEntries,
-		"oldest_entry":     oldest,
-		"newest_entry":     newest,
-		"success_rate":     float64(successCount) / float64(totalEntries) * 100,
-		"action_types":     actionTypes,
-		"active_users":     len(users),
-		"users":           users,
-		"retention_days":   at.retentionDays,
-		"max_entries":     at.maxEntries,
+		"total_entries":  totalEntries,
+		"oldest_entry":   oldest,
+		"newest_entry":   newest,
+		"success_rate":   float64(successCount) / float64(totalEntries) * 100,
+		"action_types":   actionTypes,
+		"active_users":   len(users),
+		"users":          users,
+		"retention_days": at.retentionDays,
+		"max_entries":    at.maxEntries,
 	}
-	
+
 	return stats
 }
 
 // ExportEntries exporta entradas para análise externa
 func (at *AuditTrail) ExportEntries(filter AuditFilter, format string) ([]byte, error) {
 	entries := at.GetEntries(filter)
-	
+
 	switch strings.ToLower(format) {
 	case "json":
 		return at.exportJSON(entries)
@@ -434,10 +433,10 @@ func (at *AuditTrail) exportJSON(entries []AuditEntry) ([]byte, error) {
 // exportCSV exporta entradas em formato CSV
 func (at *AuditTrail) exportCSV(entries []AuditEntry) ([]byte, error) {
 	var csv strings.Builder
-	
+
 	// Cabeçalho CSV
 	csv.WriteString("Timestamp,Action,ActionType,User,EntityID,EntityType,Success,ErrorMsg\n")
-	
+
 	// Dados
 	for _, entry := range entries {
 		csv.WriteString(fmt.Sprintf("%s,%s,%s,%s,%s,%s,%t,%s\n",
@@ -451,7 +450,7 @@ func (at *AuditTrail) exportCSV(entries []AuditEntry) ([]byte, error) {
 			entry.ErrorMsg,
 		))
 	}
-	
+
 	return []byte(csv.String()), nil
 }
 

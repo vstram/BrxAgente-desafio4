@@ -11,55 +11,55 @@ import (
 
 // KnowledgeItem representa um item da base de conhecimento
 type KnowledgeItem struct {
-	ID          string            `json:"id"`
-	Category    string            `json:"category"`
-	Question    string            `json:"question"`
-	Answer      string            `json:"answer"`
-	Context     []string          `json:"context"`
-	Examples    []string          `json:"examples"`
-	Confidence  float64           `json:"confidence"`
-	Metadata    map[string]string `json:"metadata"`
+	ID         string            `json:"id"`
+	Category   string            `json:"category"`
+	Question   string            `json:"question"`
+	Answer     string            `json:"answer"`
+	Context    []string          `json:"context"`
+	Examples   []string          `json:"examples"`
+	Confidence float64           `json:"confidence"`
+	Metadata   map[string]string `json:"metadata"`
 }
 
 // KnowledgeBase representa toda a base de conhecimento estruturada
 type KnowledgeBase struct {
-	Policies      []PolicyItem      `json:"policies"`
-	Calculations  []CalculationItem `json:"calculations"`
-	Syndicates    []SyndicateItem   `json:"syndicates"`
-	Holidays      []HolidayItem     `json:"holidays"`
-	FAQ           []FAQItem         `json:"faq"`
-	Examples      []ExampleItem     `json:"examples"`
-	LastUpdated   time.Time         `json:"last_updated"`
+	Policies     []PolicyItem      `json:"policies"`
+	Calculations []CalculationItem `json:"calculations"`
+	Syndicates   []SyndicateItem   `json:"syndicates"`
+	Holidays     []HolidayItem     `json:"holidays"`
+	FAQ          []FAQItem         `json:"faq"`
+	Examples     []ExampleItem     `json:"examples"`
+	LastUpdated  time.Time         `json:"last_updated"`
 }
 
 // PolicyItem representa uma política específica
 type PolicyItem struct {
-	ID          string            `json:"id"`
-	Category    string            `json:"category"`
-	Question    string            `json:"question"`
-	Answer      string            `json:"answer"`
-	Context     []string          `json:"context"`
-	Examples    []string          `json:"examples"`
-	Confidence  float64           `json:"confidence"`
-	Metadata    map[string]string `json:"metadata"`
+	ID         string            `json:"id"`
+	Category   string            `json:"category"`
+	Question   string            `json:"question"`
+	Answer     string            `json:"answer"`
+	Context    []string          `json:"context"`
+	Examples   []string          `json:"examples"`
+	Confidence float64           `json:"confidence"`
+	Metadata   map[string]string `json:"metadata"`
 }
 
 // CalculationItem representa uma regra de cálculo
 type CalculationItem struct {
-	ID       string    `json:"id"`
-	Scenario string    `json:"scenario"`
-	Rule     string    `json:"rule"`
-	Formula  string    `json:"formula"`
-	Context  []string  `json:"context"`
-	Examples []Example `json:"examples"`
-	Confidence float64 `json:"confidence"`
+	ID         string    `json:"id"`
+	Scenario   string    `json:"scenario"`
+	Rule       string    `json:"rule"`
+	Formula    string    `json:"formula"`
+	Context    []string  `json:"context"`
+	Examples   []Example `json:"examples"`
+	Confidence float64   `json:"confidence"`
 }
 
 // Example representa um exemplo de cálculo
 type Example struct {
-	Case        string  `json:"case"`
-	Calculation string  `json:"calculation"`
-	Reasoning   string  `json:"reasoning"`
+	Case        string `json:"case"`
+	Calculation string `json:"calculation"`
+	Reasoning   string `json:"reasoning"`
 }
 
 // SyndicateItem representa informações de um sindicato
@@ -81,25 +81,25 @@ type HolidayItem struct {
 
 // FAQItem representa uma pergunta frequente
 type FAQItem struct {
-	ID               string   `json:"id"`
-	Question         string   `json:"question"`
-	Answer           string   `json:"answer"`
-	Category         string   `json:"category"`
-	Frequency        string   `json:"frequency"`
-	RelatedPolicies  []string `json:"related_policies"`
-	Keywords         []string `json:"keywords"`
-	RequiresManualReview bool `json:"requires_manual_review,omitempty"`
+	ID                   string   `json:"id"`
+	Question             string   `json:"question"`
+	Answer               string   `json:"answer"`
+	Category             string   `json:"category"`
+	Frequency            string   `json:"frequency"`
+	RelatedPolicies      []string `json:"related_policies"`
+	Keywords             []string `json:"keywords"`
+	RequiresManualReview bool     `json:"requires_manual_review,omitempty"`
 }
 
 // ExampleItem representa um exemplo prático completo
 type ExampleItem struct {
-	ID                   string               `json:"id"`
-	Title                string               `json:"title"`
-	Scenario             string               `json:"scenario"`
-	InputData            map[string]interface{} `json:"input_data"`
+	ID                    string                     `json:"id"`
+	Title                 string                     `json:"title"`
+	Scenario              string                     `json:"scenario"`
+	InputData             map[string]interface{}     `json:"input_data"`
 	StepByStepCalculation map[string]CalculationStep `json:"step_by_step_calculation"`
-	ExpectedResult       ExpectedResult       `json:"expected_result"`
-	KeyLearning          string               `json:"key_learning"`
+	ExpectedResult        ExpectedResult             `json:"expected_result"`
+	KeyLearning           string                     `json:"key_learning"`
 }
 
 // CalculationStep representa um passo do cálculo
@@ -119,9 +119,9 @@ type ExpectedResult struct {
 
 // KnowledgeManager gerencia a base de conhecimento
 type KnowledgeManager struct {
-	basePath     string
+	basePath      string
 	knowledgeBase *KnowledgeBase
-	loadedAt     time.Time
+	loadedAt      time.Time
 }
 
 // NewKnowledgeManager cria um novo gerenciador de conhecimento
@@ -134,7 +134,7 @@ func NewKnowledgeManager(basePath string) *KnowledgeManager {
 // LoadKnowledgeBase carrega toda a base de conhecimento
 func (km *KnowledgeManager) LoadKnowledgeBase() error {
 	kb := &KnowledgeBase{}
-	
+
 	// Carregar políticas
 	policies, err := km.loadVRPolicies()
 	if err != nil {
@@ -202,10 +202,10 @@ func (km *KnowledgeManager) loadRegulations() ([]PolicyItem, error) {
 	// Implementação básica - converter regulamentações para PolicyItem
 	var regulationsData struct {
 		Regulations struct {
-			CLTArticles       []interface{} `json:"clt_articles"`
-			LaborLaws        []interface{} `json:"labor_laws"`
+			CLTArticles          []interface{} `json:"clt_articles"`
+			LaborLaws            []interface{} `json:"labor_laws"`
 			CollectiveAgreements []interface{} `json:"collective_agreements"`
-			InternalPolicies []interface{} `json:"internal_policies"`
+			InternalPolicies     []interface{} `json:"internal_policies"`
 		} `json:"regulations"`
 	}
 
@@ -213,10 +213,10 @@ func (km *KnowledgeManager) loadRegulations() ([]PolicyItem, error) {
 		return nil, err
 	}
 
-	// Por enquanto, retornar lista vazia - na implementação completa, 
+	// Por enquanto, retornar lista vazia - na implementação completa,
 	// converteria os dados para PolicyItem
 	var policies []PolicyItem
-	
+
 	return policies, nil
 }
 
@@ -312,7 +312,7 @@ func (km *KnowledgeManager) FindRelevantKnowledge(question string) ([]KnowledgeI
 func (km *KnowledgeManager) isRelevant(question string, itemQuestion, itemAnswer string, keywords []string) bool {
 	// Implementação básica de relevância usando palavras-chave
 	questionWords := strings.Fields(strings.ToLower(question))
-	
+
 	// Verificar correspondência na pergunta do item
 	itemQuestionWords := strings.Fields(strings.ToLower(itemQuestion))
 	for _, qWord := range questionWords {
@@ -359,7 +359,7 @@ func (km *KnowledgeManager) GetKnowledgeStatistics() (map[string]interface{}, er
 	}
 
 	stats := make(map[string]interface{})
-	
+
 	stats["total_policies"] = len(km.knowledgeBase.Policies)
 	stats["total_faq"] = len(km.knowledgeBase.FAQ)
 	stats["total_examples"] = len(km.knowledgeBase.Examples)

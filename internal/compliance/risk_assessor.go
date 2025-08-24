@@ -8,35 +8,35 @@ import (
 
 type RiskAssessor struct {
 	complianceChecker *ComplianceChecker
-	auditTrail       *AuditTrail
+	auditTrail        *AuditTrail
 }
 
 func NewRiskAssessor(checker *ComplianceChecker, audit *AuditTrail) *RiskAssessor {
 	return &RiskAssessor{
 		complianceChecker: checker,
-		auditTrail:       audit,
+		auditTrail:        audit,
 	}
 }
 
 type RiskAssessment struct {
-	EntityID          string    `json:"entity_id"`
-	EntityType        string    `json:"entity_type"`
-	OverallRisk       RiskLevel `json:"overall_risk"`
-	RiskScore         float64   `json:"risk_score"`
-	RiskFactors       []RiskFactor `json:"risk_factors"`
-	Recommendations   []string  `json:"recommendations"`
-	AssessmentDate    time.Time `json:"assessment_date"`
-	NextReviewDate    time.Time `json:"next_review_date"`
+	EntityID        string       `json:"entity_id"`
+	EntityType      string       `json:"entity_type"`
+	OverallRisk     RiskLevel    `json:"overall_risk"`
+	RiskScore       float64      `json:"risk_score"`
+	RiskFactors     []RiskFactor `json:"risk_factors"`
+	Recommendations []string     `json:"recommendations"`
+	AssessmentDate  time.Time    `json:"assessment_date"`
+	NextReviewDate  time.Time    `json:"next_review_date"`
 }
 
 type RiskFactor struct {
-	Category     string    `json:"category"`
-	Description  string    `json:"description"`
-	Impact       float64   `json:"impact"`
-	Probability  float64   `json:"probability"`
-	RiskScore    float64   `json:"risk_score"`
-	Severity     RiskLevel `json:"severity"`
-	Mitigation   []string  `json:"mitigation"`
+	Category    string    `json:"category"`
+	Description string    `json:"description"`
+	Impact      float64   `json:"impact"`
+	Probability float64   `json:"probability"`
+	RiskScore   float64   `json:"risk_score"`
+	Severity    RiskLevel `json:"severity"`
+	Mitigation  []string  `json:"mitigation"`
 }
 
 type RiskMatrix struct {
@@ -300,10 +300,10 @@ func (r *RiskAssessor) calculateOverallRisk(factors []RiskFactor) float64 {
 
 func (r *RiskAssessor) getCategoryWeight(category string) float64 {
 	weights := map[string]float64{
-		"compliance":     1.0, // Highest weight
-		"vr_value":       0.8,
-		"documentation":  0.6,
-		"historical":     0.4, // Lowest weight
+		"compliance":    1.0, // Highest weight
+		"vr_value":      0.8,
+		"documentation": 0.6,
+		"historical":    0.4, // Lowest weight
 	}
 
 	if weight, ok := weights[category]; ok {
@@ -363,10 +363,10 @@ func (r *RiskAssessor) generateRecommendations(factors []RiskFactor) []string {
 
 func (r *RiskAssessor) GenerateRiskReport(assessments []RiskAssessment) *RiskReport {
 	report := &RiskReport{
-		GeneratedAt:    time.Now(),
-		TotalEntities:  len(assessments),
-		Summary:        make(map[RiskLevel]int),
-		Assessments:    assessments,
+		GeneratedAt:   time.Now(),
+		TotalEntities: len(assessments),
+		Summary:       make(map[RiskLevel]int),
+		Assessments:   assessments,
 	}
 
 	for _, assessment := range assessments {
@@ -386,9 +386,9 @@ func (r *RiskAssessor) GenerateRiskReport(assessments []RiskAssessment) *RiskRep
 }
 
 type RiskReport struct {
-	GeneratedAt       time.Time              `json:"generated_at"`
-	TotalEntities     int                    `json:"total_entities"`
-	AverageRiskScore  float64               `json:"average_risk_score"`
-	Summary           map[RiskLevel]int      `json:"summary"`
-	Assessments       []RiskAssessment      `json:"assessments"`
+	GeneratedAt      time.Time         `json:"generated_at"`
+	TotalEntities    int               `json:"total_entities"`
+	AverageRiskScore float64           `json:"average_risk_score"`
+	Summary          map[RiskLevel]int `json:"summary"`
+	Assessments      []RiskAssessment  `json:"assessments"`
 }

@@ -15,21 +15,21 @@ func TestNewBaseTool(t *testing.T) {
 			},
 		},
 	}
-	
+
 	tool := NewBaseTool(name, description, schema)
-	
+
 	if tool == nil {
 		t.Fatal("NewBaseTool should not return nil")
 	}
-	
+
 	if tool.Name() != name {
 		t.Errorf("Expected name '%s', got '%s'", name, tool.Name())
 	}
-	
+
 	if tool.Description() != description {
 		t.Errorf("Expected description '%s', got '%s'", description, tool.Description())
 	}
-	
+
 	if tool.Schema() == nil {
 		t.Error("Schema should not be nil")
 	}
@@ -37,7 +37,7 @@ func TestNewBaseTool(t *testing.T) {
 
 func TestBaseTool_ValidateJSON(t *testing.T) {
 	tool := NewBaseTool("test", "test", nil)
-	
+
 	tests := []struct {
 		name    string
 		input   string
@@ -99,7 +99,7 @@ func TestBaseTool_ValidateJSON(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tool.ValidateJSON(tt.input)
@@ -112,7 +112,7 @@ func TestBaseTool_ValidateJSON(t *testing.T) {
 
 func TestBaseTool_ParseJSONInput(t *testing.T) {
 	tool := NewBaseTool("test", "test", nil)
-	
+
 	tests := []struct {
 		name    string
 		input   string
@@ -153,7 +153,7 @@ func TestBaseTool_ParseJSONInput(t *testing.T) {
 			want:    nil,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tool.ParseJSONInput(tt.input)
@@ -161,13 +161,13 @@ func TestBaseTool_ParseJSONInput(t *testing.T) {
 				t.Errorf("ParseJSONInput() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if !tt.wantErr {
 				if len(got) != len(tt.want) {
 					t.Errorf("ParseJSONInput() got %d keys, want %d", len(got), len(tt.want))
 					return
 				}
-				
+
 				for key, expectedValue := range tt.want {
 					if got[key] != expectedValue {
 						t.Errorf("ParseJSONInput() got[%s] = %v, want %v", key, got[key], expectedValue)
@@ -180,7 +180,7 @@ func TestBaseTool_ParseJSONInput(t *testing.T) {
 
 func TestBaseTool_FormatJSONOutput(t *testing.T) {
 	tool := NewBaseTool("test", "test", nil)
-	
+
 	tests := []struct {
 		name    string
 		data    interface{}
@@ -195,8 +195,8 @@ func TestBaseTool_FormatJSONOutput(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "slice válido",
-			data: []string{"item1", "item2"},
+			name:    "slice válido",
+			data:    []string{"item1", "item2"},
 			wantErr: false,
 		},
 		{
@@ -230,7 +230,7 @@ func TestBaseTool_FormatJSONOutput(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tool.FormatJSONOutput(tt.data)
@@ -238,13 +238,13 @@ func TestBaseTool_FormatJSONOutput(t *testing.T) {
 				t.Errorf("FormatJSONOutput() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if !tt.wantErr {
 				// Verificar se o output é um JSON válido
 				if err := tool.ValidateJSON(got); err != nil {
 					t.Errorf("FormatJSONOutput() produced invalid JSON: %v", err)
 				}
-				
+
 				// Verificar se tem formatação (indentação) - apenas para objetos/arrays complexos
 				if (tt.name == "map válido" || tt.name == "slice válido") && len(got) > 10 && !contains(got, "\n") {
 					t.Error("FormatJSONOutput() should produce indented JSON for complex objects")
@@ -258,27 +258,27 @@ func TestToolError(t *testing.T) {
 	toolName := "test_tool"
 	message := "Test error message"
 	code := "TEST_ERROR"
-	
+
 	err := NewToolError(toolName, message, code)
-	
+
 	if err.Tool != toolName {
 		t.Errorf("Expected tool '%s', got '%s'", toolName, err.Tool)
 	}
-	
+
 	if err.Message != message {
 		t.Errorf("Expected message '%s', got '%s'", message, err.Message)
 	}
-	
+
 	if err.Code != code {
 		t.Errorf("Expected code '%s', got '%s'", code, err.Code)
 	}
-	
+
 	// Testar método Error()
 	errorString := err.Error()
 	if !contains(errorString, toolName) {
 		t.Error("Error string should contain tool name")
 	}
-	
+
 	if !contains(errorString, message) {
 		t.Error("Error string should contain message")
 	}
@@ -286,11 +286,11 @@ func TestToolError(t *testing.T) {
 
 func TestToolError_EmptyCode(t *testing.T) {
 	err := NewToolError("test_tool", "test message", "")
-	
+
 	if err.Code != "" {
 		t.Errorf("Expected empty code, got '%s'", err.Code)
 	}
-	
+
 	// Verificar se ainda funciona sem código
 	errorString := err.Error()
 	if errorString == "" {
@@ -300,16 +300,16 @@ func TestToolError_EmptyCode(t *testing.T) {
 
 // Helper function para verificar se uma string contém outra
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || 
-		(len(s) > len(substr) && 
-			(s[:len(substr)] == substr || 
-			 s[len(s)-len(substr):] == substr ||
-			 func() bool {
-				for i := 1; i <= len(s)-len(substr); i++ {
-					if s[i:i+len(substr)] == substr {
-						return true
+	return len(s) >= len(substr) && (s == substr ||
+		(len(s) > len(substr) &&
+			(s[:len(substr)] == substr ||
+				s[len(s)-len(substr):] == substr ||
+				func() bool {
+					for i := 1; i <= len(s)-len(substr); i++ {
+						if s[i:i+len(substr)] == substr {
+							return true
+						}
 					}
-				}
-				return false
-			}())))
+					return false
+				}())))
 }

@@ -9,10 +9,10 @@ import (
 type ErroProcessamento struct {
 	// Mensagem é a descrição do erro
 	Mensagem string
-	
+
 	// Arquivo é o nome do arquivo em que ocorreu o erro
 	Arquivo string
-	
+
 	// Linha é o número da linha onde ocorreu o erro (se aplicável)
 	Linha int
 }
@@ -22,11 +22,11 @@ func (e *ErroProcessamento) Error() string {
 	if e.Arquivo != "" && e.Linha > 0 {
 		return fmt.Sprintf("Erro no arquivo %s linha %d: %s", e.Arquivo, e.Linha, e.Mensagem)
 	}
-	
+
 	if e.Arquivo != "" {
 		return fmt.Sprintf("Erro no arquivo %s: %s", e.Arquivo, e.Mensagem)
 	}
-	
+
 	return fmt.Sprintf("Erro: %s", e.Mensagem)
 }
 

@@ -24,11 +24,11 @@ type AutoProfiler struct {
 
 // ProfilerConfig configuração do profiler automático
 type ProfilerConfig struct {
-	Enabled             bool
-	OutputDir           string
-	MemProfileInterval  time.Duration // Intervalo para profile de memória
-	AutoCPUThreshold    float64       // Threshold de CPU para iniciar profiling
-	AutoMemThreshold    float64       // Threshold de memória (MB) para profile
+	Enabled            bool
+	OutputDir          string
+	MemProfileInterval time.Duration // Intervalo para profile de memória
+	AutoCPUThreshold   float64       // Threshold de CPU para iniciar profiling
+	AutoMemThreshold   float64       // Threshold de memória (MB) para profile
 }
 
 // NewAutoProfiler cria um novo profiler automático
@@ -190,7 +190,7 @@ func (ap *AutoProfiler) CreateFullSnapshot() error {
 	}
 
 	timestamp := time.Now().Unix()
-	
+
 	// Cria diretório para o snapshot
 	snapshotDir := filepath.Join(ap.outputDir, fmt.Sprintf("snapshot_%d", timestamp))
 	if err := os.MkdirAll(snapshotDir, 0755); err != nil {
@@ -322,13 +322,13 @@ type ProfilerStats struct {
 
 // AutoTrigger configura triggers automáticos baseados em métricas
 type AutoTrigger struct {
-	profiler      *AutoProfiler
+	profiler         *AutoProfiler
 	metricsCollector *MetricsCollector
-	cpuThreshold  float64
-	memThreshold  float64
-	enabled       bool
-	checking      bool
-	stopCh        chan bool
+	cpuThreshold     float64
+	memThreshold     float64
+	enabled          bool
+	checking         bool
+	stopCh           chan bool
 }
 
 // NewAutoTrigger cria um novo sistema de triggers automáticos
@@ -375,7 +375,7 @@ func (at *AutoTrigger) checkThresholds() {
 	// Verifica CPU
 	if metrics.CPUUsage.Usage > at.cpuThreshold {
 		at.profiler.StartCPUProfile()
-		
+
 		// Para CPU profile depois de 30 segundos
 		go func() {
 			time.Sleep(30 * time.Second)

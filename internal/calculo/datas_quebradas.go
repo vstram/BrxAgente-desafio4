@@ -13,36 +13,36 @@ func CalcularDiasProporcionais(colaborador *modelo.Colaborador, diasUteisMes int
 	// Se o colaborador foi admitido no meio do mês, calcular dias proporcionais
 	if !colaborador.DataAdmissao.IsZero() {
 		// Verificar se a data de admissão é no mês de referência
-		if colaborador.DataAdmissao.Month() == mesReferencia.Month() && 
-		   colaborador.DataAdmissao.Year() == mesReferencia.Year() {
+		if colaborador.DataAdmissao.Month() == mesReferencia.Month() &&
+			colaborador.DataAdmissao.Year() == mesReferencia.Year() {
 			// Calcular dias restantes no mês após a admissão
 			diasNoMes := diasNoMes(colaborador.DataAdmissao)
 			diasTrabalhados := diasNoMes - colaborador.DataAdmissao.Day() + 1
 			return (diasUteisMes * diasTrabalhados) / diasNoMes
 		}
 	}
-	
+
 	// Aplicar a regra de desligamento baseada na data de comunicação
 	diasProporcionais := AplicarRegraDesligamento(colaborador, diasUteisMes, mesReferencia)
-	
+
 	// Se a regra de desligamento retornou 0, não considerar para pagamento
 	if diasProporcionais == 0 {
 		return 0
 	}
-	
+
 	// Se o colaborador foi desligado no meio do mês, calcular dias proporcionais
 	// baseado na data de desligamento real (não na data de comunicação)
 	if colaborador.DataDesligamento != nil && !colaborador.DataDesligamento.IsZero() {
 		// Verificar se a data de desligamento é no mês de referência
-		if colaborador.DataDesligamento.Month() == mesReferencia.Month() && 
-		   colaborador.DataDesligamento.Year() == mesReferencia.Year() {
+		if colaborador.DataDesligamento.Month() == mesReferencia.Month() &&
+			colaborador.DataDesligamento.Year() == mesReferencia.Year() {
 			// Calcular dias trabalhados no mês até a data de desligamento
 			diasNoMes := diasNoMes(*colaborador.DataDesligamento)
 			diasTrabalhados := colaborador.DataDesligamento.Day()
 			return (diasUteisMes * diasTrabalhados) / diasNoMes
 		}
 	}
-	
+
 	// Se não houver datas quebradas, retornar todos os dias úteis do mês
 	return diasUteisMes
 }
@@ -51,10 +51,10 @@ func CalcularDiasProporcionais(colaborador *modelo.Colaborador, diasUteisMes int
 func diasNoMes(data time.Time) int {
 	// Obter o primeiro dia do próximo mês
 	primeiroProximoMes := time.Date(data.Year(), data.Month()+1, 1, 0, 0, 0, 0, data.Location())
-	
+
 	// Obter o último dia do mês atual (último dia do mês anterior ao próximo mês)
 	ultimoDiaMes := primeiroProximoMes.AddDate(0, 0, -1).Day()
-	
+
 	return ultimoDiaMes
 }
 
@@ -63,12 +63,12 @@ func CalcularDiasProporcionaisParaPeriodo(inicio, fim time.Time, diasUteisMes in
 	// Calcular a diferença em dias entre início e fim
 	duracao := fim.Sub(inicio)
 	diasPeriodo := int(duracao.Hours() / 24)
-	
+
 	// Obter o número de dias no mês
 	diasNoMes := diasNoMes(inicio)
-	
+
 	// Calcular dias proporcionais
 	diasProporcionais := (diasUteisMes * diasPeriodo) / diasNoMes
-	
+
 	return diasProporcionais
 }

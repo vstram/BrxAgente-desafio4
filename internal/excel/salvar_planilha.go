@@ -18,15 +18,15 @@ func SalvarPlanilhaEmDownloads(colaboradores map[string]*modelo.Colaborador, nom
 	if err != nil {
 		return fmt.Errorf("erro ao obter diretório de Downloads: %w", err)
 	}
-	
+
 	// Criar o caminho completo do arquivo
 	caminhoArquivo := filepath.Join(diretorioDownloads, nomeArquivo)
-	
+
 	// Gerar a planilha no diretório de Downloads
 	if err := GerarPlanilhaResultado(colaboradores, caminhoArquivo); err != nil {
 		return fmt.Errorf("erro ao gerar planilha: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -38,22 +38,22 @@ func SalvarPlanilhaEmDownloadsComTemplate(colaboradores map[string]*modelo.Colab
 	if err != nil {
 		return fmt.Errorf("erro ao obter diretório de Downloads: %w", err)
 	}
-	
+
 	// Criar o caminho completo do arquivo
 	caminhoArquivo := filepath.Join(diretorioDownloads, nomeArquivo)
-	
+
 	// Gerar a planilha no diretório de Downloads usando template
 	if err := GerarPlanilhaResultadoComTemplate(colaboradores, caminhoTemplate, caminhoArquivo); err != nil {
 		return fmt.Errorf("erro ao gerar planilha com template: %w", err)
 	}
-	
+
 	return nil
 }
 
 // obterDiretorioDownloads obtém o diretório de Downloads do usuário de acordo com o sistema operacional
 func obterDiretorioDownloads() (string, error) {
 	var diretorio string
-	
+
 	switch runtime.GOOS {
 	case "windows":
 		// No Windows, a pasta Downloads geralmente está em %USERPROFILE%\Downloads
@@ -84,7 +84,7 @@ func obterDiretorioDownloads() (string, error) {
 		}
 		diretorio = filepath.Join(homeDir, "Downloads")
 	}
-	
+
 	// Verificar se o diretório existe
 	if _, err := os.Stat(diretorio); os.IsNotExist(err) {
 		// Tentar criar o diretório se não existir
@@ -94,7 +94,7 @@ func obterDiretorioDownloads() (string, error) {
 	} else if err != nil {
 		return "", fmt.Errorf("erro ao verificar diretório de Downloads: %w", err)
 	}
-	
+
 	return diretorio, nil
 }
 
@@ -102,22 +102,22 @@ func obterDiretorioDownloads() (string, error) {
 func VerificarPermissoesDiretorio(diretorio string) error {
 	// Tentar criar um arquivo temporário no diretório
 	arquivoTemp := filepath.Join(diretorio, ".temp_write_test")
-	
+
 	// Criar o arquivo
 	file, err := os.Create(arquivoTemp)
 	if err != nil {
 		return fmt.Errorf("sem permissão para escrever no diretório %s: %w", diretorio, err)
 	}
-	
+
 	// Fechar o arquivo
 	if err := file.Close(); err != nil {
 		return fmt.Errorf("erro ao fechar arquivo temporário: %w", err)
 	}
-	
+
 	// Remover o arquivo temporário
 	if err := os.Remove(arquivoTemp); err != nil {
 		return fmt.Errorf("erro ao remover arquivo temporário: %w", err)
 	}
-	
+
 	return nil
 }

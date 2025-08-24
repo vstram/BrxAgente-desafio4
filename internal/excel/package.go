@@ -46,11 +46,11 @@ func (s *Service) ReadFile(filePath string, sheetName string, maxRows int) (map[
 	if len(rows) == 0 {
 		return map[string]interface{}{
 			"file_path": filePath,
-			"sheet": sheetName,
+			"sheet":     sheetName,
 			"row_count": 0,
 			"col_count": 0,
-			"headers": []string{},
-			"data": []map[string]interface{}{},
+			"headers":   []string{},
+			"data":      []map[string]interface{}{},
 		}, nil
 	}
 
@@ -73,7 +73,7 @@ func (s *Service) ReadFile(filePath string, sheetName string, maxRows int) (map[
 	for i := 1; i < endRow; i++ {
 		row := rows[i]
 		rowData := make(map[string]interface{})
-		
+
 		for j, header := range headers {
 			if j < len(row) {
 				rowData[header] = row[j]
@@ -86,10 +86,10 @@ func (s *Service) ReadFile(filePath string, sheetName string, maxRows int) (map[
 
 	return map[string]interface{}{
 		"file_path": filePath,
-		"sheet": sheetName,
+		"sheet":     sheetName,
 		"row_count": rowCount,
 		"col_count": colCount,
-		"headers": headers,
-		"data": data,
+		"headers":   headers,
+		"data":      data,
 	}, nil
 }

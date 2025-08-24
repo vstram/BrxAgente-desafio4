@@ -3,7 +3,7 @@ package knowledge
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -68,7 +68,7 @@ func (kb *KnowledgeBaseManager) LoadFromFiles(dataDir string) error {
 
 // loadPolicies carrega políticas de um arquivo JSON
 func (kb *KnowledgeBaseManager) loadPolicies(filepath string) ([]Policy, error) {
-	data, err := ioutil.ReadFile(filepath)
+	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (kb *KnowledgeBaseManager) loadPolicies(filepath string) ([]Policy, error) 
 
 // loadRegulations carrega regulamentações de um arquivo JSON
 func (kb *KnowledgeBaseManager) loadRegulations(filepath string) ([]Regulation, error) {
-	data, err := ioutil.ReadFile(filepath)
+	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (kb *KnowledgeBaseManager) loadRegulations(filepath string) ([]Regulation, 
 
 // loadBusinessRules carrega regras de negócio de um arquivo JSON
 func (kb *KnowledgeBaseManager) loadBusinessRules(filepath string) ([]BusinessRule, error) {
-	data, err := ioutil.ReadFile(filepath)
+	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
@@ -128,14 +128,14 @@ func (kb *KnowledgeBaseManager) buildIndex() error {
 	// Indexar políticas
 	for _, policy := range kb.base.Policies {
 		item := KnowledgeItem{
-			ID:           policy.ID,
-			Title:        policy.Title,
-			Content:      policy.Content,
-			Source:       policy.Source,
+			ID:            policy.ID,
+			Title:         policy.Title,
+			Content:       policy.Content,
+			Source:        policy.Source,
 			EffectiveDate: policy.EffectiveDate,
-			Categories:   policy.Categories,
-			Metadata:     policy.Metadata,
-			Type:         policy.Type,
+			Categories:    policy.Categories,
+			Metadata:      policy.Metadata,
+			Type:          policy.Type,
 		}
 		kb.indexItem(item)
 	}
@@ -143,14 +143,14 @@ func (kb *KnowledgeBaseManager) buildIndex() error {
 	// Indexar regulamentações
 	for _, regulation := range kb.base.Regulations {
 		item := KnowledgeItem{
-			ID:           regulation.ID,
-			Title:        regulation.Title,
-			Content:      regulation.Content,
-			Source:       regulation.Source,
+			ID:            regulation.ID,
+			Title:         regulation.Title,
+			Content:       regulation.Content,
+			Source:        regulation.Source,
 			EffectiveDate: regulation.EffectiveDate,
-			Categories:   regulation.Categories,
-			Metadata:     regulation.Metadata,
-			Type:         regulation.Type,
+			Categories:    regulation.Categories,
+			Metadata:      regulation.Metadata,
+			Type:          regulation.Type,
 		}
 		kb.indexItem(item)
 	}
@@ -158,14 +158,14 @@ func (kb *KnowledgeBaseManager) buildIndex() error {
 	// Indexar regras de negócio
 	for _, rule := range kb.base.Rules {
 		item := KnowledgeItem{
-			ID:           rule.ID,
-			Title:        rule.Title,
-			Content:      rule.Content,
-			Source:       rule.Source,
+			ID:            rule.ID,
+			Title:         rule.Title,
+			Content:       rule.Content,
+			Source:        rule.Source,
 			EffectiveDate: rule.EffectiveDate,
-			Categories:   rule.Categories,
-			Metadata:     rule.Metadata,
-			Type:         rule.Type,
+			Categories:    rule.Categories,
+			Metadata:      rule.Metadata,
+			Type:          rule.Type,
 		}
 		kb.indexItem(item)
 	}
@@ -211,7 +211,7 @@ func (kb *KnowledgeBaseManager) tokenize(text string) []string {
 	// Converter para minúsculas e dividir por espaços e pontuação
 	text = strings.ToLower(text)
 	separators := []string{" ", ",", ".", ";", ":", "(", ")", "[", "]", "{", "}", "-", "_", "/", "\\"}
-	
+
 	words := []string{text}
 	for _, sep := range separators {
 		var newWords []string
@@ -287,7 +287,7 @@ func (kb *KnowledgeBaseManager) Search(query string, limit int) ([]SearchResult,
 	for itemID, score := range itemScores {
 		item := itemDetails[itemID]
 		highlights := kb.extractHighlights(item, queryWords)
-		
+
 		result := SearchResult{
 			Item:       item,
 			Score:      score,
@@ -366,7 +366,7 @@ func (kb *KnowledgeBaseManager) extractHighlights(item KnowledgeItem, queryWords
 // generateContext gera contexto adicional para um resultado
 func (kb *KnowledgeBaseManager) generateContext(item KnowledgeItem, queryWords []string) string {
 	context := fmt.Sprintf("Tipo: %s | Fonte: %s", item.Type, item.Source)
-	
+
 	if len(item.Categories) > 0 {
 		context += fmt.Sprintf(" | Categorias: %s", strings.Join(item.Categories, ", "))
 	}
@@ -387,14 +387,14 @@ func (kb *KnowledgeBaseManager) GetByCategory(category string) ([]KnowledgeItem,
 		for _, cat := range policy.Categories {
 			if strings.EqualFold(cat, category) {
 				item := KnowledgeItem{
-					ID:           policy.ID,
-					Title:        policy.Title,
-					Content:      policy.Content,
-					Source:       policy.Source,
+					ID:            policy.ID,
+					Title:         policy.Title,
+					Content:       policy.Content,
+					Source:        policy.Source,
 					EffectiveDate: policy.EffectiveDate,
-					Categories:   policy.Categories,
-					Metadata:     policy.Metadata,
-					Type:         policy.Type,
+					Categories:    policy.Categories,
+					Metadata:      policy.Metadata,
+					Type:          policy.Type,
 				}
 				items = append(items, item)
 				break
@@ -407,14 +407,14 @@ func (kb *KnowledgeBaseManager) GetByCategory(category string) ([]KnowledgeItem,
 		for _, cat := range regulation.Categories {
 			if strings.EqualFold(cat, category) {
 				item := KnowledgeItem{
-					ID:           regulation.ID,
-					Title:        regulation.Title,
-					Content:      regulation.Content,
-					Source:       regulation.Source,
+					ID:            regulation.ID,
+					Title:         regulation.Title,
+					Content:       regulation.Content,
+					Source:        regulation.Source,
 					EffectiveDate: regulation.EffectiveDate,
-					Categories:   regulation.Categories,
-					Metadata:     regulation.Metadata,
-					Type:         regulation.Type,
+					Categories:    regulation.Categories,
+					Metadata:      regulation.Metadata,
+					Type:          regulation.Type,
 				}
 				items = append(items, item)
 				break
@@ -427,14 +427,14 @@ func (kb *KnowledgeBaseManager) GetByCategory(category string) ([]KnowledgeItem,
 		for _, cat := range rule.Categories {
 			if strings.EqualFold(cat, category) {
 				item := KnowledgeItem{
-					ID:           rule.ID,
-					Title:        rule.Title,
-					Content:      rule.Content,
-					Source:       rule.Source,
+					ID:            rule.ID,
+					Title:         rule.Title,
+					Content:       rule.Content,
+					Source:        rule.Source,
 					EffectiveDate: rule.EffectiveDate,
-					Categories:   rule.Categories,
-					Metadata:     rule.Metadata,
-					Type:         rule.Type,
+					Categories:    rule.Categories,
+					Metadata:      rule.Metadata,
+					Type:          rule.Type,
 				}
 				items = append(items, item)
 				break
@@ -455,14 +455,14 @@ func (kb *KnowledgeBaseManager) GetByID(id string) (KnowledgeItem, error) {
 	for _, policy := range kb.base.Policies {
 		if policy.ID == id {
 			return KnowledgeItem{
-				ID:           policy.ID,
-				Title:        policy.Title,
-				Content:      policy.Content,
-				Source:       policy.Source,
+				ID:            policy.ID,
+				Title:         policy.Title,
+				Content:       policy.Content,
+				Source:        policy.Source,
 				EffectiveDate: policy.EffectiveDate,
-				Categories:   policy.Categories,
-				Metadata:     policy.Metadata,
-				Type:         policy.Type,
+				Categories:    policy.Categories,
+				Metadata:      policy.Metadata,
+				Type:          policy.Type,
 			}, nil
 		}
 	}
@@ -471,14 +471,14 @@ func (kb *KnowledgeBaseManager) GetByID(id string) (KnowledgeItem, error) {
 	for _, regulation := range kb.base.Regulations {
 		if regulation.ID == id {
 			return KnowledgeItem{
-				ID:           regulation.ID,
-				Title:        regulation.Title,
-				Content:      regulation.Content,
-				Source:       regulation.Source,
+				ID:            regulation.ID,
+				Title:         regulation.Title,
+				Content:       regulation.Content,
+				Source:        regulation.Source,
 				EffectiveDate: regulation.EffectiveDate,
-				Categories:   regulation.Categories,
-				Metadata:     regulation.Metadata,
-				Type:         regulation.Type,
+				Categories:    regulation.Categories,
+				Metadata:      regulation.Metadata,
+				Type:          regulation.Type,
 			}, nil
 		}
 	}
@@ -487,14 +487,14 @@ func (kb *KnowledgeBaseManager) GetByID(id string) (KnowledgeItem, error) {
 	for _, rule := range kb.base.Rules {
 		if rule.ID == id {
 			return KnowledgeItem{
-				ID:           rule.ID,
-				Title:        rule.Title,
-				Content:      rule.Content,
-				Source:       rule.Source,
+				ID:            rule.ID,
+				Title:         rule.Title,
+				Content:       rule.Content,
+				Source:        rule.Source,
 				EffectiveDate: rule.EffectiveDate,
-				Categories:   rule.Categories,
-				Metadata:     rule.Metadata,
-				Type:         rule.Type,
+				Categories:    rule.Categories,
+				Metadata:      rule.Metadata,
+				Type:          rule.Type,
 			}, nil
 		}
 	}
@@ -511,10 +511,10 @@ func (kb *KnowledgeBaseManager) GetStats() map[string]interface{} {
 	}
 
 	return map[string]interface{}{
-		"loaded":                true,
-		"policies_count":        len(kb.base.Policies),
-		"regulations_count":     len(kb.base.Regulations),
-		"business_rules_count":  len(kb.base.Rules),
+		"loaded":               true,
+		"policies_count":       len(kb.base.Policies),
+		"regulations_count":    len(kb.base.Regulations),
+		"business_rules_count": len(kb.base.Rules),
 		"total_items":          len(kb.base.Policies) + len(kb.base.Regulations) + len(kb.base.Rules),
 		"index_size":           len(kb.index),
 		"version":              kb.base.Version,

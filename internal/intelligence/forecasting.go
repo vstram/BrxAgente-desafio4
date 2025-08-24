@@ -11,21 +11,21 @@ import (
 
 // Forecaster implementa modelos de previsão para VR
 type Forecaster struct {
-	config      ForecastConfig
-	models      map[string]ForecastModel
-	predictor   *TrendPredictor
-	analyzer    *PatternAnalyzer
-	detector    *TrendDetector
+	config    ForecastConfig
+	models    map[string]ForecastModel
+	predictor *TrendPredictor
+	analyzer  *PatternAnalyzer
+	detector  *TrendDetector
 }
 
 // ForecastConfig configuração do sistema de previsão
 type ForecastConfig struct {
-	DefaultHorizon      int     `json:"default_horizon"`       // horizonte padrão em meses
-	MinAccuracy         float64 `json:"min_accuracy"`          // acurácia mínima aceitável
-	EnsembleModels      bool    `json:"ensemble_models"`       // usar ensemble de modelos
-	SeasonalAdjustment  bool    `json:"seasonal_adjustment"`   // ajuste sazonal
-	ConfidenceIntervals bool    `json:"confidence_intervals"`  // calcular intervalos de confiança
-	ValidationPeriod    int     `json:"validation_period"`     // períodos para validação
+	DefaultHorizon      int     `json:"default_horizon"`      // horizonte padrão em meses
+	MinAccuracy         float64 `json:"min_accuracy"`         // acurácia mínima aceitável
+	EnsembleModels      bool    `json:"ensemble_models"`      // usar ensemble de modelos
+	SeasonalAdjustment  bool    `json:"seasonal_adjustment"`  // ajuste sazonal
+	ConfidenceIntervals bool    `json:"confidence_intervals"` // calcular intervalos de confiança
+	ValidationPeriod    int     `json:"validation_period"`    // períodos para validação
 }
 
 // ForecastModel interface para modelos de previsão
@@ -38,11 +38,11 @@ type ForecastModel interface {
 
 // SimpleMovingAverageModel modelo de média móvel simples
 type SimpleMovingAverageModel struct {
-	name         string
-	window       int
-	accuracy     float64
-	lastValues   []float64
-	sindicato    string
+	name       string
+	window     int
+	accuracy   float64
+	lastValues []float64
+	sindicato  string
 }
 
 // ExponentialSmoothingModel modelo de suavização exponencial
@@ -50,8 +50,8 @@ type ExponentialSmoothingModel struct {
 	name      string
 	alpha     float64 // parâmetro de suavização
 	accuracy  float64
-	level     float64 // nível atual
-	trend     float64 // tendência atual
+	level     float64         // nível atual
+	trend     float64         // tendência atual
 	seasonal  map[int]float64 // componentes sazonais
 	sindicato string
 }
@@ -67,22 +67,22 @@ type LinearRegressionModel struct {
 
 // EnsembleForecast resultado de previsão ensemble
 type EnsembleForecast struct {
-	WeightedForecast   *predicoes.ConsumptionForecast `json:"weighted_forecast"`
+	WeightedForecast    *predicoes.ConsumptionForecast            `json:"weighted_forecast"`
 	IndividualForecasts map[string]*predicoes.ConsumptionForecast `json:"individual_forecasts"`
-	ModelWeights       map[string]float64          `json:"model_weights"`
-	EnsembleAccuracy   float64                     `json:"ensemble_accuracy"`
-	ConsensusLevel     float64                     `json:"consensus_level"`
+	ModelWeights        map[string]float64                        `json:"model_weights"`
+	EnsembleAccuracy    float64                                   `json:"ensemble_accuracy"`
+	ConsensusLevel      float64                                   `json:"consensus_level"`
 }
 
 // ForecastValidation resultado da validação de previsões
 type ForecastValidation struct {
-	Model          string                 `json:"model"`
-	Accuracy       float64                `json:"accuracy"`
-	MAPE          float64                `json:"mape"`           // Mean Absolute Percentage Error
-	RMSE          float64                `json:"rmse"`           // Root Mean Square Error
-	MAE           float64                `json:"mae"`            // Mean Absolute Error
-	Predictions   []ValidationPoint      `json:"predictions"`
-	ActualVsForecast map[string]float64   `json:"actual_vs_forecast"`
+	Model            string             `json:"model"`
+	Accuracy         float64            `json:"accuracy"`
+	MAPE             float64            `json:"mape"` // Mean Absolute Percentage Error
+	RMSE             float64            `json:"rmse"` // Root Mean Square Error
+	MAE              float64            `json:"mae"`  // Mean Absolute Error
+	Predictions      []ValidationPoint  `json:"predictions"`
+	ActualVsForecast map[string]float64 `json:"actual_vs_forecast"`
 }
 
 // ValidationPoint ponto de validação
@@ -97,8 +97,8 @@ type ValidationPoint struct {
 // NewForecaster cria novo sistema de previsão
 func NewForecaster(config ForecastConfig) *Forecaster {
 	return &Forecaster{
-		config:    config,
-		models:    make(map[string]ForecastModel),
+		config: config,
+		models: make(map[string]ForecastModel),
 		predictor: NewTrendPredictor(TrendPredictorConfig{
 			MinDataPoints:       6,
 			ConfidenceThreshold: 0.6,
@@ -218,9 +218,9 @@ func (f *Forecaster) GenerateScenarios(data []predicoes.HistoricalVRData, sindic
 	}
 
 	scenarios := &ForecastScenarios{
-		Base:        baseForecast.WeightedForecast,
-		Optimistic:  f.generateOptimisticScenario(baseForecast.WeightedForecast),
-		Pessimistic: f.generatePessimisticScenario(baseForecast.WeightedForecast),
+		Base:         baseForecast.WeightedForecast,
+		Optimistic:   f.generateOptimisticScenario(baseForecast.WeightedForecast),
+		Pessimistic:  f.generatePessimisticScenario(baseForecast.WeightedForecast),
 		Conservative: f.generateConservativeScenario(baseForecast.WeightedForecast),
 	}
 
@@ -653,7 +653,7 @@ func (f *Forecaster) calculateEnsembleForecast(forecasts map[string]*predicoes.C
 			Lower: lowerSum,
 			Upper: upperSum,
 		},
-		Factors:     factors,
+		Factors: factors,
 		Assumptions: []string{
 			fmt.Sprintf("Ensemble de %d modelos", len(forecasts)),
 			"Pesos baseados na acurácia individual",
@@ -739,7 +739,7 @@ func (f *Forecaster) validateModel(model ForecastModel, trainingData, testData [
 		error := predicted - actual.TotalVR
 		errorPct := 0.0
 		if actual.TotalVR != 0 {
-			errorPct = math.Abs(error / actual.TotalVR) * 100
+			errorPct = math.Abs(error/actual.TotalVR) * 100
 		}
 
 		predictions = append(predictions, ValidationPoint{
@@ -768,7 +768,7 @@ func (f *Forecaster) validateModel(model ForecastModel, trainingData, testData [
 	accuracy := math.Max(0, 1.0-mape/100.0)
 
 	return ForecastValidation{
-		Accuracy:     accuracy,
+		Accuracy:    accuracy,
 		MAPE:        mape,
 		RMSE:        rmse,
 		MAE:         mae,

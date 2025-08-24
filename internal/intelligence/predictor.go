@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"BrxAgente-desafio4/internal/predicoes"
 	"BrxAgente-desafio4/internal/modelo"
+	"BrxAgente-desafio4/internal/predicoes"
 )
 
 // TrendPredictor implementa modelos preditivos para tendências
@@ -65,8 +65,8 @@ func NewAnomalyPredictor(config TrendPredictorConfig) *AnomalyPredictor {
 	return &AnomalyPredictor{
 		TrendPredictor: NewTrendPredictor(config),
 		riskThresholds: map[string]float64{
-			"variacao_alta":    2.0,  // 2 desvios padrão
-			"ausencia_padrao":  0.3,  // 30% acima do normal
+			"variacao_alta":     2.0, // 2 desvios padrão
+			"ausencia_padrao":   0.3, // 30% acima do normal
 			"valor_discrepante": 1.5, // 1.5x a média
 		},
 	}
@@ -83,7 +83,7 @@ func NewProcessPredictor(config TrendPredictorConfig) *ProcessPredictor {
 // LoadHistoricalData carrega dados históricos para predição
 func (tp *TrendPredictor) LoadHistoricalData(data []predicoes.HistoricalVRData) error {
 	if len(data) < tp.config.MinDataPoints {
-		return fmt.Errorf("dados insuficientes: %d pontos, mínimo requerido: %d", 
+		return fmt.Errorf("dados insuficientes: %d pontos, mínimo requerido: %d",
 			len(data), tp.config.MinDataPoints)
 	}
 
@@ -106,10 +106,10 @@ func (cp *ConsumptionPredictor) PredictNextMonth(sindicato string) (*predicoes.C
 
 	// Extrair série temporal de VR
 	timeSeries := cp.extractVRTimeSeries(sindicatoData)
-	
+
 	// Detectar tendência
 	trend := cp.detectTrend(timeSeries)
-	
+
 	// Detectar sazonalidade
 	seasonality := cp.detectSeasonality(timeSeries)
 	cp.seasonalPatterns[sindicato] = seasonality
@@ -151,19 +151,19 @@ func (ap *AnomalyPredictor) AssessRisk(colaborador *modelo.Colaborador) (*predic
 
 	// Calcular fatores de risco
 	riskFactors := ap.calculateRiskFactors(colaborador)
-	
+
 	// Calcular score de risco agregado
 	riskScore := ap.aggregateRiskScore(riskFactors)
-	
+
 	// Determinar nível de risco
 	riskLevel := predicoes.GetRiskLevel(riskScore)
-	
+
 	// Calcular probabilidade baseada em histórico
 	probability := ap.calculateProbability(colaborador, riskFactors)
-	
+
 	// Determinar impacto potencial
 	impact := ap.assessImpact(colaborador, riskScore)
-	
+
 	// Gerar ações de mitigação
 	mitigation := ap.generateMitigationActions(riskLevel, riskFactors)
 
@@ -186,19 +186,19 @@ func (ap *AnomalyPredictor) AssessRisk(colaborador *modelo.Colaborador) (*predic
 func (pp *ProcessPredictor) OptimizeSchedule(month time.Time) (*predicoes.ProcessOptimization, error) {
 	// Prever volume de dados para o mês
 	dataVolume := pp.predictDataVolume(month)
-	
+
 	// Estimar tempo de processamento atual
 	currentState := pp.estimateCurrentProcessing(dataVolume)
-	
+
 	// Calcular estado otimizado
 	optimalState := pp.calculateOptimalState(currentState, dataVolume)
-	
+
 	// Gerar sugestões de melhoria
 	improvements := pp.generateImprovements(currentState, optimalState)
-	
+
 	// Calcular ganhos esperados
 	gains := pp.calculateGains(currentState, optimalState)
-	
+
 	// Criar plano de implementação
 	implementation := pp.createImplementationPlan(improvements)
 
@@ -259,7 +259,7 @@ func (cp *ConsumptionPredictor) detectTrend(ts *predicoes.TimeSeries) *predicoes
 	// Calcular tendência usando regressão linear simples
 	n := len(values)
 	sumX, sumY, sumXY, sumX2 := 0.0, 0.0, 0.0, 0.0
-	
+
 	for i, y := range values {
 		x := float64(i + 1)
 		sumX += x
@@ -267,14 +267,14 @@ func (cp *ConsumptionPredictor) detectTrend(ts *predicoes.TimeSeries) *predicoes
 		sumXY += x * y
 		sumX2 += x * x
 	}
-	
+
 	// Coeficiente angular (slope)
 	slope := (float64(n)*sumXY - sumX*sumY) / (float64(n)*sumX2 - sumX*sumX)
-	
+
 	// Determinar tipo e força da tendência
 	var trendType predicoes.TrendType
 	strength := math.Abs(slope) / (sumY / float64(n)) // normalizar pelo valor médio
-	
+
 	if math.Abs(slope) < 0.01 {
 		trendType = predicoes.TrendStable
 	} else if slope > 0 {
@@ -286,14 +286,14 @@ func (cp *ConsumptionPredictor) detectTrend(ts *predicoes.TimeSeries) *predicoes
 	// Calcular coeficiente de correlação para confiança
 	meanX, meanY := sumX/float64(n), sumY/float64(n)
 	ssXY, ssX, ssY := 0.0, 0.0, 0.0
-	
+
 	for i, y := range values {
 		x := float64(i + 1)
 		ssXY += (x - meanX) * (y - meanY)
 		ssX += (x - meanX) * (x - meanX)
 		ssY += (y - meanY) * (y - meanY)
 	}
-	
+
 	correlation := ssXY / math.Sqrt(ssX*ssY)
 	confidence := math.Abs(correlation)
 
@@ -325,7 +325,7 @@ func (cp *ConsumptionPredictor) detectSeasonality(ts *predicoes.TimeSeries) *pre
 	// Calcular médias mensais
 	monthlyAvgs := make(map[int]float64)
 	overallSum, overallCount := 0.0, 0
-	
+
 	for month := 1; month <= 12; month++ {
 		if values, exists := monthlyValues[month]; exists {
 			sum := 0.0
@@ -353,15 +353,15 @@ func (cp *ConsumptionPredictor) detectSeasonality(ts *predicoes.TimeSeries) *pre
 		variance += (avg - overallAvg) * (avg - overallAvg)
 	}
 	variance /= float64(len(monthlyAvgs))
-	
+
 	// Se variabilidade for significativa, detectar sazonalidade
 	cv := math.Sqrt(variance) / overallAvg // coeficiente de variação
-	isDetected := cv > 0.1 // 10% de variação
+	isDetected := cv > 0.1                 // 10% de variação
 
 	// Identificar picos e vales
 	var peakMonths, troughMonths []int
 	threshold := overallAvg * 0.1 // 10% da média
-	
+
 	for month, avg := range monthlyAvgs {
 		if avg > overallAvg+threshold {
 			peakMonths = append(peakMonths, month)
@@ -419,7 +419,7 @@ func (cp *ConsumptionPredictor) calculateForecast(ts *predicoes.TimeSeries, tren
 				overallAvg += v
 			}
 			overallAvg /= float64(len(seasonality.Pattern))
-			
+
 			seasonalFactor := seasonal / overallAvg
 			baseValue *= seasonalFactor
 		}
@@ -444,7 +444,7 @@ func (cp *ConsumptionPredictor) calculateForecast(ts *predicoes.TimeSeries, tren
 		fmt.Sprintf("Tendência: %s", trend.Type),
 		fmt.Sprintf("Confiança da tendência: %.1f%%", trend.Confidence*100),
 	}
-	
+
 	if seasonality.IsDetected {
 		factors = append(factors, "Padrão sazonal detectado")
 	}
@@ -597,7 +597,7 @@ func (ap *AnomalyPredictor) aggregateRiskScore(factors []predicoes.RiskFactor) f
 func (ap *AnomalyPredictor) calculateProbability(colaborador *modelo.Colaborador, factors []predicoes.RiskFactor) float64 {
 	// Calcular probabilidade baseada em fatores de risco
 	baseProb := 0.1 // 10% base
-	
+
 	for _, factor := range factors {
 		if factor.Value > factor.Threshold {
 			baseProb += factor.Weight * 0.3
@@ -644,7 +644,7 @@ func (ap *AnomalyPredictor) generateMitigationActions(riskLevel predicoes.RiskLe
 func (pp *ProcessPredictor) predictDataVolume(month time.Time) int {
 	// Simular predição de volume baseada em histórico
 	baseVolume := 1000 // número base de colaboradores
-	
+
 	// Ajuste sazonal (dezembro tem mais dados)
 	if month.Month() == 12 {
 		baseVolume = int(float64(baseVolume) * 1.2)
@@ -655,35 +655,35 @@ func (pp *ProcessPredictor) predictDataVolume(month time.Time) int {
 
 func (pp *ProcessPredictor) estimateCurrentProcessing(dataVolume int) predicoes.ProcessState {
 	return predicoes.ProcessState{
-		Duration:      time.Duration(dataVolume) * time.Millisecond * 50, // 50ms por colaborador
+		Duration: time.Duration(dataVolume) * time.Millisecond * 50, // 50ms por colaborador
 		ResourceUsage: map[string]float64{
 			"cpu":    0.7,
 			"memory": 0.5,
 			"disk":   0.3,
 		},
-		Efficiency:    0.75,
-		ErrorRate:     0.05,
-		Throughput:    dataVolume,
+		Efficiency: 0.75,
+		ErrorRate:  0.05,
+		Throughput: dataVolume,
 		Metrics: map[string]interface{}{
 			"parallel_workers": 4,
-			"batch_size":      100,
+			"batch_size":       100,
 		},
 	}
 }
 
 func (pp *ProcessPredictor) calculateOptimalState(current predicoes.ProcessState, dataVolume int) predicoes.ProcessState {
 	optimal := current
-	
+
 	// Otimizar duração (redução de 30%)
 	optimal.Duration = time.Duration(float64(optimal.Duration) * 0.7)
-	
+
 	// Melhor uso de recursos
 	optimal.ResourceUsage["cpu"] = 0.8
 	optimal.ResourceUsage["memory"] = 0.6
-	
+
 	// Maior eficiência
 	optimal.Efficiency = 0.9
-	
+
 	// Menor taxa de erro
 	optimal.ErrorRate = 0.02
 

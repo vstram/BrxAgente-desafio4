@@ -3,7 +3,7 @@ package agent
 import (
 	"testing"
 	"time"
-	
+
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
 )
@@ -22,10 +22,10 @@ func TestNewVRAgent(t *testing.T) {
 			ToolsEnabled:   []string{"excel"},
 		},
 	}
-	
+
 	// Criar chat service mock
 	chatSvc := chat.NewChat(cfg)
-	
+
 	// Converter para AgentConfig
 	agentConfig := &AgentConfig{
 		Enabled:        cfg.AgentConfig.Enabled,
@@ -44,22 +44,22 @@ func TestNewVRAgent(t *testing.T) {
 		DebugMode:      false,
 		ToolsEnabled:   cfg.AgentConfig.ToolsEnabled,
 	}
-	
+
 	// Criar agente
 	agent, err := NewVRAgent(agentConfig, chatSvc)
 	if err != nil {
 		t.Fatalf("Erro ao criar agente: %v", err)
 	}
-	
+
 	// Verificar se agente foi criado corretamente
 	if agent == nil {
 		t.Fatal("Agente não foi criado")
 	}
-	
+
 	if !agent.IsEnabled() {
 		t.Error("Agente deveria estar habilitado")
 	}
-	
+
 	status := agent.GetStatus()
 	if status.State != "idle" {
 		t.Errorf("Estado inicial deveria ser 'idle', mas é '%s'", status.State)
@@ -108,7 +108,7 @@ func TestAgentConfig_Validate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.config.Validate()
@@ -127,13 +127,13 @@ func TestVRAgent_EnableDisable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Erro ao criar agente: %v", err)
 	}
-	
+
 	// Testar disable
 	agent.Disable()
 	if agent.IsEnabled() {
 		t.Error("Agente deveria estar desabilitado")
 	}
-	
+
 	// Testar enable
 	agent.Enable()
 	if !agent.IsEnabled() {
@@ -149,17 +149,17 @@ func TestVRAgent_Reset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Erro ao criar agente: %v", err)
 	}
-	
+
 	// Simular algumas operações
 	agent.status.TotalRequests = 10
 	agent.status.ErrorCount = 2
-	
+
 	// Reset
 	err = agent.Reset()
 	if err != nil {
 		t.Errorf("Erro ao resetar agente: %v", err)
 	}
-	
+
 	// Verificar se foi resetado
 	status := agent.GetStatus()
 	if status.TotalRequests != 0 {
@@ -172,20 +172,20 @@ func TestVRAgent_Reset(t *testing.T) {
 
 func TestDefaultAgentConfig(t *testing.T) {
 	config := DefaultAgentConfig()
-	
+
 	// Verificar valores padrão
 	if !config.Enabled {
 		t.Error("Configuração padrão deveria ter agente habilitado")
 	}
-	
+
 	if config.Model != "gpt-3.5-turbo" {
 		t.Errorf("Modelo padrão deveria ser 'gpt-3.5-turbo', mas é '%s'", config.Model)
 	}
-	
+
 	if config.Temperature != 0.7 {
 		t.Errorf("Temperatura padrão deveria ser 0.7, mas é %f", config.Temperature)
 	}
-	
+
 	// Validar configuração padrão
 	if err := config.Validate(); err != nil {
 		t.Errorf("Configuração padrão deveria ser válida: %v", err)

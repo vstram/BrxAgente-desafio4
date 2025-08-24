@@ -20,31 +20,31 @@ func NewRelationshipAnomalyDetector(config *AnalysisConfig) *RelationshipAnomaly
 // DetectDuplicateMatriculas detecta matrículas duplicadas
 func (d *RelationshipAnomalyDetector) DetectDuplicateMatriculas(ctx *AnalysisContext) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	// Mapa para rastrear matrículas já vistas
 	matriculasVistas := make(map[string][]string)
-	
+
 	// Primeiro passo: coletar todas as matrículas e suas fontes
 	for _, data := range ctx.Colaboradores {
 		dataMap, ok := data.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Extrair matrícula dos dados (não da chave)
 		matriculaValue, exists := dataMap["matricula"]
 		if !exists {
 			continue
 		}
-		
+
 		matriculaStr, ok := matriculaValue.(string)
 		if !ok {
 			continue
 		}
-		
+
 		// Normalizar matrícula (remover espaços, zeros à esquerda, etc.)
 		normalizedMatricula := d.normalizeMatricula(matriculaStr)
-		
+
 		// Extrair fonte dos dados se disponível
 		fonte := "unknown"
 		if f, exists := dataMap["fonte"]; exists {
@@ -52,17 +52,17 @@ func (d *RelationshipAnomalyDetector) DetectDuplicateMatriculas(ctx *AnalysisCon
 				fonte = fStr
 			}
 		}
-		
+
 		// Adicionar ao mapa de matrículas vistas
 		if fontes, exists := matriculasVistas[normalizedMatricula]; exists {
 			matriculasVistas[normalizedMatricula] = append(fontes, fonte)
 		} else {
 			matriculasVistas[normalizedMatricula] = []string{fonte}
 		}
-		
+
 		ctx.IncrementProcessed()
 	}
-	
+
 	// Segundo passo: identificar duplicatas
 	for matricula, fontes := range matriculasVistas {
 		if len(fontes) > 1 {
@@ -79,41 +79,41 @@ func (d *RelationshipAnomalyDetector) DetectDuplicateMatriculas(ctx *AnalysisCon
 				"relationship_duplicate_detector",
 				"duplicate_matricula",
 			)
-			
+
 			anomaly.AddData("fontes", fontes)
 			anomaly.AddData("numero_duplicatas", len(fontes))
-			
+
 			anomaly.AddSuggestion("Consolidar dados da matrícula em uma única fonte")
 			anomaly.AddSuggestion("Verificar se são colaboradores diferentes com matrícula similar")
 			anomaly.AddSuggestion("Revisar processo de importação de dados")
-			
+
 			anomalies = append(anomalies, anomaly)
 		}
 	}
-	
+
 	return anomalies
 }
 
 // DetectInconsistentStatus detecta inconsistências de status
 func (d *RelationshipAnomalyDetector) DetectInconsistentStatus(ctx *AnalysisContext) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	for matricula, data := range ctx.Colaboradores {
 		dataMap, ok := data.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Extrair status e data de desligamento
 		status, hasStatus := dataMap["status"]
 		dataDesligamento, hasDesligamento := dataMap["data_desligamento"]
-		
+
 		if hasStatus && hasDesligamento {
 			statusStr, statusOk := status.(string)
 			if !statusOk {
 				continue
 			}
-			
+
 			// Verificar inconsistências
 			if strings.ToLower(statusStr) == "ativo" && dataDesligamento != nil {
 				// Verificar se data de desligamento não é vazia/zero
@@ -131,13 +131,13 @@ func (d *RelationshipAnomalyDetector) DetectInconsistentStatus(ctx *AnalysisCont
 						"relationship_status_detector",
 						"inconsistent_status",
 					)
-					
+
 					anomaly.AddData("status", status)
 					anomaly.AddData("data_desligamento", dataDesligamento)
-					
+
 					anomaly.AddSuggestion("Atualizar status para 'desligado' ou remover data de desligamento")
 					anomaly.AddSuggestion("Verificar se houve recontratação")
-					
+
 					anomalies = append(anomalies, anomaly)
 				}
 			} else if strings.ToLower(statusStr) == "desligado" && (dataDesligamento == nil || dataDesligamento == "") {
@@ -154,36 +154,36 @@ func (d *RelationshipAnomalyDetector) DetectInconsistentStatus(ctx *AnalysisCont
 					"relationship_status_detector",
 					"inconsistent_status",
 				)
-				
+
 				anomaly.AddData("status", status)
 				anomaly.AddData("data_desligamento", dataDesligamento)
-				
+
 				anomaly.AddSuggestion("Adicionar data de desligamento")
 				anomaly.AddSuggestion("Verificar se status deveria ser 'ativo'")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
 		}
-		
+
 		ctx.IncrementProcessed()
 	}
-	
+
 	return anomalies
 }
 
 // DetectOrphanedRecords detecta registros órfãos
 func (d *RelationshipAnomalyDetector) DetectOrphanedRecords(ctx *AnalysisContext) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	// Extrair dados de referência se disponíveis no contexto
 	sindicatosValidos := d.extractValidSindicatos(ctx)
-	
+
 	for matricula, data := range ctx.Colaboradores {
 		dataMap, ok := data.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Verificar se sindicato existe
 		if sindicato, exists := dataMap["sindicato"]; exists {
 			if sindicatoStr, ok := sindicato.(string); ok {
@@ -201,47 +201,47 @@ func (d *RelationshipAnomalyDetector) DetectOrphanedRecords(ctx *AnalysisContext
 						"relationship_orphan_detector",
 						"orphaned_sindicate",
 					)
-					
+
 					anomaly.AddData("sindicato", sindicato)
 					anomaly.AddData("sindicatos_validos", sindicatosValidos)
-					
+
 					anomaly.AddSuggestion("Verificar se sindicato foi digitado corretamente")
 					anomaly.AddSuggestion("Atualizar lista de sindicatos válidos")
 					anomaly.AddSuggestion("Corrigir sindicato do colaborador")
-					
+
 					anomalies = append(anomalies, anomaly)
 				}
 			}
 		}
-		
+
 		// Verificar campos obrigatórios
 		anomalies = append(anomalies, d.detectMissingRequiredFields(matricula, dataMap)...)
-		
+
 		ctx.IncrementProcessed()
 	}
-	
+
 	return anomalies
 }
 
 // DetectDataInconsistencies detecta inconsistências entre campos relacionados
 func (d *RelationshipAnomalyDetector) DetectDataInconsistencies(ctx *AnalysisContext) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	for matricula, data := range ctx.Colaboradores {
 		dataMap, ok := data.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Verificar consistência entre VR calculado e valor esperado
 		if vrCalculado, err1 := d.extractNumeric(dataMap, "vr_calculado"); err1 == nil {
 			if vrEsperado, err2 := d.extractNumeric(dataMap, "vr_esperado"); err2 == nil {
 				diferenca := abs64(vrCalculado - vrEsperado)
 				tolerancia := vrEsperado * 0.05 // 5% de tolerância
-				
+
 				if diferenca > tolerancia {
 					percentualDiferenca := (diferenca / vrEsperado) * 100
-					
+
 					anomaly := NewAnomaly(
 						AnomalyTypeRelationship,
 						d.getSeverityForDifference(percentualDiferenca),
@@ -255,36 +255,36 @@ func (d *RelationshipAnomalyDetector) DetectDataInconsistencies(ctx *AnalysisCon
 						"relationship_consistency_detector",
 						"vr_inconsistency",
 					)
-					
+
 					anomaly.AddData("vr_calculado", vrCalculado)
 					anomaly.AddData("vr_esperado", vrEsperado)
 					anomaly.AddData("diferenca", diferenca)
 					anomaly.AddData("percentual_diferenca", percentualDiferenca)
-					
+
 					anomaly.AddSuggestion("Revisar cálculo de VR")
 					anomaly.AddSuggestion("Verificar parâmetros utilizados no cálculo")
 					anomaly.AddSuggestion("Confirmar valor esperado")
-					
+
 					anomalies = append(anomalies, anomaly)
 				}
 			}
 		}
-		
+
 		// Verificar consistência entre dias úteis e período
 		anomalies = append(anomalies, d.detectPeriodConsistency(matricula, dataMap)...)
-		
+
 		ctx.IncrementProcessed()
 	}
-	
+
 	return anomalies
 }
 
 // detectMissingRequiredFields detecta campos obrigatórios ausentes
 func (d *RelationshipAnomalyDetector) detectMissingRequiredFields(matricula string, dataMap map[string]interface{}) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	requiredFields := []string{"matricula", "sindicato", "data_admissao"}
-	
+
 	for _, field := range requiredFields {
 		if value, exists := dataMap[field]; !exists || d.isEmpty(value) {
 			anomaly := NewAnomaly(
@@ -300,36 +300,36 @@ func (d *RelationshipAnomalyDetector) detectMissingRequiredFields(matricula stri
 				"relationship_required_detector",
 				"missing_required_field",
 			)
-			
+
 			anomaly.AddData("campo_ausente", field)
 			anomaly.AddData("campos_obrigatorios", requiredFields)
-			
+
 			anomaly.AddSuggestion(fmt.Sprintf("Preencher campo obrigatório '%s'", field))
 			anomaly.AddSuggestion("Verificar fonte dos dados")
-			
+
 			anomalies = append(anomalies, anomaly)
 		}
 	}
-	
+
 	return anomalies
 }
 
 // detectPeriodConsistency verifica consistência entre períodos e dias úteis
 func (d *RelationshipAnomalyDetector) detectPeriodConsistency(matricula string, dataMap map[string]interface{}) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	// Extrair dados do período
 	diasUteis, errDias := d.extractNumeric(dataMap, "dias_uteis")
 	if errDias != nil {
 		return anomalies
 	}
-	
+
 	// Se temos informações de período, verificar consistência
 	if periodoInicio, err1 := d.extractString(dataMap, "periodo_inicio"); err1 == nil {
 		if periodoFim, err2 := d.extractString(dataMap, "periodo_fim"); err2 == nil {
 			// Aqui poderíamos calcular dias úteis esperados para o período
 			// Por simplicidade, vamos verificar apenas valores óbvios
-			
+
 			if diasUteis > 31 {
 				anomaly := NewAnomaly(
 					AnomalyTypeRelationship,
@@ -344,19 +344,19 @@ func (d *RelationshipAnomalyDetector) detectPeriodConsistency(matricula string, 
 					"relationship_period_detector",
 					"period_inconsistency",
 				)
-				
+
 				anomaly.AddData("dias_uteis", diasUteis)
 				anomaly.AddData("periodo_inicio", periodoInicio)
 				anomaly.AddData("periodo_fim", periodoFim)
-				
+
 				anomaly.AddSuggestion("Verificar cálculo de dias úteis")
 				anomaly.AddSuggestion("Confirmar período de referência")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
 		}
 	}
-	
+
 	return anomalies
 }
 
@@ -365,7 +365,7 @@ func (d *RelationshipAnomalyDetector) detectPeriodConsistency(matricula string, 
 func (d *RelationshipAnomalyDetector) normalizeMatricula(matricula string) string {
 	// Remover espaços e converter para maiúsculas
 	normalized := strings.TrimSpace(strings.ToUpper(matricula))
-	
+
 	// Remover zeros à esquerda se for numérico
 	if len(normalized) > 1 && normalized[0] == '0' {
 		// Verificar se é todo numérico
@@ -376,7 +376,7 @@ func (d *RelationshipAnomalyDetector) normalizeMatricula(matricula string) strin
 				break
 			}
 		}
-		
+
 		if isNumeric {
 			// Remover zeros à esquerda
 			for len(normalized) > 1 && normalized[0] == '0' {
@@ -384,7 +384,7 @@ func (d *RelationshipAnomalyDetector) normalizeMatricula(matricula string) strin
 			}
 		}
 	}
-	
+
 	return normalized
 }
 
@@ -395,7 +395,7 @@ func (d *RelationshipAnomalyDetector) extractValidSindicatos(ctx *AnalysisContex
 			return sindicatosList
 		}
 	}
-	
+
 	// Se não há lista específica, extrair sindicatos únicos dos dados
 	sindicatosMap := make(map[string]bool)
 	for _, data := range ctx.Colaboradores {
@@ -407,13 +407,13 @@ func (d *RelationshipAnomalyDetector) extractValidSindicatos(ctx *AnalysisContex
 			}
 		}
 	}
-	
+
 	// Converter para slice
 	sindicatos := make([]string, 0, len(sindicatosMap))
 	for sindicato := range sindicatosMap {
 		sindicatos = append(sindicatos, sindicato)
 	}
-	
+
 	return sindicatos
 }
 
@@ -430,7 +430,7 @@ func (d *RelationshipAnomalyDetector) isEmpty(value interface{}) bool {
 	if value == nil {
 		return true
 	}
-	
+
 	switch v := value.(type) {
 	case string:
 		return strings.TrimSpace(v) == ""
@@ -446,7 +446,7 @@ func (d *RelationshipAnomalyDetector) extractNumeric(dataMap map[string]interfac
 	if !exists {
 		return 0, fmt.Errorf("campo %s não encontrado", fieldName)
 	}
-	
+
 	return extractNumericValue(value)
 }
 
@@ -455,11 +455,11 @@ func (d *RelationshipAnomalyDetector) extractString(dataMap map[string]interface
 	if !exists {
 		return "", fmt.Errorf("campo %s não encontrado", fieldName)
 	}
-	
+
 	if str, ok := value.(string); ok {
 		return str, nil
 	}
-	
+
 	return fmt.Sprintf("%v", value), nil
 }
 

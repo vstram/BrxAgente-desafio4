@@ -23,9 +23,9 @@ type PerformanceMetrics struct {
 	GoroutineCount int
 
 	// Métricas de cache
-	CacheHitRatio  float64
-	CacheSize      int64
-	CacheMisses    int64
+	CacheHitRatio float64
+	CacheSize     int64
+	CacheMisses   int64
 
 	// Timestamps
 	StartTime    time.Time
@@ -248,11 +248,11 @@ func (mc *MetricsCollector) GetPerformanceReport() PerformanceReport {
 	metrics := mc.GetMetrics()
 
 	report := PerformanceReport{
-		Timestamp: time.Now(),
-		Summary:   summary,
-		Details:   metrics,
-		Status:    "healthy",
-		Warnings:  []string{},
+		Timestamp:       time.Now(),
+		Summary:         summary,
+		Details:         metrics,
+		Status:          "healthy",
+		Warnings:        []string{},
 		Recommendations: []string{},
 	}
 
@@ -292,18 +292,18 @@ type PerformanceReport struct {
 	Timestamp       time.Time
 	Summary         MetricsSummary
 	Details         PerformanceMetrics
-	Status          string   // "healthy", "warning", "critical"
+	Status          string // "healthy", "warning", "critical"
 	Warnings        []string
 	Recommendations []string
 }
 
 // Benchmark executa benchmark de performance
 type Benchmark struct {
-	Name        string
-	Function    func() error
-	Iterations  int
-	Warmup      int
-	metrics     *MetricsCollector
+	Name       string
+	Function   func() error
+	Iterations int
+	Warmup     int
+	metrics    *MetricsCollector
 }
 
 // NewBenchmark cria um novo benchmark
@@ -312,7 +312,7 @@ func NewBenchmark(name string, function func() error, iterations int) *Benchmark
 		Name:       name,
 		Function:   function,
 		Iterations: iterations,
-		Warmup:     iterations / 10, // 10% para warmup
+		Warmup:     iterations / 10,        // 10% para warmup
 		metrics:    NewMetricsCollector(0), // Sem coleta periódica
 	}
 }

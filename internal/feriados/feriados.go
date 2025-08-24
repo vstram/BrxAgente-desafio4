@@ -7,11 +7,11 @@ import (
 
 // Feriado represents a holiday with its date and description
 type Feriado struct {
-	Data        time.Time
-	Descricao   string
-	Tipo        string // "nacional", "estadual", "municipal"
-	Estado      string // For state holidays
-	Municipio   string // For municipal holidays
+	Data      time.Time
+	Descricao string
+	Tipo      string // "nacional", "estadual", "municipal"
+	Estado    string // For state holidays
+	Municipio string // For municipal holidays
 }
 
 // ObterFeriadosNacionais obtém os feriados nacionais para um determinado ano
@@ -179,9 +179,9 @@ func ObterFeriadosMunicipais(municipio string, estado string, ano int) []Feriado
 // EhFeriado verifica se uma data específica é feriado
 func EhFeriado(data time.Time, feriados []Feriado) bool {
 	for _, feriado := range feriados {
-		if feriado.Data.Year() == data.Year() && 
-		   feriado.Data.Month() == data.Month() && 
-		   feriado.Data.Day() == data.Day() {
+		if feriado.Data.Year() == data.Year() &&
+			feriado.Data.Month() == data.Month() &&
+			feriado.Data.Day() == data.Day() {
 			return true
 		}
 	}

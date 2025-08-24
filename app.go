@@ -509,7 +509,7 @@ func (a *App) testOllamaAPI(ollamaConfig config.OllamaConfig) (bool, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return false, fmt.Errorf("Ollama retornou status %d", resp.StatusCode)
+		return false, fmt.Errorf("ollama retornou status %d", resp.StatusCode)
 	}
 
 	// Try to read response to see available models

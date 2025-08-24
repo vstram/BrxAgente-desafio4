@@ -53,13 +53,13 @@ func CalcularVRPorColaborador(colaborador *modelo.Colaborador, valorPorSindicato
 func mapearSindicatoParaEstado(sindicato string) string {
 	// Mapear os sindicatos para os estados
 	// This function needs to handle both formats:
-	// 1. From "Base dias uteis.xlsx": 
+	// 1. From "Base dias uteis.xlsx":
 	//    - "SITEPD PR - SIND DOS TRAB EM EMPR PRIVADAS DE PROC DE DADOS DE CURITIBA E REGIAO METROPOLITANA 22"
 	//    - "SINDPPD RS - SINDICATO DOS TRAB. EM PROC. DE DADOS RIO GRANDE DO SUL 21"
 	//    - "SINDPD SP - SIND.TRAB.EM PROC DADOS E EMPR.EMPRESAS PROC DADOS ESTADO DE SP. 22"
 	//    - "SINDPD RJ - SINDICATO PROFISSIONAIS DE PROC DADOS DO RIO DE JANEIRO 21"
 	// 2. From "ATIVOS.xlsx": Direct state names like "Paraná", "Rio Grande do Sul", etc.
-	
+
 	// Handle direct state names first
 	switch strings.ToUpper(sindicato) {
 	case "PARANÁ", "PARANA":
@@ -71,7 +71,7 @@ func mapearSindicatoParaEstado(sindicato string) string {
 	case "RIO DE JANEIRO":
 		return "Rio de Janeiro"
 	}
-	
+
 	// Handle sindicato names with acronyms
 	switch {
 	case strings.Contains(strings.ToUpper(sindicato), "PR") && strings.Contains(strings.ToUpper(sindicato), "CURITIBA"):

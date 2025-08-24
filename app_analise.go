@@ -47,8 +47,8 @@ func (a *App) RealizarAnaliseOrquestrada(diretorioPlanilhas string) (string, err
 		// Logar o erro, mas não falhar a operação principal
 		fmt.Printf("Aviso: Falha ao definir o contexto do chat: %v\n", err)
 	}
-	
+
 	// Retornar mensagem de sucesso com o número de colaboradores processados
-	return fmt.Sprintf("Análise concluída com sucesso! %d colaboradores processados. Planilha salva em Downloads como %s", 
+	return fmt.Sprintf("Análise concluída com sucesso! %d colaboradores processados. Planilha salva em Downloads como %s",
 		len(colaboradores), nomeArquivo), nil
 }

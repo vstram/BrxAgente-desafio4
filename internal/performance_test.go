@@ -30,21 +30,21 @@ func TestStressLLMCache(t *testing.T) {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
-			
+
 			for j := 0; j < numOperations/numWorkers; j++ {
 				prompt := fmt.Sprintf("worker_%d_prompt_%d", workerID, j)
 				response := fmt.Sprintf("response_for_worker_%d_op_%d", workerID, j)
-				
+
 				metadata := cache.CacheMetadata{
 					TokensUsed: 100,
 					Duration:   time.Millisecond * 50,
 					Model:      "test-model",
 					Quality:    0.95,
 				}
-				
+
 				// Set operation
 				llmCache.Set(prompt, response, metadata)
-				
+
 				// Get operation
 				if got, found := llmCache.Get(prompt); !found || got != response {
 					t.Errorf("Cache miss ou valor incorreto para worker %d op %d", workerID, j)
@@ -57,7 +57,7 @@ func TestStressLLMCache(t *testing.T) {
 	elapsed := time.Since(start)
 
 	stats := llmCache.GetStats()
-	
+
 	t.Logf("Stress Test LLM Cache:")
 	t.Logf("- Tempo total: %v", elapsed)
 	t.Logf("- Operações: %d", numOperations)
@@ -87,11 +87,11 @@ func TestStressDataCache(t *testing.T) {
 	}
 
 	start := time.Now()
-	
+
 	// Armazena no cache
 	key := "colaboradores_stress_test"
 	dataCache.SetColaboradores(key, colaboradores)
-	
+
 	// Recupera do cache múltiplas vezes
 	for i := 0; i < 100; i++ {
 		if cached, found := dataCache.GetColaboradores(key); !found {
@@ -115,23 +115,23 @@ func TestStressDataCache(t *testing.T) {
 // BenchmarkWorkerPool benchmark do worker pool
 func BenchmarkWorkerPool(b *testing.B) {
 	sizes := []int{1, 10, 50, 100}
-	
+
 	for _, workers := range sizes {
 		b.Run(fmt.Sprintf("workers_%d", workers), func(b *testing.B) {
 			pool := parallel.NewWorkerPool(workers, 1000)
 			defer pool.Close()
 
 			b.ResetTimer()
-			
+
 			for i := 0; i < b.N; i++ {
 				task := &TestTask{
 					ID:       fmt.Sprintf("task_%d", i),
 					Duration: time.Millisecond,
 				}
-				
+
 				pool.SubmitTask(task)
 			}
-			
+
 			pool.WaitForCompletion(30 * time.Second)
 		})
 	}
@@ -145,7 +145,7 @@ func BenchmarkBatchProcessor(b *testing.B) {
 		MaxConcurrent:  5,
 		TimeoutSeconds: 30,
 	}
-	
+
 	processor := parallel.NewBatchProcessor(config)
 	defer processor.Close()
 
@@ -168,7 +168,7 @@ func BenchmarkBatchProcessor(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	
+
 	for i := 0; i < b.N; i++ {
 		_, erros := processor.ProcessColaboradoresBatch(colaboradores, processFunc)
 		if len(erros) > 0 {
@@ -219,17 +219,17 @@ func TestLargeVolumeProcessing(t *testing.T) {
 	processFunc := func(col *modelo.Colaborador) (*modelo.Colaborador, error) {
 		// Simula processamento complexo
 		time.Sleep(time.Microsecond * time.Duration(100+rand.Intn(200)))
-		
+
 		// Simula erro ocasional
 		if rand.Float64() < 0.01 { // 1% de erro
 			return nil, fmt.Errorf("erro simulado para %s", col.Matricula)
 		}
-		
+
 		return col, nil
 	}
 
 	resultados, erros := processor.ProcessColaboradoresBatch(colaboradores, processFunc)
-	
+
 	elapsed := time.Since(start)
 	throughput := float64(numColaboradores) / elapsed.Seconds()
 
@@ -275,16 +275,16 @@ func TestMemoryUsageUnderLoad(t *testing.T) {
 	// Simula carga pesada
 	smartCache := cache.NewSmartCache(cache.SmartCacheConfig{
 		LLMMaxSize:       1000,
-		LLMTTLHours:     1,
+		LLMTTLHours:      1,
 		DataMaxSizeBytes: 100 * 1024 * 1024, // 100MB
-		DataTTLHours:    1,
+		DataTTLHours:     1,
 	})
 
 	// Cria muitos dados em cache
 	for i := 0; i < 5000; i++ {
 		prompt := fmt.Sprintf("prompt_de_teste_numero_%d_com_texto_longo", i)
 		response := fmt.Sprintf("resposta_detalhada_para_prompt_%d_com_muito_conteudo", i)
-		
+
 		metadata := cache.CacheMetadata{
 			TokensUsed: 200 + rand.Intn(300),
 			Duration:   time.Millisecond * time.Duration(50+rand.Intn(200)),
@@ -305,7 +305,7 @@ func TestMemoryUsageUnderLoad(t *testing.T) {
 					Sindicato: "SIND_TEST",
 				}
 			}
-			
+
 			key := fmt.Sprintf("colaboradores_batch_%d", i/100)
 			smartCache.SetProcessedData(key, colaboradores, 20*1024) // 20KB estimado
 		}
@@ -344,9 +344,9 @@ func TestMemoryUsageUnderLoad(t *testing.T) {
 func TestConcurrentCacheOperations(t *testing.T) {
 	smartCache := cache.NewSmartCache(cache.SmartCacheConfig{
 		LLMMaxSize:       500,
-		LLMTTLHours:     1,
+		LLMTTLHours:      1,
 		DataMaxSizeBytes: 50 * 1024 * 1024,
-		DataTTLHours:    1,
+		DataTTLHours:     1,
 	})
 
 	numGoroutines := 100
@@ -365,7 +365,7 @@ func TestConcurrentCacheOperations(t *testing.T) {
 				// Operações LLM Cache
 				prompt := fmt.Sprintf("g%d_prompt_%d", goroutineID, j)
 				response := fmt.Sprintf("response_g%d_op%d", goroutineID, j)
-				
+
 				metadata := cache.CacheMetadata{
 					TokensUsed: 100,
 					Duration:   time.Millisecond * 50,
@@ -420,8 +420,8 @@ func TestConcurrentCacheOperations(t *testing.T) {
 
 // TestTask implementa Task interface para testes
 type TestTask struct {
-	ID       string
-	Duration time.Duration
+	ID          string
+	Duration    time.Duration
 	ShouldError bool
 }
 

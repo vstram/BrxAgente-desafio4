@@ -121,19 +121,19 @@ func TestParseDataDesligamento(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := parseDataDesligamento(tc.dataStr)
-			
+
 			if tc.expectError {
 				if err == nil {
 					t.Error("Esperava erro, mas não houve erro")
 				}
 				return
 			}
-			
+
 			if err != nil {
 				t.Errorf("Não esperava erro, mas obteve: %v", err)
 				return
 			}
-			
+
 			if !result.Equal(tc.expected) {
 				t.Errorf("Esperava %v, obteve %v", tc.expected, result)
 			}
@@ -169,19 +169,19 @@ func TestParseDataAdmissao(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := parseDataAdmissao(tc.dataStr)
-			
+
 			if tc.expectError {
 				if err == nil {
 					t.Error("Esperava erro, mas não houve erro")
 				}
 				return
 			}
-			
+
 			if err != nil {
 				t.Errorf("Não esperava erro, mas obteve: %v", err)
 				return
 			}
-			
+
 			if !result.Equal(tc.expected) {
 				t.Errorf("Esperava %v, obteve %v", tc.expected, result)
 			}
@@ -194,21 +194,21 @@ func TestCalcularDiasProporcionaisParaPeriodoAdicional(t *testing.T) {
 	inicio := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
 	fim := time.Date(2025, 5, 10, 0, 0, 0, 0, time.UTC)
 	diasUteisMes := 22
-	
+
 	resultado := CalcularDiasProporcionaisParaPeriodo(inicio, fim, diasUteisMes)
-	
+
 	// Cálculo: (22 * 9) / 31 ≈ 6.4 => 6 dias (9 because it's 9 days difference, not 10)
 	// The function calculates the duration between dates, which is 9 days from May 1 to May 10
 	if resultado < 5 || resultado > 7 {
 		t.Errorf("Esperava aproximadamente 6 dias, obteve %d", resultado)
 	}
-	
+
 	// Test case 2: Período de 5 dias em um mês de 31 dias
 	inicio2 := time.Date(2025, 5, 10, 0, 0, 0, 0, time.UTC)
 	fim2 := time.Date(2025, 5, 14, 0, 0, 0, 0, time.UTC)
-	
+
 	resultado2 := CalcularDiasProporcionaisParaPeriodo(inicio2, fim2, diasUteisMes)
-	
+
 	// Cálculo: (22 * 4) / 31 ≈ 2.8 => 2 dias (4 because it's 4 days difference, not 5)
 	if resultado2 < 1 || resultado2 > 3 {
 		t.Errorf("Esperava aproximadamente 2 dias, obteve %d", resultado2)

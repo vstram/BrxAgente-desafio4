@@ -38,18 +38,18 @@ func (c *Cache) ObterFeriadosNacionaisCached(ano int) []feriados.Feriado {
 
 	// Se não estiver em cache, calcular e armazenar
 	feriados := feriados.ObterFeriadosNacionais(ano)
-	
+
 	c.mu.Lock()
 	c.feriadosCache[ano] = feriados
 	c.mu.Unlock()
-	
+
 	return feriados
 }
 
 // ObterFeriadosEstaduaisCached obtém feriados estaduais com cache
 func (c *Cache) ObterFeriadosEstaduaisCached(estado string, ano int) []feriados.Feriado {
 	chave := estado + "_" + string(rune(ano))
-	
+
 	c.mu.RLock()
 	if item, existe := c.calculoCache[chave]; existe {
 		if time.Now().Before(c.expirationTimes[chave]) {
@@ -61,11 +61,11 @@ func (c *Cache) ObterFeriadosEstaduaisCached(estado string, ano int) []feriados.
 
 	// Se não estiver em cache ou expirado, calcular e armazenar
 	feriados := feriados.ObterFeriadosEstaduais(estado, ano)
-	
+
 	c.mu.Lock()
 	c.calculoCache[chave] = feriados
 	c.expirationTimes[chave] = time.Now().Add(c.defaultTTL)
 	c.mu.Unlock()
-	
+
 	return feriados
 }

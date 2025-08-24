@@ -11,12 +11,12 @@ import (
 )
 
 type ComplianceAssistant struct {
-	complianceChecker    *compliance.ComplianceChecker
-	riskAssessor        *compliance.RiskAssessor
-	auditTrail          *compliance.AuditTrail
-	documentationGen    *compliance.DocumentationGenerator
-	name                string
-	description         string
+	complianceChecker *compliance.ComplianceChecker
+	riskAssessor      *compliance.RiskAssessor
+	auditTrail        *compliance.AuditTrail
+	documentationGen  *compliance.DocumentationGenerator
+	name              string
+	description       string
 }
 
 func NewComplianceAssistant() *ComplianceAssistant {
@@ -27,10 +27,10 @@ func NewComplianceAssistant() *ComplianceAssistant {
 
 	return &ComplianceAssistant{
 		complianceChecker: complianceChecker,
-		riskAssessor:     riskAssessor,
-		auditTrail:       auditTrail,
-		documentationGen: documentationGen,
-		name:             "compliance_assistant",
+		riskAssessor:      riskAssessor,
+		auditTrail:        auditTrail,
+		documentationGen:  documentationGen,
+		name:              "compliance_assistant",
 		description: `Assistente de compliance e auditoria para Vale Refeição. 
 
 Funcionalidades:
@@ -108,12 +108,12 @@ func (c *ComplianceAssistant) handleCheckCompliance(data map[string]interface{})
 	}
 
 	response := map[string]interface{}{
-		"status":              result.Status,
-		"compliance_score":    result.Score,
-		"total_violations":    len(result.Violations),
-		"violations":          result.Violations,
-		"recommendations":     result.Recommendations,
-		"checked_at":          result.CheckedAt,
+		"status":           result.Status,
+		"compliance_score": result.Score,
+		"total_violations": len(result.Violations),
+		"violations":       result.Violations,
+		"recommendations":  result.Recommendations,
+		"checked_at":       result.CheckedAt,
 	}
 
 	// Log compliance check result
@@ -121,9 +121,9 @@ func (c *ComplianceAssistant) handleCheckCompliance(data map[string]interface{})
 	if result.Status != compliance.StatusCompliant {
 		level = "WARN"
 	}
-	
+
 	entityID, _ := data["matricula"].(string)
-	c.auditTrail.RecordSimpleAction(entityID, "compliance_check", 
+	c.auditTrail.RecordSimpleAction(entityID, "compliance_check",
 		fmt.Sprintf("Verificação de compliance - Status: %s", result.Status), level, response)
 
 	jsonResponse, err := json.MarshalIndent(response, "", "  ")
@@ -156,8 +156,8 @@ func (c *ComplianceAssistant) handleAssessRisk(data map[string]interface{}) (str
 		level = "WARN"
 	}
 
-	c.auditTrail.RecordSimpleAction(assessment.EntityID, "risk_assessment", 
-		fmt.Sprintf("Avaliação de risco - Nível: %s (Score: %.2f)", assessment.OverallRisk, assessment.RiskScore), 
+	c.auditTrail.RecordSimpleAction(assessment.EntityID, "risk_assessment",
+		fmt.Sprintf("Avaliação de risco - Nível: %s (Score: %.2f)", assessment.OverallRisk, assessment.RiskScore),
 		level, response)
 
 	jsonResponse, err := json.MarshalIndent(response, "", "  ")
@@ -213,11 +213,11 @@ func (c *ComplianceAssistant) handleGenerateReport(data map[string]interface{}) 
 	format, _ := data["format"].(string)
 	if format == "markdown" {
 		markdownReport := c.documentationGen.GenerateMarkdownReport(report)
-		
+
 		response := map[string]interface{}{
-			"format":    "markdown",
-			"report":    markdownReport,
-			"summary":   report.Summary,
+			"format":       "markdown",
+			"report":       markdownReport,
+			"summary":      report.Summary,
 			"generated_at": report.GeneratedAt,
 		}
 
@@ -229,12 +229,12 @@ func (c *ComplianceAssistant) handleGenerateReport(data map[string]interface{}) 
 	}
 
 	// Log report generation
-	c.auditTrail.RecordSimpleAction("system", "generate_report", 
-		fmt.Sprintf("Relatório de compliance gerado - Período: %s a %s", 
-			startDate.Format("02/01/2006"), endDate.Format("02/01/2006")), 
+	c.auditTrail.RecordSimpleAction("system", "generate_report",
+		fmt.Sprintf("Relatório de compliance gerado - Período: %s a %s",
+			startDate.Format("02/01/2006"), endDate.Format("02/01/2006")),
 		"INFO", map[string]interface{}{
-			"total_employees": report.Summary.TotalEmployees,
-			"compliance_rate": report.Summary.ComplianceRate,
+			"total_employees":  report.Summary.TotalEmployees,
+			"compliance_rate":  report.Summary.ComplianceRate,
 			"total_violations": len(report.Violations),
 		})
 
@@ -248,7 +248,7 @@ func (c *ComplianceAssistant) handleGenerateReport(data map[string]interface{}) 
 
 func (c *ComplianceAssistant) handleAuditTrail(data map[string]interface{}) (string, error) {
 	operation, _ := data["operation"].(string)
-	
+
 	switch operation {
 	case "query":
 		return c.handleAuditQuery(data)
@@ -263,20 +263,20 @@ func (c *ComplianceAssistant) handleAuditTrail(data map[string]interface{}) (str
 
 func (c *ComplianceAssistant) handleAuditQuery(data map[string]interface{}) (string, error) {
 	entityID, _ := data["entity_id"].(string)
-	
+
 	// Parse date range
 	sinceStr, _ := data["since"].(string)
 	untilStr, _ := data["until"].(string)
-	
+
 	since := time.Now().AddDate(0, -1, 0) // Default to 1 month ago
 	until := time.Now()
-	
+
 	if sinceStr != "" {
 		if parsed, err := time.Parse("2006-01-02", sinceStr); err == nil {
 			since = parsed
 		}
 	}
-	
+
 	if untilStr != "" {
 		if parsed, err := time.Parse("2006-01-02", untilStr); err == nil {
 			until = parsed
@@ -284,7 +284,7 @@ func (c *ComplianceAssistant) handleAuditQuery(data map[string]interface{}) (str
 	}
 
 	entries := c.auditTrail.GetEntriesForEntity(entityID, since, until)
-	
+
 	response := map[string]interface{}{
 		"total_entries": len(entries),
 		"period": map[string]string{
@@ -307,24 +307,24 @@ func (c *ComplianceAssistant) handleAuditRecord(data map[string]interface{}) (st
 	action, _ := data["action"].(string)
 	description, _ := data["description"].(string)
 	level, _ := data["level"].(string)
-	
+
 	if userID == "" || action == "" {
 		return "", fmt.Errorf("user_id e action são obrigatórios para registrar entrada de auditoria")
 	}
-	
+
 	if level == "" {
 		level = "INFO"
 	}
 
 	metadata, _ := data["metadata"].(map[string]interface{})
-	
+
 	c.auditTrail.RecordSimpleAction(userID, action, description, level, metadata)
-	
+
 	response := map[string]interface{}{
-		"status": "recorded",
+		"status":    "recorded",
 		"timestamp": time.Now(),
-		"user_id": userID,
-		"action": action,
+		"user_id":   userID,
+		"action":    action,
 	}
 
 	jsonResponse, err := json.MarshalIndent(response, "", "  ")
@@ -338,7 +338,7 @@ func (c *ComplianceAssistant) handleAuditRecord(data map[string]interface{}) (st
 func (c *ComplianceAssistant) handleAuditReport(data map[string]interface{}) (string, error) {
 	startDateStr, _ := data["start_date"].(string)
 	endDateStr, _ := data["end_date"].(string)
-	
+
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
 		startDate = time.Now().AddDate(0, -1, 0) // Default to 1 month ago
@@ -350,7 +350,7 @@ func (c *ComplianceAssistant) handleAuditReport(data map[string]interface{}) (st
 	}
 
 	auditReport := c.documentationGen.GenerateAuditReport(startDate, endDate)
-	
+
 	jsonResponse, err := json.MarshalIndent(auditReport, "", "  ")
 	if err != nil {
 		return "", fmt.Errorf("erro ao serializar relatório de auditoria: %v", err)
@@ -363,7 +363,7 @@ func (c *ComplianceAssistant) handleGetRegulations(data map[string]interface{}) 
 	category, _ := data["category"].(string)
 	ruleID, _ := data["rule_id"].(string)
 	ruleType, _ := data["type"].(string)
-	
+
 	// Load regulations if needed
 	err := c.complianceChecker.LoadRegulations()
 	if err != nil {
@@ -371,25 +371,25 @@ func (c *ComplianceAssistant) handleGetRegulations(data map[string]interface{}) 
 	}
 
 	var filteredRules []compliance.ComplianceRule
-	
+
 	// Get all rules and filter based on criteria
 	allRules := c.complianceChecker.GetAllRules()
-	
+
 	for _, rule := range allRules {
 		matches := true
-		
+
 		if category != "" && rule.Category != category {
 			matches = false
 		}
-		
+
 		if ruleID != "" && rule.ID != ruleID {
 			matches = false
 		}
-		
+
 		if ruleType != "" && rule.Type != ruleType {
 			matches = false
 		}
-		
+
 		if matches {
 			filteredRules = append(filteredRules, rule)
 		}
@@ -406,8 +406,8 @@ func (c *ComplianceAssistant) handleGetRegulations(data map[string]interface{}) 
 	}
 
 	// Log regulation query
-	c.auditTrail.RecordSimpleAction("system", "query_regulations", 
-		fmt.Sprintf("Consulta de regulamentações - Filtros: category=%s, rule_id=%s, type=%s", 
+	c.auditTrail.RecordSimpleAction("system", "query_regulations",
+		fmt.Sprintf("Consulta de regulamentações - Filtros: category=%s, rule_id=%s, type=%s",
 			category, ruleID, ruleType), "INFO", response)
 
 	jsonResponse, err := json.MarshalIndent(response, "", "  ")

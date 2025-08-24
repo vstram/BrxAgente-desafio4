@@ -38,7 +38,7 @@ func TestCalcularDiasProporcionais(t *testing.T) {
 		// Maio tem 31 dias, então dias trabalhados = 31 - 15 + 1 = 17
 		// Dias proporcionais = (22 * 17) / 31 = 12.06... ≈ 12
 		diasEsperados := (diasUteisMes * (31 - 15 + 1)) / 31
-		
+
 		if dias != diasEsperados {
 			t.Errorf("Esperava %d dias proporcionais, mas obteve %d", diasEsperados, dias)
 		}
@@ -95,7 +95,7 @@ func TestCalcularDiasProporcionais(t *testing.T) {
 		// Dias trabalhados = 20
 		// Dias proporcionais = (22 * 20) / 31 = 14.19... ≈ 14
 		diasEsperados := (diasUteisMes * 20) / 31
-		
+
 		if dias != diasEsperados {
 			t.Errorf("Esperava %d dias proporcionais, mas obteve %d", diasEsperados, dias)
 		}
@@ -122,7 +122,7 @@ func TestDiasNoMes(t *testing.T) {
 	t.Run("Janeiro", func(t *testing.T) {
 		data := time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC)
 		dias := diasNoMes(data)
-		
+
 		if dias != 31 {
 			t.Errorf("Esperava 31 dias para janeiro, mas obteve %d", dias)
 		}
@@ -131,7 +131,7 @@ func TestDiasNoMes(t *testing.T) {
 	t.Run("FevereiroAnoBissexto", func(t *testing.T) {
 		data := time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC)
 		dias := diasNoMes(data)
-		
+
 		if dias != 29 {
 			t.Errorf("Esperava 29 dias para fevereiro de ano bissexto, mas obteve %d", dias)
 		}
@@ -140,7 +140,7 @@ func TestDiasNoMes(t *testing.T) {
 	t.Run("FevereiroAnoNaoBissexto", func(t *testing.T) {
 		data := time.Date(2025, 2, 15, 0, 0, 0, 0, time.UTC)
 		dias := diasNoMes(data)
-		
+
 		if dias != 28 {
 			t.Errorf("Esperava 28 dias para fevereiro de ano não bissexto, mas obteve %d", dias)
 		}
@@ -149,7 +149,7 @@ func TestDiasNoMes(t *testing.T) {
 	t.Run("Abril", func(t *testing.T) {
 		data := time.Date(2025, 4, 15, 0, 0, 0, 0, time.UTC)
 		dias := diasNoMes(data)
-		
+
 		if dias != 30 {
 			t.Errorf("Esperava 30 dias para abril, mas obteve %d", dias)
 		}
@@ -158,32 +158,32 @@ func TestDiasNoMes(t *testing.T) {
 
 func TestCalcularDiasProporcionaisParaPeriodo(t *testing.T) {
 	diasUteisMes := 22 // Exemplo de dias úteis em maio
-	
+
 	t.Run("PeriodoCurto", func(t *testing.T) {
 		inicio := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
 		fim := time.Date(2025, 5, 10, 0, 0, 0, 0, time.UTC)
-		
+
 		dias := CalcularDiasProporcionaisParaPeriodo(inicio, fim, diasUteisMes)
-		
+
 		// Período de 9 dias (1 a 10) em um mês de 31 dias
 		// Dias proporcionais = (22 * 9) / 31 = 6.38... ≈ 6
 		diasEsperados := (diasUteisMes * 9) / 31
-		
+
 		if dias != diasEsperados {
 			t.Errorf("Esperava %d dias proporcionais, mas obteve %d", diasEsperados, dias)
 		}
 	})
-	
+
 	t.Run("PeriodoLongo", func(t *testing.T) {
 		inicio := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
 		fim := time.Date(2025, 5, 25, 0, 0, 0, 0, time.UTC)
-		
+
 		dias := CalcularDiasProporcionaisParaPeriodo(inicio, fim, diasUteisMes)
-		
+
 		// Período de 24 dias (1 a 25) em um mês de 31 dias
 		// Dias proporcionais = (22 * 24) / 31 = 17.03... ≈ 17
 		diasEsperados := (diasUteisMes * 24) / 31
-		
+
 		if dias != diasEsperados {
 			t.Errorf("Esperava %d dias proporcionais, mas obteve %d", diasEsperados, dias)
 		}

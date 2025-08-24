@@ -57,16 +57,16 @@ func (s WorkflowStatus) String() string {
 
 // WorkflowResult contém o resultado da execução de um workflow
 type WorkflowResult struct {
-	WorkflowName  string                 `json:"workflow_name"`
-	Status        WorkflowStatus         `json:"status"`
-	StartTime     time.Time              `json:"start_time"`
-	EndTime       time.Time              `json:"end_time"`
-	Duration      time.Duration          `json:"duration"`
-	CompletedSteps int                   `json:"completed_steps"`
-	TotalSteps    int                    `json:"total_steps"`
-	Error         error                  `json:"error,omitempty"`
-	StepResults   []StepResult           `json:"step_results"`
-	Metadata      map[string]interface{} `json:"metadata"`
+	WorkflowName   string                 `json:"workflow_name"`
+	Status         WorkflowStatus         `json:"status"`
+	StartTime      time.Time              `json:"start_time"`
+	EndTime        time.Time              `json:"end_time"`
+	Duration       time.Duration          `json:"duration"`
+	CompletedSteps int                    `json:"completed_steps"`
+	TotalSteps     int                    `json:"total_steps"`
+	Error          error                  `json:"error,omitempty"`
+	StepResults    []StepResult           `json:"step_results"`
+	Metadata       map[string]interface{} `json:"metadata"`
 }
 
 // StepResult contém o resultado da execução de um step
@@ -117,29 +117,29 @@ func (w *BaseWorkflow) Validate() error {
 	if w.name == "" {
 		return fmt.Errorf("workflow name cannot be empty")
 	}
-	
+
 	if len(w.steps) == 0 {
 		return fmt.Errorf("workflow must have at least one step")
 	}
-	
+
 	// Validar cada step
 	stepNames := make(map[string]bool)
 	for i, step := range w.steps {
 		if step == nil {
 			return fmt.Errorf("step %d is nil", i)
 		}
-		
+
 		stepName := step.Name()
 		if stepName == "" {
 			return fmt.Errorf("step %d has empty name", i)
 		}
-		
+
 		if stepNames[stepName] {
 			return fmt.Errorf("duplicate step name: %s", stepName)
 		}
 		stepNames[stepName] = true
 	}
-	
+
 	return nil
 }
 

@@ -19,7 +19,7 @@ func (a *AnalyzerAdapter) AnalyzeData(colaboradores map[string]interface{}, para
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Retornar um wrapper que implementa a interface
 	return &AnomalyReportWrapper{report: report}, nil
 }
@@ -72,14 +72,14 @@ func (w *AnomalyReportWrapper) GetSummary() map[string]interface{} {
 	if w.report == nil {
 		return make(map[string]interface{})
 	}
-	
+
 	summary := make(map[string]interface{})
 	summary["generated_at"] = w.report.GeneratedAt
 	summary["total_records"] = w.report.TotalRecords
 	summary["total_anomalies"] = w.report.TotalAnomalies
 	summary["anomalies_by_type"] = w.report.AnomaliesByType
 	summary["anomalies_by_severity"] = w.report.AnomaliesBySeverity
-	
+
 	// Summary sempre existe pois é uma struct, não ponteiro
 	summary["overall_score"] = w.report.Summary.OverallScore
 	summary["risk_level"] = w.report.Summary.RiskLevel
@@ -88,7 +88,7 @@ func (w *AnomalyReportWrapper) GetSummary() map[string]interface{} {
 	summary["top_value_issues"] = w.report.Summary.TopValueIssues
 	summary["top_temporal_issues"] = w.report.Summary.TopTemporalIssues
 	summary["top_relationship_issues"] = w.report.Summary.TopRelationshipIssues
-	
+
 	return summary
 }
 

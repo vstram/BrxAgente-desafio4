@@ -20,22 +20,22 @@ type TimePoint struct {
 
 // HistoricalVRData representa dados históricos de VR
 type HistoricalVRData struct {
-	Month             time.Time          `json:"month"`
-	Sindicato         string             `json:"sindicato"`
-	TotalVR           float64            `json:"total_vr"`
-	NumColaboradores  int                `json:"num_colaboradores"`
-	MediaPorPessoa    float64            `json:"media_por_pessoa"`
-	DaysProcessed     int                `json:"days_processed"`
-	Anomalies         []string           `json:"anomalies"`
-	Metadata          map[string]interface{} `json:"metadata"`
+	Month            time.Time              `json:"month"`
+	Sindicato        string                 `json:"sindicato"`
+	TotalVR          float64                `json:"total_vr"`
+	NumColaboradores int                    `json:"num_colaboradores"`
+	MediaPorPessoa   float64                `json:"media_por_pessoa"`
+	DaysProcessed    int                    `json:"days_processed"`
+	Anomalies        []string               `json:"anomalies"`
+	Metadata         map[string]interface{} `json:"metadata"`
 }
 
 // VRTrend representa uma tendência identificada nos dados de VR
 type VRTrend struct {
 	Type        TrendType `json:"type"`
-	Strength    float64   `json:"strength"`    // -1.0 a 1.0
-	Period      int       `json:"period"`      // em meses
-	Confidence  float64   `json:"confidence"`  // 0.0 a 1.0
+	Strength    float64   `json:"strength"`   // -1.0 a 1.0
+	Period      int       `json:"period"`     // em meses
+	Confidence  float64   `json:"confidence"` // 0.0 a 1.0
 	StartDate   time.Time `json:"start_date"`
 	Description string    `json:"description"`
 }
@@ -44,31 +44,31 @@ type VRTrend struct {
 type TrendType string
 
 const (
-	TrendUpward    TrendType = "upward"
-	TrendDownward  TrendType = "downward" 
-	TrendStable    TrendType = "stable"
-	TrendVolatile  TrendType = "volatile"
-	TrendSeasonal  TrendType = "seasonal"
-	TrendCyclical  TrendType = "cyclical"
+	TrendUpward   TrendType = "upward"
+	TrendDownward TrendType = "downward"
+	TrendStable   TrendType = "stable"
+	TrendVolatile TrendType = "volatile"
+	TrendSeasonal TrendType = "seasonal"
+	TrendCyclical TrendType = "cyclical"
 )
 
 // SeasonalityInfo contém informações sobre sazonalidade detectada
 type SeasonalityInfo struct {
-	IsDetected   bool                   `json:"is_detected"`
-	Period       int                    `json:"period"`        // período em meses
-	Amplitude    float64                `json:"amplitude"`     // amplitude da variação sazonal
-	PeakMonths   []int                  `json:"peak_months"`   // meses de pico (1-12)
-	TroughMonths []int                  `json:"trough_months"` // meses de vale (1-12)
-	Confidence   float64                `json:"confidence"`
-	Pattern      map[int]float64        `json:"pattern"`       // padrão sazonal por mês
+	IsDetected   bool            `json:"is_detected"`
+	Period       int             `json:"period"`        // período em meses
+	Amplitude    float64         `json:"amplitude"`     // amplitude da variação sazonal
+	PeakMonths   []int           `json:"peak_months"`   // meses de pico (1-12)
+	TroughMonths []int           `json:"trough_months"` // meses de vale (1-12)
+	Confidence   float64         `json:"confidence"`
+	Pattern      map[int]float64 `json:"pattern"` // padrão sazonal por mês
 }
 
 // OutlierPattern representa um padrão de outliers identificado
 type OutlierPattern struct {
 	Type        OutlierType `json:"type"`
-	Frequency   float64     `json:"frequency"`   // frequência de ocorrência
-	Severity    float64     `json:"severity"`    // severidade média
-	Affected    []string    `json:"affected"`    // entidades afetadas
+	Frequency   float64     `json:"frequency"` // frequência de ocorrência
+	Severity    float64     `json:"severity"`  // severidade média
+	Affected    []string    `json:"affected"`  // entidades afetadas
 	Description string      `json:"description"`
 	Confidence  float64     `json:"confidence"`
 }
@@ -77,10 +77,10 @@ type OutlierPattern struct {
 type OutlierType string
 
 const (
-	OutlierSpike     OutlierType = "spike"      // picos isolados
-	OutlierDip       OutlierType = "dip"        // quedas isoladas
-	OutlierSustained OutlierType = "sustained"  // valores sustentados fora do padrão
-	OutlierCyclic    OutlierType = "cyclic"     // outliers cíclicos
+	OutlierSpike     OutlierType = "spike"     // picos isolados
+	OutlierDip       OutlierType = "dip"       // quedas isoladas
+	OutlierSustained OutlierType = "sustained" // valores sustentados fora do padrão
+	OutlierCyclic    OutlierType = "cyclic"    // outliers cíclicos
 )
 
 // Pattern representa um padrão identificado nos dados
@@ -91,7 +91,7 @@ type Pattern struct {
 	Confidence  float64                `json:"confidence"`
 	StartDate   time.Time              `json:"start_date"`
 	EndDate     *time.Time             `json:"end_date,omitempty"`
-	Entities    []string               `json:"entities"`    // sindicatos, colaboradores afetados
+	Entities    []string               `json:"entities"` // sindicatos, colaboradores afetados
 	Attributes  map[string]interface{} `json:"attributes"`
 	Impact      PatternImpact          `json:"impact"`
 }
@@ -100,18 +100,18 @@ type Pattern struct {
 type PatternType string
 
 const (
-	PatternConsumption PatternType = "consumption"  // padrão de consumo
-	PatternBehavior    PatternType = "behavior"     // padrão comportamental
-	PatternSeasonal    PatternType = "seasonal"     // padrão sazonal
-	PatternAnomaly     PatternType = "anomaly"      // padrão de anomalias
-	PatternGrowth      PatternType = "growth"       // padrão de crescimento
+	PatternConsumption PatternType = "consumption" // padrão de consumo
+	PatternBehavior    PatternType = "behavior"    // padrão comportamental
+	PatternSeasonal    PatternType = "seasonal"    // padrão sazonal
+	PatternAnomaly     PatternType = "anomaly"     // padrão de anomalias
+	PatternGrowth      PatternType = "growth"      // padrão de crescimento
 )
 
 // PatternImpact descreve o impacto de um padrão
 type PatternImpact struct {
 	Level       ImpactLevel `json:"level"`
-	Areas       []string    `json:"areas"`       // áreas afetadas
-	Magnitude   float64     `json:"magnitude"`   // magnitude do impacto
+	Areas       []string    `json:"areas"`     // áreas afetadas
+	Magnitude   float64     `json:"magnitude"` // magnitude do impacto
 	Description string      `json:"description"`
 }
 
@@ -119,16 +119,16 @@ type PatternImpact struct {
 type ImpactLevel string
 
 const (
-	ImpactLow    ImpactLevel = "low"
-	ImpactMedium ImpactLevel = "medium"
-	ImpactHigh   ImpactLevel = "high"
+	ImpactLow      ImpactLevel = "low"
+	ImpactMedium   ImpactLevel = "medium"
+	ImpactHigh     ImpactLevel = "high"
 	ImpactCritical ImpactLevel = "critical"
 )
 
 // MovingAverageConfig configuração para média móvel
 type MovingAverageConfig struct {
-	Window int     `json:"window"`  // janela de tempo (em períodos)
-	Weight float64 `json:"weight"`  // peso para média ponderada
+	Window int     `json:"window"` // janela de tempo (em períodos)
+	Weight float64 `json:"weight"` // peso para média ponderada
 }
 
 // TrendAnalysisConfig configuração para análise de tendências

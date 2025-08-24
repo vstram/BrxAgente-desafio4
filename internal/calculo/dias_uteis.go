@@ -52,14 +52,14 @@ func CalcularDiasUteisPorSindicato(colaborador *modelo.Colaborador, diasUteisSin
 
 	// Obter feriados para o mês de referência com cache para evitar recálculos
 	feriadosNacionais := ObterFeriadosNacionaisCached(mesReferencia.Year())
-	
+
 	// Determinar o estado do colaborador com base no sindicato
 	estado := determinarEstadoPorSindicato(colaborador.Sindicato)
 	feriadosEstaduais := ObterFeriadosEstaduaisCached(estado, mesReferencia.Year())
-	
+
 	// TODO: Implementar obtenção de feriados municipais quando disponível
 	// feriadosMunicipais := feriados.ObterFeriadosMunicipais(municipio, estado, mesReferencia.Year())
-	
+
 	// Combinar todos os feriados
 	todosFeriados := append(feriadosNacionais, feriadosEstaduais...)
 	// todosFeriados = append(todosFeriados, feriadosMunicipais...)
@@ -110,7 +110,7 @@ func containsIgnoreCase(s, substr string) bool {
 func contarFeriadosNoMes(feriadosLista []feriados.Feriado, mesReferencia time.Time) int {
 	inicioMes := time.Date(mesReferencia.Year(), mesReferencia.Month(), 1, 0, 0, 0, 0, time.UTC)
 	fimMes := time.Date(mesReferencia.Year(), mesReferencia.Month()+1, 1, 0, 0, 0, 0, time.UTC).AddDate(0, 0, -1)
-	
+
 	return feriados.ContarFeriadosNoPeriodo(inicioMes, fimMes, feriadosLista)
 }
 
@@ -202,7 +202,7 @@ func containsStringIgnoreCase(s, substr string) bool {
 			sUpper += string(r)
 		}
 	}
-	
+
 	substrUpper := ""
 	for _, r := range substr {
 		if r >= 'a' && r <= 'z' {
@@ -211,7 +211,7 @@ func containsStringIgnoreCase(s, substr string) bool {
 			substrUpper += string(r)
 		}
 	}
-	
+
 	// Simple contains implementation
 	for i := 0; i <= len(sUpper)-len(substrUpper); i++ {
 		if sUpper[i:i+len(substrUpper)] == substrUpper {

@@ -159,12 +159,12 @@ func (c *DataCache) GetStats() DataCacheStats {
 	defer c.mutex.RUnlock()
 
 	return DataCacheStats{
-		EntryCount:    len(c.cache),
-		CurrentSize:   c.currSize,
-		MaxSize:       c.maxSize,
-		UsagePercent:  float64(c.currSize) / float64(c.maxSize) * 100,
-		OldestEntry:   c.getOldestEntryAge(),
-		NewestEntry:   c.getNewestEntryAge(),
+		EntryCount:   len(c.cache),
+		CurrentSize:  c.currSize,
+		MaxSize:      c.maxSize,
+		UsagePercent: float64(c.currSize) / float64(c.maxSize) * 100,
+		OldestEntry:  c.getOldestEntryAge(),
+		NewestEntry:  c.getNewestEntryAge(),
 	}
 }
 
@@ -221,7 +221,7 @@ func (c *DataCache) evictLRU() {
 // matchPattern verifica se uma chave corresponde ao padrão (implementação simples)
 func (c *DataCache) matchPattern(key, pattern string) bool {
 	// Implementação simples de matching - pode ser expandida para regex
-	return key == pattern || (pattern[len(pattern)-1] == '*' && 
+	return key == pattern || (pattern[len(pattern)-1] == '*' &&
 		len(key) >= len(pattern)-1 &&
 		key[:len(pattern)-1] == pattern[:len(pattern)-1])
 }

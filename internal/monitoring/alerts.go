@@ -92,14 +92,14 @@ func NewAlertManager() *AlertManager {
 func (am *AlertManager) addDefaultRules() {
 	// Regra de alta utilização de memória
 	am.AddRule(&AlertRule{
-		ID:       "high_memory_usage",
-		Name:     "Alta utilização de memória",
-		Type:     AlertTypeMemory,
-		Enabled:  true,
-		Threshold: 500, // 500MB
-		Duration: 2 * time.Minute,
-		Cooldown: 10 * time.Minute,
-		Severity: AlertSeverityWarning,
+		ID:          "high_memory_usage",
+		Name:        "Alta utilização de memória",
+		Type:        AlertTypeMemory,
+		Enabled:     true,
+		Threshold:   500, // 500MB
+		Duration:    2 * time.Minute,
+		Cooldown:    10 * time.Minute,
+		Severity:    AlertSeverityWarning,
 		Description: "Uso de memória acima de 500MB",
 		Condition: func(metrics PerformanceMetrics) bool {
 			return metrics.MemoryUsage.AllocMB > 500
@@ -108,14 +108,14 @@ func (am *AlertManager) addDefaultRules() {
 
 	// Regra de alto uso de CPU
 	am.AddRule(&AlertRule{
-		ID:       "high_cpu_usage",
-		Name:     "Alto uso de CPU",
-		Type:     AlertTypeCPU,
-		Enabled:  true,
-		Threshold: 80, // 80%
-		Duration: 1 * time.Minute,
-		Cooldown: 5 * time.Minute,
-		Severity: AlertSeverityWarning,
+		ID:          "high_cpu_usage",
+		Name:        "Alto uso de CPU",
+		Type:        AlertTypeCPU,
+		Enabled:     true,
+		Threshold:   80, // 80%
+		Duration:    1 * time.Minute,
+		Cooldown:    5 * time.Minute,
+		Severity:    AlertSeverityWarning,
 		Description: "Uso de CPU acima de 80%",
 		Condition: func(metrics PerformanceMetrics) bool {
 			return metrics.CPUUsage.Usage > 80
@@ -124,14 +124,14 @@ func (am *AlertManager) addDefaultRules() {
 
 	// Regra de baixo hit ratio do cache
 	am.AddRule(&AlertRule{
-		ID:       "low_cache_hit_ratio",
-		Name:     "Baixo hit ratio do cache",
-		Type:     AlertTypeCache,
-		Enabled:  true,
-		Threshold: 0.5, // 50%
-		Duration: 5 * time.Minute,
-		Cooldown: 15 * time.Minute,
-		Severity: AlertSeverityInfo,
+		ID:          "low_cache_hit_ratio",
+		Name:        "Baixo hit ratio do cache",
+		Type:        AlertTypeCache,
+		Enabled:     true,
+		Threshold:   0.5, // 50%
+		Duration:    5 * time.Minute,
+		Cooldown:    15 * time.Minute,
+		Severity:    AlertSeverityInfo,
 		Description: "Hit ratio do cache abaixo de 50%",
 		Condition: func(metrics PerformanceMetrics) bool {
 			return metrics.ItemsProcessed > 100 && metrics.CacheHitRatio < 0.5
@@ -140,14 +140,14 @@ func (am *AlertManager) addDefaultRules() {
 
 	// Regra de alta taxa de erro
 	am.AddRule(&AlertRule{
-		ID:       "high_error_rate",
-		Name:     "Alta taxa de erro",
-		Type:     AlertTypeError,
-		Enabled:  true,
-		Threshold: 5, // 5%
-		Duration: 1 * time.Minute,
-		Cooldown: 5 * time.Minute,
-		Severity: AlertSeverityCritical,
+		ID:          "high_error_rate",
+		Name:        "Alta taxa de erro",
+		Type:        AlertTypeError,
+		Enabled:     true,
+		Threshold:   5, // 5%
+		Duration:    1 * time.Minute,
+		Cooldown:    5 * time.Minute,
+		Severity:    AlertSeverityCritical,
 		Description: "Taxa de erro acima de 5%",
 		Condition: func(metrics PerformanceMetrics) bool {
 			return metrics.ItemsProcessed > 50 && metrics.ErrorRate > 5
@@ -156,14 +156,14 @@ func (am *AlertManager) addDefaultRules() {
 
 	// Regra de processamento lento
 	am.AddRule(&AlertRule{
-		ID:       "slow_processing",
-		Name:     "Processamento lento",
-		Type:     AlertTypePerformance,
-		Enabled:  true,
-		Threshold: 10, // 10 segundos
-		Duration: 3 * time.Minute,
-		Cooldown: 10 * time.Minute,
-		Severity: AlertSeverityWarning,
+		ID:          "slow_processing",
+		Name:        "Processamento lento",
+		Type:        AlertTypePerformance,
+		Enabled:     true,
+		Threshold:   10, // 10 segundos
+		Duration:    3 * time.Minute,
+		Cooldown:    10 * time.Minute,
+		Severity:    AlertSeverityWarning,
 		Description: "Tempo médio de processamento acima de 10 segundos",
 		Condition: func(metrics PerformanceMetrics) bool {
 			return metrics.AverageProcessingTime > 10*time.Second
@@ -175,7 +175,7 @@ func (am *AlertManager) addDefaultRules() {
 func (am *AlertManager) AddRule(rule *AlertRule) {
 	am.mutex.Lock()
 	defer am.mutex.Unlock()
-	
+
 	am.rules[rule.ID] = rule
 }
 
@@ -183,7 +183,7 @@ func (am *AlertManager) AddRule(rule *AlertRule) {
 func (am *AlertManager) RemoveRule(ruleID string) {
 	am.mutex.Lock()
 	defer am.mutex.Unlock()
-	
+
 	delete(am.rules, ruleID)
 }
 
@@ -191,7 +191,7 @@ func (am *AlertManager) RemoveRule(ruleID string) {
 func (am *AlertManager) AddHandler(handler AlertHandler) {
 	am.mutex.Lock()
 	defer am.mutex.Unlock()
-	
+
 	am.handlers = append(am.handlers, handler)
 }
 
@@ -220,16 +220,16 @@ func (am *AlertManager) CheckMetrics(metrics PerformanceMetrics) []Alert {
 		if rule.Condition(metrics) {
 			alert := am.createAlert(rule, metrics)
 			newAlerts = append(newAlerts, alert)
-			
+
 			// Atualiza timestamp do último alerta
 			rule.lastAlert = time.Now()
-			
+
 			// Adiciona aos alertas ativos
 			am.alerts[alert.ID] = &alert
-			
+
 			// Adiciona ao histórico
 			am.history = append(am.history, alert)
-			
+
 			// Limita tamanho do histórico
 			if len(am.history) > 1000 {
 				am.history = am.history[100:]
@@ -246,15 +246,15 @@ func (am *AlertManager) CheckMetrics(metrics PerformanceMetrics) []Alert {
 // createAlert cria um novo alerta baseado na regra
 func (am *AlertManager) createAlert(rule *AlertRule, metrics PerformanceMetrics) Alert {
 	alertID := fmt.Sprintf("%s_%d", rule.ID, time.Now().Unix())
-	
+
 	metadata := map[string]interface{}{
-		"rule_id":            rule.ID,
-		"threshold":          rule.Threshold,
-		"current_memory_mb":  metrics.MemoryUsage.AllocMB,
-		"current_cpu_pct":    metrics.CPUUsage.Usage,
-		"current_error_rate": metrics.ErrorRate,
-		"cache_hit_ratio":    metrics.CacheHitRatio,
-		"items_processed":    metrics.ItemsProcessed,
+		"rule_id":             rule.ID,
+		"threshold":           rule.Threshold,
+		"current_memory_mb":   metrics.MemoryUsage.AllocMB,
+		"current_cpu_pct":     metrics.CPUUsage.Usage,
+		"current_error_rate":  metrics.ErrorRate,
+		"cache_hit_ratio":     metrics.CacheHitRatio,
+		"items_processed":     metrics.ItemsProcessed,
 		"avg_processing_time": metrics.AverageProcessingTime.Seconds(),
 	}
 
@@ -401,7 +401,7 @@ func NewLogHandler() *LogHandler {
 }
 
 func (lh *LogHandler) HandleAlert(alert Alert) error {
-	fmt.Printf("[ALERT] %s - %s: %s (Severity: %s)\n", 
+	fmt.Printf("[ALERT] %s - %s: %s (Severity: %s)\n",
 		alert.Timestamp.Format("2006-01-02 15:04:05"),
 		alert.Type,
 		alert.Title,

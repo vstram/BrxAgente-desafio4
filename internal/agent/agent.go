@@ -6,13 +6,13 @@ import (
 	"log"
 	"strings"
 	"time"
-	
+
+	"BrxAgente-desafio4/internal/agent/tools"
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/excel"
-	"BrxAgente-desafio4/internal/agent/tools"
-	"BrxAgente-desafio4/internal/workflows"
 	"BrxAgente-desafio4/internal/intelligence"
-	
+	"BrxAgente-desafio4/internal/workflows"
+
 	"github.com/tmc/langchaingo/chains"
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/memory"
@@ -20,40 +20,40 @@ import (
 
 // VRAgent representa o agente principal de IA para processamento de VR
 type VRAgent struct {
-	config    *AgentConfig
-	
+	config *AgentConfig
+
 	// Componentes LangChain
-	chain    *chains.LLMChain
-	memory   *memory.ConversationBuffer
-	llm      llms.Model
-	
+	chain  *chains.LLMChain
+	memory *memory.ConversationBuffer
+	llm    llms.Model
+
 	// Integração com sistema existente
-	chatService    *chat.Chat
-	excelService   *excel.Service
-	toolRegistry   *tools.ToolRegistry
-	
+	chatService  *chat.Chat
+	excelService *excel.Service
+	toolRegistry *tools.ToolRegistry
+
 	// Sistema de workflow
-	orchestrator   *workflows.Orchestrator
-	
-	// Sistema de detecção de anomalias  
-	analyzer       *intelligence.Analyzer
-	
+	orchestrator *workflows.Orchestrator
+
+	// Sistema de detecção de anomalias
+	analyzer *intelligence.Analyzer
+
 	// Estado do agente
-	enabled    bool
-	status     AgentStatus
-	startTime  time.Time
-	logger     *log.Logger
+	enabled   bool
+	status    AgentStatus
+	startTime time.Time
+	logger    *log.Logger
 }
 
 // AgentStatus representa o status atual do agente
 type AgentStatus struct {
-	State          string            `json:"state"`           // idle, running, error
-	LastActivity   time.Time         `json:"last_activity"`   
-	TotalRequests  int64             `json:"total_requests"`  
-	ErrorCount     int64             `json:"error_count"`     
-	Uptime         time.Duration     `json:"uptime"`          
-	CurrentTask    string            `json:"current_task"`    
-	Metadata       map[string]string `json:"metadata"`        
+	State         string            `json:"state"` // idle, running, error
+	LastActivity  time.Time         `json:"last_activity"`
+	TotalRequests int64             `json:"total_requests"`
+	ErrorCount    int64             `json:"error_count"`
+	Uptime        time.Duration     `json:"uptime"`
+	CurrentTask   string            `json:"current_task"`
+	Metadata      map[string]string `json:"metadata"`
 }
 
 // NewVRAgent cria uma nova instância do agente VR
@@ -61,7 +61,7 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 	if agentConfig == nil {
 		agentConfig = DefaultAgentConfig()
 	}
-	
+
 	// Validar configuração
 	if err := agentConfig.Validate(); err != nil {
 		return nil, fmt.Errorf("configuração inválida: %w", err)
@@ -73,12 +73,12 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 	var memoryBuffer *memory.ConversationBuffer
 	var orchestrator *workflows.Orchestrator
 	var analyzer *intelligence.Analyzer
-	
+
 	// Inicialização condicional para evitar overhead
 	if agentConfig.DebugMode {
 		// Apenas se debug estiver ativado, criar componentes avançados
 		excelSvc = excel.NewService()
-		
+
 		var toolErr error
 		toolRegistry, toolErr = tools.GetDefaultToolRegistry()
 		if toolErr != nil {
@@ -86,7 +86,7 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 			fmt.Printf("Warning: Failed to create tool registry: %v\n", toolErr)
 		}
 	}
-	
+
 	agent := &VRAgent{
 		config:       agentConfig,
 		memory:       memoryBuffer,
@@ -107,7 +107,7 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		},
 		logger: log.Default(),
 	}
-	
+
 	// Configurar LLM Chain quando o agente for habilitado
 	if agentConfig.Enabled {
 		if err := agent.setupLLMChain(); err != nil {
@@ -115,26 +115,26 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 			// Não retorna erro para manter backward compatibility
 		}
 	}
-	
+
 	// Registrar workflows padrão
 	if err := agent.registerDefaultWorkflows(); err != nil {
 		agent.logger.Printf("Aviso: Falha ao registrar workflows padrão: %v", err)
 	}
-	
+
 	// Log de inicialização com verificação de nil
 	toolCount := 0
 	if toolRegistry != nil {
 		toolCount = toolRegistry.Count()
 	}
-	
+
 	workflowCount := 0
 	if agent.orchestrator != nil {
 		workflowCount = len(agent.orchestrator.ListWorkflows())
 	}
-	
-	agent.logger.Printf("VRAgent inicializado com sucesso - Enabled: %v, Model: %s, Tools: %d, Workflows: %d", 
+
+	agent.logger.Printf("VRAgent inicializado com sucesso - Enabled: %v, Model: %s, Tools: %d, Workflows: %d",
 		agentConfig.Enabled, agentConfig.Model, toolCount, workflowCount)
-	
+
 	return agent, nil
 }
 
@@ -151,17 +151,17 @@ func (a *VRAgent) Ask(question string) (string, error) {
 	if !a.enabled {
 		return "", fmt.Errorf("agente está desabilitado")
 	}
-	
+
 	// Atualizar status
 	a.updateStatus("running", fmt.Sprintf("Processando pergunta: %.50s...", question))
 	defer a.updateStatus("idle", "")
-	
+
 	a.status.TotalRequests++
-	
+
 	// Usar apenas chat service para máxima simplicidade e estabilidade
 	var response string
 	var err error
-	
+
 	// Usar diretamente AskOllama ou AskOpenAI para evitar recursão infinita
 	// (não usar a.chatService.Ask que pode chamar o próprio agente novamente)
 	contextData := a.chatService.GetContextDataAsString()
@@ -177,20 +177,20 @@ IMPORTANTE:
 - Todos os colaboradores mostrados no contexto JÁ FORAM PROCESSADOS pelo sistema
 - Use os dados fornecidos para responder as perguntas de forma clara e objetiva
 - Seja preciso com números e cálculos`, contextData)
-	
+
 	// Tentar Ollama primeiro, depois OpenAI se configurado
 	response, err = a.chatService.AskOllama(question, systemPrompt)
 	if err != nil {
 		// Se Ollama falhar, tentar OpenAI
 		response, err = a.chatService.AskOpenAI(question, []chat.Message{})
 	}
-	
+
 	if err != nil {
 		a.status.ErrorCount++
 		a.logger.Printf("Erro ao processar pergunta: %v", err)
 		return "", fmt.Errorf("erro ao processar pergunta: %w", err)
 	}
-	
+
 	a.logger.Printf("Pergunta processada com sucesso: %.50s...", question)
 	return response, nil
 }
@@ -198,22 +198,22 @@ IMPORTANTE:
 // askWithLangChain processa pergunta usando LangChain com memory
 func (a *VRAgent) askWithLangChain(question string) (string, error) {
 	ctx := context.Background()
-	
+
 	// Preparar input com contexto das ferramentas disponíveis
 	toolsInfo := a.getToolsContext()
-	
+
 	input := map[string]interface{}{
-		"input": question,
+		"input":           question,
 		"tools_available": toolsInfo,
-		"agent_context": "Você é um assistente especializado em processamento de VR (Vale Refeição).",
+		"agent_context":   "Você é um assistente especializado em processamento de VR (Vale Refeição).",
 	}
-	
+
 	// Executar chain com memory
 	result, err := chains.Run(ctx, a.chain, input)
 	if err != nil {
 		return "", fmt.Errorf("erro na execução da chain: %w", err)
 	}
-	
+
 	// Armazenar na memória
 	if a.memory != nil {
 		inputs := map[string]any{"input": question}
@@ -222,7 +222,7 @@ func (a *VRAgent) askWithLangChain(question string) (string, error) {
 			a.logger.Printf("Aviso: Erro ao salvar contexto na memória: %v", err)
 		}
 	}
-	
+
 	return result, nil
 }
 
@@ -231,12 +231,12 @@ func (a *VRAgent) getToolsContext() string {
 	if a.toolRegistry == nil {
 		return "Nenhuma ferramenta específica disponível."
 	}
-	
+
 	tools := a.toolRegistry.ListNames()
 	if len(tools) == 0 {
 		return "Nenhuma ferramenta específica disponível."
 	}
-	
+
 	return fmt.Sprintf("Ferramentas disponíveis: %s", strings.Join(tools, ", "))
 }
 
@@ -280,7 +280,7 @@ func (a *VRAgent) Reset() error {
 		Metadata:      make(map[string]string),
 	}
 	a.startTime = time.Now()
-	
+
 	// Limpar memória do agente
 	if a.memory != nil {
 		ctx := context.Background()
@@ -288,7 +288,7 @@ func (a *VRAgent) Reset() error {
 			a.logger.Printf("Aviso: Erro ao limpar memória: %v", err)
 		}
 	}
-	
+
 	a.logger.Println("Estado do agente resetado (incluindo memória)")
 	return nil
 }
@@ -298,10 +298,10 @@ func (a *VRAgent) GetMemory() ([]string, error) {
 	if a.memory == nil {
 		return []string{}, nil
 	}
-	
+
 	ctx := context.Background()
 	memoryVars := a.memory.MemoryVariables(ctx)
-	
+
 	var history []string
 	for _, key := range memoryVars {
 		if key == "history" {
@@ -309,7 +309,7 @@ func (a *VRAgent) GetMemory() ([]string, error) {
 			if err != nil {
 				return nil, fmt.Errorf("erro ao carregar histórico de memória: %w", err)
 			}
-			
+
 			if historyValue, ok := buffer["history"]; ok {
 				if historyStr, ok := historyValue.(string); ok {
 					// Parse do histórico de conversação
@@ -324,7 +324,7 @@ func (a *VRAgent) GetMemory() ([]string, error) {
 			break
 		}
 	}
-	
+
 	return history, nil
 }
 
@@ -333,12 +333,12 @@ func (a *VRAgent) ClearMemory() error {
 	if a.memory == nil {
 		return fmt.Errorf("memória não inicializada")
 	}
-	
+
 	ctx := context.Background()
 	if err := a.memory.Clear(ctx); err != nil {
 		return fmt.Errorf("erro ao limpar memória: %w", err)
 	}
-	
+
 	a.logger.Println("Memória do agente limpa")
 	return nil
 }
@@ -348,12 +348,12 @@ func (a *VRAgent) ExecuteWorkflow(workflow string) error {
 	if !a.enabled {
 		return fmt.Errorf("agente está desabilitado")
 	}
-	
+
 	a.updateStatus("running", fmt.Sprintf("Executando workflow: %s", workflow))
 	defer a.updateStatus("idle", "")
-	
+
 	a.status.TotalRequests++
-	
+
 	// Por enquanto, implementação básica de workflows
 	switch strings.ToLower(workflow) {
 	case "processar-vr-mensal":
@@ -368,7 +368,7 @@ func (a *VRAgent) ExecuteWorkflow(workflow string) error {
 // executeVRWorkflow executa o workflow principal de processamento de VR
 func (a *VRAgent) executeVRWorkflow() error {
 	a.logger.Println("Iniciando workflow de processamento de VR mensal")
-	
+
 	// Implementação básica - será expandida em issues futuras
 	steps := []string{
 		"Validação de dados",
@@ -376,15 +376,15 @@ func (a *VRAgent) executeVRWorkflow() error {
 		"Geração de relatórios",
 		"Notificação de resultados",
 	}
-	
+
 	for i, step := range steps {
 		a.updateStatus("running", fmt.Sprintf("Executando: %s (%d/%d)", step, i+1, len(steps)))
 		a.logger.Printf("Workflow VR - Etapa %d/%d: %s", i+1, len(steps), step)
-		
+
 		// Simular processamento
 		time.Sleep(100 * time.Millisecond)
 	}
-	
+
 	a.logger.Println("Workflow de processamento de VR concluído")
 	return nil
 }
@@ -392,7 +392,7 @@ func (a *VRAgent) executeVRWorkflow() error {
 // executeValidationWorkflow executa o workflow de validação de dados
 func (a *VRAgent) executeValidationWorkflow() error {
 	a.logger.Println("Iniciando workflow de validação de dados")
-	
+
 	// Implementação básica - será expandida em issues futuras
 	validations := []string{
 		"Verificação de arquivos Excel",
@@ -400,15 +400,15 @@ func (a *VRAgent) executeValidationWorkflow() error {
 		"Verificação de datas",
 		"Análise de inconsistências",
 	}
-	
+
 	for i, validation := range validations {
 		a.updateStatus("running", fmt.Sprintf("Executando: %s (%d/%d)", validation, i+1, len(validations)))
 		a.logger.Printf("Workflow Validação - Etapa %d/%d: %s", i+1, len(validations), validation)
-		
+
 		// Simular validação
 		time.Sleep(50 * time.Millisecond)
 	}
-	
+
 	a.logger.Println("Workflow de validação concluído")
 	return nil
 }
@@ -469,22 +469,22 @@ func (a *VRAgent) registerDefaultWorkflows() error {
 		a.logger.Printf("Orchestrator não disponível - pulando registro de workflows")
 		return nil
 	}
-	
+
 	// Registrar workflow de validação simples
 	simpleValidation := workflows.NewSimpleValidationWorkflow()
 	if err := a.orchestrator.RegisterWorkflow(simpleValidation); err != nil {
 		return fmt.Errorf("erro ao registrar workflow simple-validation: %w", err)
 	}
-	
+
 	// TODO: Registrar workflow com detecção de anomalias quando implementado
 	// validatedVR := intelligence.NewValidatedVRWorkflow(a.analyzer)
 	// if err := a.orchestrator.RegisterWorkflow(validatedVR); err != nil {
 	//     return fmt.Errorf("erro ao registrar workflow validated-vr-processing: %w", err)
 	// }
-	
+
 	// Registrar outros workflows futuros aqui
 	// TODO: Implementar workflow processar-vr-mensal quando as ferramentas estiverem prontas
-	
+
 	return nil
 }
 
@@ -493,21 +493,21 @@ func (a *VRAgent) ExecuteWorkflowByName(workflowName string, params map[string]i
 	if !a.enabled {
 		return nil, fmt.Errorf("agente está desabilitado")
 	}
-	
+
 	a.updateStatus("running", fmt.Sprintf("workflow:%s", workflowName))
 	a.status.TotalRequests++
-	
+
 	defer func() {
 		a.updateStatus("idle", "")
 	}()
-	
+
 	result, err := a.orchestrator.ExecuteWorkflow(workflowName, params)
 	if err != nil {
 		a.status.ErrorCount++
 		a.logger.Printf("Erro ao executar workflow %s: %v", workflowName, err)
 		return nil, err
 	}
-	
+
 	a.logger.Printf("Workflow %s executado com sucesso", workflowName)
 	return result, nil
 }
@@ -517,16 +517,16 @@ func (a *VRAgent) ExecuteWorkflowAsync(workflowName string, params map[string]in
 	if !a.enabled {
 		return "", fmt.Errorf("agente está desabilitado")
 	}
-	
+
 	a.status.TotalRequests++
-	
+
 	executionID, err := a.orchestrator.ExecuteWorkflowAsync(workflowName, params)
 	if err != nil {
 		a.status.ErrorCount++
 		a.logger.Printf("Erro ao executar workflow async %s: %v", workflowName, err)
 		return "", err
 	}
-	
+
 	a.logger.Printf("Workflow %s iniciado assincronamente com ID: %s", workflowName, executionID)
 	return executionID, nil
 }
@@ -556,24 +556,24 @@ func (a *VRAgent) AnalyzeAnomalies(colaboradores map[string]interface{}, params 
 	if !a.enabled {
 		return nil, fmt.Errorf("agente está desabilitado")
 	}
-	
+
 	a.updateStatus("running", "anomaly-analysis")
 	a.status.TotalRequests++
-	
+
 	defer func() {
 		a.updateStatus("idle", "")
 	}()
-	
+
 	report, err := a.analyzer.AnalyzeData(colaboradores, params)
 	if err != nil {
 		a.status.ErrorCount++
 		a.logger.Printf("Erro na análise de anomalias: %v", err)
 		return nil, err
 	}
-	
+
 	a.logger.Printf("Análise de anomalias concluída: %d anomalias detectadas (score: %.1f)",
 		report.TotalAnomalies, report.Summary.OverallScore)
-	
+
 	return report, nil
 }
 

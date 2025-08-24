@@ -25,7 +25,7 @@ func (pe *PolicyEngine) AnalyzeScenario(scenario map[string]interface{}) (*Consu
 
 	// Extrair informações do cenário
 	query := pe.extractQuery(scenario)
-	
+
 	// Identificar regras aplicáveis
 	applicableRules, err := pe.findApplicableRules(scenario)
 	if err != nil {
@@ -43,7 +43,7 @@ func (pe *PolicyEngine) AnalyzeScenario(scenario map[string]interface{}) (*Consu
 
 	// Gerar resposta final
 	answer := pe.generateAnswer(reasoningSteps, conflicts)
-	
+
 	// Calcular confiança
 	confidence := pe.calculateConfidence(reasoningSteps, conflicts)
 
@@ -87,7 +87,7 @@ func (pe *PolicyEngine) findApplicableRules(scenario map[string]interface{}) ([]
 
 	// Buscar por palavras-chave do cenário
 	keywords := pe.extractScenarioKeywords(scenario)
-	
+
 	for _, keyword := range keywords {
 		results, err := pe.knowledgeBase.Search(keyword, 10)
 		if err != nil {
@@ -155,7 +155,7 @@ func (pe *PolicyEngine) extractScenarioKeywords(scenario map[string]interface{})
 func (pe *PolicyEngine) isRuleApplicable(rule KnowledgeItem, scenario map[string]interface{}) bool {
 	// Regras sempre aplicáveis para VR
 	vrCategories := []string{"vr", "vale-refeicao", "calculo", "elegibilidade"}
-	
+
 	for _, category := range rule.Categories {
 		for _, vrCat := range vrCategories {
 			if strings.Contains(strings.ToLower(category), vrCat) {
@@ -233,10 +233,10 @@ func (pe *PolicyEngine) applyRule(rule KnowledgeItem, scenario map[string]interf
 
 	// Determinar a lógica aplicada baseada no tipo de regra
 	logic := pe.determineLogic(rule, scenario)
-	
+
 	// Calcular resultado da aplicação da regra
 	result := pe.calculateRuleResult(rule, scenario)
-	
+
 	// Calcular confiança baseada na clareza da regra
 	confidence := pe.calculateRuleConfidence(rule, scenario)
 
@@ -319,8 +319,8 @@ func (pe *PolicyEngine) calculateVRValue(scenario map[string]interface{}) string
 			totalValue := baseValue * diasUteis
 			companyValue := totalValue * companyPercentage
 			employeeDiscount := totalValue * employeePercentage
-			
-			return fmt.Sprintf("Valor total: R$ %.2f (Empresa: R$ %.2f, Desconto colaborador: R$ %.2f)", 
+
+			return fmt.Sprintf("Valor total: R$ %.2f (Empresa: R$ %.2f, Desconto colaborador: R$ %.2f)",
 				totalValue, companyValue, employeeDiscount)
 		}
 	}
@@ -413,7 +413,7 @@ func (pe *PolicyEngine) shouldApplyRule(rule KnowledgeItem, scenario map[string]
 
 func (pe *PolicyEngine) describeScenario(scenario map[string]interface{}) string {
 	var parts []string
-	
+
 	if query, exists := scenario["query"]; exists {
 		if queryStr, ok := query.(string); ok {
 			parts = append(parts, fmt.Sprintf("Consulta: %s", queryStr))
@@ -449,28 +449,28 @@ func (pe *PolicyEngine) describeScenario(scenario map[string]interface{}) string
 func (pe *PolicyEngine) deduplicateRules(rules []KnowledgeItem) []KnowledgeItem {
 	seen := make(map[string]bool)
 	var result []KnowledgeItem
-	
+
 	for _, rule := range rules {
 		if !seen[rule.ID] {
 			seen[rule.ID] = true
 			result = append(result, rule)
 		}
 	}
-	
+
 	return result
 }
 
 func (pe *PolicyEngine) deduplicateStrings(strs []string) []string {
 	seen := make(map[string]bool)
 	var result []string
-	
+
 	for _, str := range strs {
 		if !seen[str] && str != "" {
 			seen[str] = true
 			result = append(result, str)
 		}
 	}
-	
+
 	return result
 }
 
@@ -479,27 +479,27 @@ func (pe *PolicyEngine) getRulePriority(rule KnowledgeItem) int {
 	if rule.Type == "regulation" {
 		return 1 // Regulamentações têm prioridade máxima
 	}
-	
+
 	if rule.Type == "policy" {
 		return 2 // Políticas em segundo
 	}
-	
+
 	return 3 // Regras de negócio por último
 }
 
 func (pe *PolicyEngine) calculateRuleConfidence(rule KnowledgeItem, scenario map[string]interface{}) float64 {
 	confidence := 0.8 // Base confidence
-	
+
 	// Aumentar confiança para regulamentações
 	if rule.Type == "regulation" {
 		confidence = 0.95
 	}
-	
+
 	// Diminuir confiança para regras muito antigas
 	if time.Since(rule.EffectiveDate) > 2*365*24*time.Hour {
 		confidence *= 0.9
 	}
-	
+
 	return confidence
 }
 
@@ -507,18 +507,18 @@ func (pe *PolicyEngine) calculateStepsConfidence(steps []ReasoningStep) float64 
 	if len(steps) == 0 {
 		return 0.0
 	}
-	
+
 	total := 0.0
 	for _, step := range steps {
 		total += step.Confidence
 	}
-	
+
 	return total / float64(len(steps))
 }
 
 func (pe *PolicyEngine) consolidateResults(steps []ReasoningStep) string {
 	var results []string
-	
+
 	for i, step := range steps {
 		if i == 0 || i == len(steps)-1 {
 			continue // Skip context and final steps
@@ -527,18 +527,18 @@ func (pe *PolicyEngine) consolidateResults(steps []ReasoningStep) string {
 			results = append(results, step.Result)
 		}
 	}
-	
+
 	if len(results) == 0 {
 		return "Análise concluída com base nas regras aplicáveis"
 	}
-	
+
 	return strings.Join(results, "; ")
 }
 
 func (pe *PolicyEngine) consolidateCitations(steps []ReasoningStep) []Citation {
 	var citations []Citation
 	seen := make(map[string]bool)
-	
+
 	for _, step := range steps {
 		for _, citation := range step.Citations {
 			key := citation.Source + citation.Date.String()
@@ -548,21 +548,21 @@ func (pe *PolicyEngine) consolidateCitations(steps []ReasoningStep) []Citation {
 			}
 		}
 	}
-	
+
 	return citations
 }
 
 func (pe *PolicyEngine) detectConflicts(rules []KnowledgeItem) []ConflictDetection {
 	// Implementação básica de detecção de conflitos
 	var conflicts []ConflictDetection
-	
+
 	// Verificar por regras contraditórias (implementação simplificada)
 	for i, rule1 := range rules {
 		for j, rule2 := range rules {
 			if i >= j {
 				continue
 			}
-			
+
 			if pe.rulesConflict(rule1, rule2) {
 				conflict := ConflictDetection{
 					Type:          "contradiction",
@@ -575,7 +575,7 @@ func (pe *PolicyEngine) detectConflicts(rules []KnowledgeItem) []ConflictDetecti
 			}
 		}
 	}
-	
+
 	return conflicts
 }
 
@@ -585,14 +585,14 @@ func (pe *PolicyEngine) rulesConflict(rule1, rule2 KnowledgeItem) bool {
 	if rule1.Type == rule2.Type {
 		content1 := strings.ToLower(rule1.Content)
 		content2 := strings.ToLower(rule2.Content)
-		
+
 		// Procurar por palavras contraditórias
 		if (strings.Contains(content1, "não") && !strings.Contains(content2, "não")) ||
-		   (!strings.Contains(content1, "não") && strings.Contains(content2, "não")) {
+			(!strings.Contains(content1, "não") && strings.Contains(content2, "não")) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -600,25 +600,25 @@ func (pe *PolicyEngine) generateAnswer(steps []ReasoningStep, conflicts []Confli
 	if len(steps) == 0 {
 		return "Não foi possível gerar uma resposta baseada nas informações disponíveis."
 	}
-	
+
 	// Usar o resultado consolidado do último passo
 	lastStep := steps[len(steps)-1]
 	answer := lastStep.Result
-	
+
 	// Adicionar informação sobre conflitos se existirem
 	if len(conflicts) > 0 {
 		answer += fmt.Sprintf(" ATENÇÃO: Foram detectados %d possíveis conflitos entre as regras aplicadas.", len(conflicts))
 	}
-	
+
 	return answer
 }
 
 func (pe *PolicyEngine) calculateConfidence(steps []ReasoningStep, conflicts []ConflictDetection) float64 {
 	baseConfidence := pe.calculateStepsConfidence(steps)
-	
+
 	// Reduzir confiança baseado no número de conflitos
 	conflictPenalty := float64(len(conflicts)) * 0.1
-	
+
 	confidence := baseConfidence - conflictPenalty
 	if confidence < 0 {
 		confidence = 0
@@ -626,14 +626,14 @@ func (pe *PolicyEngine) calculateConfidence(steps []ReasoningStep, conflicts []C
 	if confidence > 1 {
 		confidence = 1
 	}
-	
+
 	return confidence
 }
 
 func (pe *PolicyEngine) extractCitations(rules []KnowledgeItem) []Citation {
 	var citations []Citation
 	seen := make(map[string]bool)
-	
+
 	for _, rule := range rules {
 		key := rule.Source + rule.EffectiveDate.String()
 		if !seen[key] {
@@ -646,14 +646,14 @@ func (pe *PolicyEngine) extractCitations(rules []KnowledgeItem) []Citation {
 			citations = append(citations, citation)
 		}
 	}
-	
+
 	return citations
 }
 
 func (pe *PolicyEngine) findRelatedTopics(rules []KnowledgeItem) []string {
 	var topics []string
 	seen := make(map[string]bool)
-	
+
 	for _, rule := range rules {
 		for _, category := range rule.Categories {
 			if !seen[category] {
@@ -662,17 +662,17 @@ func (pe *PolicyEngine) findRelatedTopics(rules []KnowledgeItem) []string {
 			}
 		}
 	}
-	
+
 	return topics
 }
 
 func (pe *PolicyEngine) generateRecommendations(steps []ReasoningStep, conflicts []ConflictDetection) []string {
 	var recommendations []string
-	
+
 	if len(conflicts) > 0 {
 		recommendations = append(recommendations, "Revisar possíveis conflitos entre regras identificados")
 	}
-	
+
 	// Analisar confiança dos passos
 	lowConfidenceSteps := 0
 	for _, step := range steps {
@@ -680,31 +680,31 @@ func (pe *PolicyEngine) generateRecommendations(steps []ReasoningStep, conflicts
 			lowConfidenceSteps++
 		}
 	}
-	
+
 	if lowConfidenceSteps > 0 {
 		recommendations = append(recommendations, "Verificar manualmente resultados com baixa confiança")
 	}
-	
+
 	// Recomendações específicas baseadas no contexto
 	recommendations = append(recommendations, "Consultar documentação atualizada para confirmação")
-	
+
 	return recommendations
 }
 
 func (pe *PolicyEngine) identifyAmbiguities(conflicts []ConflictDetection, steps []ReasoningStep) []string {
 	var ambiguities []string
-	
+
 	// Ambiguidades baseadas em conflitos
 	for _, conflict := range conflicts {
 		ambiguities = append(ambiguities, conflict.Description)
 	}
-	
+
 	// Ambiguidades baseadas em baixa confiança
 	for _, step := range steps {
 		if step.Confidence < 0.5 {
 			ambiguities = append(ambiguities, fmt.Sprintf("Baixa confiança no passo: %s", step.Description))
 		}
 	}
-	
+
 	return ambiguities
 }

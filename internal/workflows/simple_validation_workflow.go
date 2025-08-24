@@ -17,13 +17,13 @@ func NewSimpleValidationWorkflow() *SimpleValidationWorkflow {
 		NewValidateDataStep(),
 		NewReportResultsStep(),
 	}
-	
+
 	baseWorkflow := NewBaseWorkflow(
 		"simple-validation",
 		"Workflow de validação simples para demonstrar o orquestrador",
 		steps,
 	)
-	
+
 	return &SimpleValidationWorkflow{
 		BaseWorkflow: baseWorkflow,
 	}
@@ -32,19 +32,19 @@ func NewSimpleValidationWorkflow() *SimpleValidationWorkflow {
 // Execute executa o workflow através do orquestrador (sobrescreve BaseWorkflow.Execute)
 func (w *SimpleValidationWorkflow) Execute(ctx *WorkflowContext) error {
 	ctx.Logger.Info("Executando workflow de validação simples")
-	
+
 	// Esta implementação seria chamada pelo orquestrador
 	// Em uma implementação real, isto seria tratado pelo orchestrator.executeWorkflowInternal
 	for _, step := range w.Steps() {
 		if ctx.IsCanceled() {
 			return fmt.Errorf("workflow cancelado")
 		}
-		
+
 		if err := step.Execute(ctx); err != nil {
 			return fmt.Errorf("erro no step '%s': %w", step.Name(), err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -65,26 +65,26 @@ func NewLoadDataStep() *LoadDataStep {
 
 func (s *LoadDataStep) Execute(ctx *WorkflowContext) error {
 	ctx.Logger.Debug("Executando step: %s", s.Name())
-	
+
 	// Simular carregamento de dados
 	filePath, hasFile := ctx.GetParameterString("file_path")
 	if !hasFile {
 		filePath = "files/ATIVOS.xlsx" // Padrão
 	}
-	
+
 	ctx.Logger.Info("Carregando dados de: %s", filePath)
-	
+
 	// Simular dados carregados
 	loadedData := map[string]interface{}{
-		"source_file": filePath,
+		"source_file":   filePath,
 		"records_count": 150,
-		"columns": []string{"MATRICULA", "SINDICATO", "DATA_ADMISSAO"},
-		"load_time": time.Now(),
+		"columns":       []string{"MATRICULA", "SINDICATO", "DATA_ADMISSAO"},
+		"load_time":     time.Now(),
 	}
-	
+
 	ctx.SetResult(s.Name(), loadedData)
 	ctx.Set("data_loaded", true)
-	
+
 	return nil
 }
 
@@ -116,29 +116,29 @@ func NewValidateDataStep() *ValidateDataStep {
 
 func (s *ValidateDataStep) Execute(ctx *WorkflowContext) error {
 	ctx.Logger.Debug("Executando step: %s", s.Name())
-	
+
 	// Verificar se dados foram carregados
 	if !ctx.Has("data_loaded") {
 		return fmt.Errorf("dados não foram carregados antes da validação")
 	}
-	
+
 	// Recuperar dados do step anterior
 	loadResult, exists := ctx.GetResult("load-data")
 	if !exists {
 		return fmt.Errorf("resultado do carregamento não encontrado")
 	}
-	
+
 	loadData, ok := loadResult.(map[string]interface{})
 	if !ok {
 		return fmt.Errorf("formato de dados inválido")
 	}
-	
+
 	ctx.Logger.Info("Validando dados de: %v", loadData["source_file"])
-	
+
 	// Simular validações
 	validationResult := map[string]interface{}{
-		"total_records": loadData["records_count"],
-		"valid_records": 145,
+		"total_records":   loadData["records_count"],
+		"valid_records":   145,
 		"invalid_records": 5,
 		"errors": []string{
 			"Matrícula duplicada: 12345",
@@ -146,12 +146,12 @@ func (s *ValidateDataStep) Execute(ctx *WorkflowContext) error {
 			"Sindicato não reconhecido: colaborador 11111",
 		},
 		"validation_time": time.Now(),
-		"is_valid": false, // Há erros
+		"is_valid":        false, // Há erros
 	}
-	
+
 	ctx.SetResult(s.Name(), validationResult)
 	ctx.Set("validation_completed", true)
-	
+
 	return nil
 }
 
@@ -183,41 +183,41 @@ func NewReportResultsStep() *ReportResultsStep {
 
 func (s *ReportResultsStep) Execute(ctx *WorkflowContext) error {
 	ctx.Logger.Debug("Executando step: %s", s.Name())
-	
+
 	// Verificar se validação foi feita
 	if !ctx.Has("validation_completed") {
 		return fmt.Errorf("validação não foi completada antes do relatório")
 	}
-	
+
 	// Recuperar resultados da validação
 	validationResult, exists := ctx.GetResult("validate-data")
 	if !exists {
 		return fmt.Errorf("resultado da validação não encontrado")
 	}
-	
+
 	validationData, ok := validationResult.(map[string]interface{})
 	if !ok {
 		return fmt.Errorf("formato de resultado de validação inválido")
 	}
-	
+
 	// Gerar relatório
 	report := map[string]interface{}{
-		"workflow_name": ctx.WorkflowName,
-		"execution_id": ctx.ExecutionID,
+		"workflow_name":  ctx.WorkflowName,
+		"execution_id":   ctx.ExecutionID,
 		"total_duration": ctx.Elapsed(),
 		"summary": fmt.Sprintf(
 			"Validação completada: %d registros válidos, %d inválidos de %d total",
-			validationData["valid_records"], 
-			validationData["invalid_records"], 
+			validationData["valid_records"],
+			validationData["invalid_records"],
 			validationData["total_records"],
 		),
-		"details": validationData,
+		"details":     validationData,
 		"report_time": time.Now(),
 	}
-	
+
 	ctx.SetResult(s.Name(), report)
 	ctx.Logger.Info("Relatório gerado: %s", report["summary"])
-	
+
 	return nil
 }
 

@@ -9,16 +9,16 @@ import (
 type VRTool interface {
 	// Name retorna o nome único da ferramenta
 	Name() string
-	
+
 	// Description retorna uma descrição clara do que a ferramenta faz
 	Description() string
-	
+
 	// Execute executa a ferramenta com o input fornecido
 	Execute(input string) (string, error)
-	
+
 	// Validate valida se o input está correto antes da execução
 	Validate(input string) error
-	
+
 	// Schema retorna o schema JSON do input esperado (opcional)
 	Schema() map[string]interface{}
 }

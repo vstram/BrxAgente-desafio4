@@ -11,7 +11,7 @@ package agent
 #### 1. **Testes de Integração Básica** (`integration_test.go`)
 - ✅ `TestVRAgent_ToolIntegration` - Verificação de ferramentas disponíveis
 - ✅ `TestVRAgent_ExecuteReadExcelTool` - Execução da ferramenta ReadExcel
-- ✅ `TestVRAgent_ExecuteCalculateVRTool` - Execução da ferramenta CalculateVR  
+- ✅ `TestVRAgent_ExecuteCalculateVRTool` - Execução da ferramenta CalculateVR
 - ✅ `TestVRAgent_ExecuteValidateDataTool` - Execução da ferramenta ValidateData
 - ✅ `TestVRAgent_GetToolInfo` - Obtenção de informações das ferramentas
 - ✅ `TestVRAgent_GetAllToolsInfo` - Informações de todas as ferramentas
@@ -108,7 +108,7 @@ go test ./internal/agent/... -v
 # Executar testes específicos
 go test ./internal/agent/ -run="TestAgentRealScenarios" -v
 
-# Benchmark de performance  
+# Benchmark de performance
 go test ./internal/agent/ -run="TestVRAgent_PerformanceBenchmark" -v
 
 # Testes rápidos (sem stress tests)

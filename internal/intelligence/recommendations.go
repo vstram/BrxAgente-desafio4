@@ -11,20 +11,20 @@ import (
 
 // RecommendationEngine gera recomendações baseadas em análise preditiva
 type RecommendationEngine struct {
-	config      RecommendationConfig
-	predictor   *TrendPredictor
-	analyzer    *PatternAnalyzer
-	detector    *TrendDetector
-	forecaster  *Forecaster
+	config     RecommendationConfig
+	predictor  *TrendPredictor
+	analyzer   *PatternAnalyzer
+	detector   *TrendDetector
+	forecaster *Forecaster
 }
 
 // RecommendationConfig configuração do motor de recomendações
 type RecommendationConfig struct {
-	MaxRecommendations   int     `json:"max_recommendations"`   // máximo de recomendações por análise
-	MinConfidence        float64 `json:"min_confidence"`        // confiança mínima para gerar recomendação
-	PriorityThreshold    float64 `json:"priority_threshold"`    // limite para prioridade alta
+	MaxRecommendations   int     `json:"max_recommendations"`    // máximo de recomendações por análise
+	MinConfidence        float64 `json:"min_confidence"`         // confiança mínima para gerar recomendação
+	PriorityThreshold    float64 `json:"priority_threshold"`     // limite para prioridade alta
 	AutoApproveThreshold float64 `json:"auto_approve_threshold"` // limite para aprovação automática
-	ContextWindow        int     `json:"context_window"`        // janela de contexto em meses
+	ContextWindow        int     `json:"context_window"`         // janela de contexto em meses
 }
 
 // RecommendationSuite conjunto completo de recomendações
@@ -32,66 +32,66 @@ type RecommendationSuite struct {
 	Summary         RecommendationSummary    `json:"summary"`
 	Recommendations []EnhancedRecommendation `json:"recommendations"`
 	ActionPlan      ActionPlan               `json:"action_plan"`
-	RiskFactors     []RiskFactor            `json:"risk_factors"`
-	Opportunities   []Opportunity           `json:"opportunities"`
-	GeneratedAt     time.Time               `json:"generated_at"`
-	ValidUntil      time.Time               `json:"valid_until"`
+	RiskFactors     []RiskFactor             `json:"risk_factors"`
+	Opportunities   []Opportunity            `json:"opportunities"`
+	GeneratedAt     time.Time                `json:"generated_at"`
+	ValidUntil      time.Time                `json:"valid_until"`
 }
 
 // EnhancedRecommendation recomendação aprimorada com mais contexto
 type EnhancedRecommendation struct {
 	predicoes.ActionItem
-	Context         RecommendationContext    `json:"context"`
-	Evidence        []Evidence               `json:"evidence"`
-	ExpectedImpact  ImpactAssessment         `json:"expected_impact"`
-	Implementation  ImplementationGuide      `json:"implementation"`
-	Dependencies    []string                 `json:"dependencies"`
-	Alternatives    []Alternative            `json:"alternatives"`
-	Confidence      float64                  `json:"confidence"`
-	AutoApproved    bool                     `json:"auto_approved"`
+	Context        RecommendationContext `json:"context"`
+	Evidence       []Evidence            `json:"evidence"`
+	ExpectedImpact ImpactAssessment      `json:"expected_impact"`
+	Implementation ImplementationGuide   `json:"implementation"`
+	Dependencies   []string              `json:"dependencies"`
+	Alternatives   []Alternative         `json:"alternatives"`
+	Confidence     float64               `json:"confidence"`
+	AutoApproved   bool                  `json:"auto_approved"`
 }
 
 // RecommendationContext contexto da recomendação
 type RecommendationContext struct {
-	SourceAnalysis   string                 `json:"source_analysis"`   // de onde veio a recomendação
-	TriggerCondition string                 `json:"trigger_condition"` // condição que disparou
-	AffectedEntities []string               `json:"affected_entities"` // entidades afetadas
-	TimeHorizon      string                 `json:"time_horizon"`      // horizonte temporal
-	Seasonality      *predicoes.SeasonalityInfo `json:"seasonality"`      // contexto sazonal
-	TrendInfo        *predicoes.VRTrend         `json:"trend_info"`       // informação de tendência
+	SourceAnalysis   string                     `json:"source_analysis"`   // de onde veio a recomendação
+	TriggerCondition string                     `json:"trigger_condition"` // condição que disparou
+	AffectedEntities []string                   `json:"affected_entities"` // entidades afetadas
+	TimeHorizon      string                     `json:"time_horizon"`      // horizonte temporal
+	Seasonality      *predicoes.SeasonalityInfo `json:"seasonality"`       // contexto sazonal
+	TrendInfo        *predicoes.VRTrend         `json:"trend_info"`        // informação de tendência
 }
 
 // Evidence evidência que suporta a recomendação
 type Evidence struct {
-	Type        EvidenceType               `json:"type"`
-	Source      string                     `json:"source"`
-	Description string                     `json:"description"`
-	Value       float64                    `json:"value"`
-	Confidence  float64                    `json:"confidence"`
-	Metadata    map[string]interface{}     `json:"metadata"`
+	Type        EvidenceType           `json:"type"`
+	Source      string                 `json:"source"`
+	Description string                 `json:"description"`
+	Value       float64                `json:"value"`
+	Confidence  float64                `json:"confidence"`
+	Metadata    map[string]interface{} `json:"metadata"`
 }
 
 // EvidenceType tipo de evidência
 type EvidenceType string
 
 const (
-	EvidenceTrend         EvidenceType = "trend"
-	EvidenceSeasonality   EvidenceType = "seasonality"
-	EvidenceAnomaly       EvidenceType = "anomaly"
-	EvidenceCorrelation   EvidenceType = "correlation"
-	EvidenceForecast      EvidenceType = "forecast"
-	EvidencePattern       EvidenceType = "pattern"
-	EvidenceRisk          EvidenceType = "risk"
+	EvidenceTrend       EvidenceType = "trend"
+	EvidenceSeasonality EvidenceType = "seasonality"
+	EvidenceAnomaly     EvidenceType = "anomaly"
+	EvidenceCorrelation EvidenceType = "correlation"
+	EvidenceForecast    EvidenceType = "forecast"
+	EvidencePattern     EvidenceType = "pattern"
+	EvidenceRisk        EvidenceType = "risk"
 )
 
 // ImpactAssessment avaliação de impacto
 type ImpactAssessment struct {
-	Financial    ImpactDetail `json:"financial"`
-	Operational  ImpactDetail `json:"operational"`
-	Strategic    ImpactDetail `json:"strategic"`
-	Risk         ImpactDetail `json:"risk"`
-	Timeline     string       `json:"timeline"`
-	Probability  float64      `json:"probability"`
+	Financial   ImpactDetail `json:"financial"`
+	Operational ImpactDetail `json:"operational"`
+	Strategic   ImpactDetail `json:"strategic"`
+	Risk        ImpactDetail `json:"risk"`
+	Timeline    string       `json:"timeline"`
+	Probability float64      `json:"probability"`
 }
 
 // ImpactDetail detalhes do impacto
@@ -104,25 +104,25 @@ type ImpactDetail struct {
 
 // ImplementationGuide guia de implementação
 type ImplementationGuide struct {
-	Steps        []ImplementationStep `json:"steps"`
-	Resources    []RequiredResource   `json:"resources"`
-	Timeline     string               `json:"timeline"`
-	Risks        []string             `json:"risks"`
-	Success      []string             `json:"success_criteria"`
-	Rollback     []string             `json:"rollback_plan"`
+	Steps     []ImplementationStep `json:"steps"`
+	Resources []RequiredResource   `json:"resources"`
+	Timeline  string               `json:"timeline"`
+	Risks     []string             `json:"risks"`
+	Success   []string             `json:"success_criteria"`
+	Rollback  []string             `json:"rollback_plan"`
 }
 
 // ImplementationStep passo de implementação
 type ImplementationStep struct {
-	ID          string            `json:"id"`
-	Title       string            `json:"title"`
-	Description string            `json:"description"`
-	Duration    string            `json:"duration"`
-	Order       int               `json:"order"`
-	Dependencies []string         `json:"dependencies"`
-	Resources   []RequiredResource `json:"resources"`
-	Status      string            `json:"status"`
-	Progress    float64           `json:"progress"`
+	ID           string             `json:"id"`
+	Title        string             `json:"title"`
+	Description  string             `json:"description"`
+	Duration     string             `json:"duration"`
+	Order        int                `json:"order"`
+	Dependencies []string           `json:"dependencies"`
+	Resources    []RequiredResource `json:"resources"`
+	Status       string             `json:"status"`
+	Progress     float64            `json:"progress"`
 }
 
 // RequiredResource recurso necessário
@@ -149,42 +149,42 @@ type RiskFactor struct {
 	Type        string                 `json:"type"`
 	Description string                 `json:"description"`
 	Probability float64                `json:"probability"`
-	Impact      predicoes.ImpactLevel     `json:"impact"`
-	Mitigation  []predicoes.ActionItem    `json:"mitigation"`
+	Impact      predicoes.ImpactLevel  `json:"impact"`
+	Mitigation  []predicoes.ActionItem `json:"mitigation"`
 	Source      string                 `json:"source"`
 }
 
 // Opportunity oportunidade identificada
 type Opportunity struct {
-	ID          string           `json:"id"`
-	Title       string           `json:"title"`
-	Description string           `json:"description"`
-	Value       float64          `json:"value"`
-	Effort      float64          `json:"effort"`
-	Timeline    string           `json:"timeline"`
+	ID          string                 `json:"id"`
+	Title       string                 `json:"title"`
+	Description string                 `json:"description"`
+	Value       float64                `json:"value"`
+	Effort      float64                `json:"effort"`
+	Timeline    string                 `json:"timeline"`
 	Actions     []predicoes.ActionItem `json:"actions"`
 }
 
 // ActionPlan plano de ação consolidado
 type ActionPlan struct {
-	QuickWins     []EnhancedRecommendation `json:"quick_wins"`
-	ShortTerm     []EnhancedRecommendation `json:"short_term"`
-	MediumTerm    []EnhancedRecommendation `json:"medium_term"`
-	LongTerm      []EnhancedRecommendation `json:"long_term"`
-	Dependencies  map[string][]string      `json:"dependencies"`
-	Timeline      string                   `json:"timeline"`
+	QuickWins    []EnhancedRecommendation `json:"quick_wins"`
+	ShortTerm    []EnhancedRecommendation `json:"short_term"`
+	MediumTerm   []EnhancedRecommendation `json:"medium_term"`
+	LongTerm     []EnhancedRecommendation `json:"long_term"`
+	Dependencies map[string][]string      `json:"dependencies"`
+	Timeline     string                   `json:"timeline"`
 }
 
 // RecommendationSummary resumo das recomendações
 type RecommendationSummary struct {
-	TotalRecommendations int                    `json:"total_recommendations"`
-	ByPriority          map[string]int          `json:"by_priority"`
-	ByCategory          map[string]int          `json:"by_category"`
-	ExpectedValue       float64                `json:"expected_value"`
-	TotalEffort         float64                `json:"total_effort"`
-	AverageConfidence   float64                `json:"average_confidence"`
-	TopOpportunities    []string               `json:"top_opportunities"`
-	CriticalRisks       []string               `json:"critical_risks"`
+	TotalRecommendations int            `json:"total_recommendations"`
+	ByPriority           map[string]int `json:"by_priority"`
+	ByCategory           map[string]int `json:"by_category"`
+	ExpectedValue        float64        `json:"expected_value"`
+	TotalEffort          float64        `json:"total_effort"`
+	AverageConfidence    float64        `json:"average_confidence"`
+	TopOpportunities     []string       `json:"top_opportunities"`
+	CriticalRisks        []string       `json:"critical_risks"`
 }
 
 // NewRecommendationEngine cria nova engine de recomendações
@@ -632,11 +632,11 @@ func (re *RecommendationEngine) prioritizeRecommendations(recommendations []Enha
 			predicoes.PriorityMedium:   2,
 			predicoes.PriorityLow:      1,
 		}
-		
+
 		if priorityOrder[recommendations[i].Priority] != priorityOrder[recommendations[j].Priority] {
 			return priorityOrder[recommendations[i].Priority] > priorityOrder[recommendations[j].Priority]
 		}
-		
+
 		// Depois por confiança
 		return recommendations[i].Confidence > recommendations[j].Confidence
 	})
@@ -704,12 +704,12 @@ func (re *RecommendationEngine) createSummary(recommendations []EnhancedRecommen
 
 	return RecommendationSummary{
 		TotalRecommendations: len(recommendations),
-		ByPriority:          byPriority,
-		ByCategory:          byCategory,
-		ExpectedValue:       0, // seria calculado baseado nos impactos
-		TotalEffort:         0, // seria calculado baseado nos esforços
-		AverageConfidence:   avgConfidence,
-		TopOpportunities:    topOpps,
-		CriticalRisks:       criticalRisks,
+		ByPriority:           byPriority,
+		ByCategory:           byCategory,
+		ExpectedValue:        0, // seria calculado baseado nos impactos
+		TotalEffort:          0, // seria calculado baseado nos esforços
+		AverageConfidence:    avgConfidence,
+		TopOpportunities:     topOpps,
+		CriticalRisks:        criticalRisks,
 	}
 }

@@ -183,7 +183,7 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	// The adaptive context will be implemented in a future version
 	fullSystemPrompt := systemPrompt
 
-	// Print debug information  
+	// Print debug information
 	fmt.Printf("AskOllama: Tamanho do prompt completo: %d caracteres\n", len(fullSystemPrompt))
 
 	// Create request with response limits to prevent timeouts
@@ -205,7 +205,7 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("falha ao serializar requisição: %w", err)
 	}
-	
+
 	// Debug: log the request being sent to Ollama
 	fmt.Printf("Ollama Request JSON: %s\n", string(jsonData))
 
@@ -215,7 +215,7 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 		url += "/"
 	}
 	url += "api/generate"
-	
+
 	// Debug: log the URL being used
 	fmt.Printf("Ollama URL: %s\n", url)
 
@@ -243,7 +243,7 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("Ollama API retornou status %d: %s", resp.StatusCode, string(body))
+		return "", fmt.Errorf("ollama API retornou status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse response
@@ -286,15 +286,15 @@ func (c *Chat) formatContextDataWithDetail(maxDetailed int) string {
 	// Create summary of the data with smart truncation
 	var summary strings.Builder
 	total := len(c.contextData)
-	
+
 	summary.WriteString(fmt.Sprintf("Dados de %d colaboradores disponíveis:\n", total))
-	
+
 	// Calculate totals first
 	var totalVR, totalEmpresa, totalColaborador float64
 	var totalDiasUteis int
 	sindicatos := make(map[string]int)
 	empresas := make(map[string]int)
-	
+
 	for _, colaborador := range c.contextData {
 		totalVR += colaborador.ValorTotalVR
 		totalEmpresa += colaborador.ValorEmpresa
@@ -303,7 +303,7 @@ func (c *Chat) formatContextDataWithDetail(maxDetailed int) string {
 		sindicatos[colaborador.Sindicato]++
 		empresas[colaborador.Empresa]++
 	}
-	
+
 	// Add summary statistics
 	summary.WriteString(fmt.Sprintf("\n=== RESUMO GERAL ===\n"))
 	summary.WriteString(fmt.Sprintf("Total de colaboradores: %d\n", total))
@@ -311,17 +311,17 @@ func (c *Chat) formatContextDataWithDetail(maxDetailed int) string {
 	summary.WriteString(fmt.Sprintf("Valor total empresa: R$ %.2f\n", totalEmpresa))
 	summary.WriteString(fmt.Sprintf("Valor total colaborador: R$ %.2f\n", totalColaborador))
 	summary.WriteString(fmt.Sprintf("Total dias úteis: %d\n", totalDiasUteis))
-	
+
 	summary.WriteString("\nDistribuição por sindicato:\n")
 	for sindicato, count := range sindicatos {
 		summary.WriteString(fmt.Sprintf("  %s: %d colaboradores\n", sindicato, count))
 	}
-	
+
 	summary.WriteString("\nDistribuição por empresa:\n")
 	for empresa, count := range empresas {
 		summary.WriteString(fmt.Sprintf("  %s: %d colaboradores\n", empresa, count))
 	}
-	
+
 	// Add some detailed examples (limited to maxDetailed)
 	if total > 0 {
 		detailedCount := maxDetailed
@@ -335,7 +335,7 @@ func (c *Chat) formatContextDataWithDetail(maxDetailed int) string {
 				summary.WriteString(fmt.Sprintf("... e mais %d colaboradores com dados detalhados disponíveis\n", total-maxDetailed))
 				break
 			}
-			
+
 			summary.WriteString(fmt.Sprintf(
 				"Colaborador %d: Matrícula=%s, Empresa=%s, Sindicato=%s, VR=R$%.2f, Dias=%d\n",
 				count+1,
@@ -351,7 +351,6 @@ func (c *Chat) formatContextDataWithDetail(maxDetailed int) string {
 
 	return summary.String()
 }
-
 
 // SetAgent configura o agente de IA para o chat
 func (c *Chat) SetAgent(agent AgentInterface) {

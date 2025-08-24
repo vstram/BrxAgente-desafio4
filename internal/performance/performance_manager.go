@@ -23,15 +23,15 @@ type PerformanceManager struct {
 	autoTrigger      *monitoring.AutoTrigger
 
 	// Processamento paralelo
-	workerPool      *parallel.WorkerPool
-	batchProcessor  *parallel.BatchProcessor
-	pipeline        *parallel.ProcessingPipeline
+	workerPool     *parallel.WorkerPool
+	batchProcessor *parallel.BatchProcessor
+	pipeline       *parallel.ProcessingPipeline
 
 	// Configuração e estado
-	config   PerformanceConfig
-	running  bool
-	stopCh   chan bool
-	mutex    sync.RWMutex
+	config  PerformanceConfig
+	running bool
+	stopCh  chan bool
+	mutex   sync.RWMutex
 }
 
 // PerformanceConfig configuração completa de performance
@@ -40,16 +40,16 @@ type PerformanceConfig struct {
 	CacheConfig cache.SmartCacheConfig
 
 	// Processamento Paralelo
-	WorkerPoolSize   int
-	BatchSize        int
-	MaxConcurrent    int
-	PipelineBuffer   int
+	WorkerPoolSize int
+	BatchSize      int
+	MaxConcurrent  int
+	PipelineBuffer int
 
 	// Monitoramento
-	MetricsInterval      time.Duration
-	ProfilingEnabled     bool
-	ProfilingOutputDir   string
-	AlertsEnabled        bool
+	MetricsInterval    time.Duration
+	ProfilingEnabled   bool
+	ProfilingOutputDir string
+	AlertsEnabled      bool
 
 	// Otimização automática
 	AutoOptimization     bool
@@ -64,23 +64,23 @@ type PerformanceConfig struct {
 func DefaultPerformanceConfig() PerformanceConfig {
 	return PerformanceConfig{
 		CacheConfig: cache.SmartCacheConfig{
-			LLMMaxSize:        1000,
+			LLMMaxSize:       1000,
 			LLMTTLHours:      24,
 			DataMaxSizeBytes: 512 * 1024 * 1024, // 512MB
 			DataTTLHours:     12,
 		},
 		WorkerPoolSize:       runtime.NumCPU() * 2,
-		BatchSize:           100,
-		MaxConcurrent:       runtime.NumCPU(),
-		PipelineBuffer:      200,
-		MetricsInterval:     10 * time.Second,
-		ProfilingEnabled:    false,
-		ProfilingOutputDir:  "./profiles",
-		AlertsEnabled:       true,
-		AutoOptimization:    true,
+		BatchSize:            100,
+		MaxConcurrent:        runtime.NumCPU(),
+		PipelineBuffer:       200,
+		MetricsInterval:      10 * time.Second,
+		ProfilingEnabled:     false,
+		ProfilingOutputDir:   "./profiles",
+		AlertsEnabled:        true,
+		AutoOptimization:     true,
 		OptimizationInterval: 15 * time.Minute,
-		CPUThreshold:        80.0,
-		MemoryThreshold:     500.0,
+		CPUThreshold:         80.0,
+		MemoryThreshold:      500.0,
 	}
 }
 
@@ -111,11 +111,11 @@ func (pm *PerformanceManager) initializeComponents() {
 
 	// Profiler automático
 	profilerConfig := monitoring.ProfilerConfig{
-		Enabled:             pm.config.ProfilingEnabled,
-		OutputDir:           pm.config.ProfilingOutputDir,
-		MemProfileInterval:  10 * time.Minute,
-		AutoCPUThreshold:    pm.config.CPUThreshold,
-		AutoMemThreshold:    pm.config.MemoryThreshold,
+		Enabled:            pm.config.ProfilingEnabled,
+		OutputDir:          pm.config.ProfilingOutputDir,
+		MemProfileInterval: 10 * time.Minute,
+		AutoCPUThreshold:   pm.config.CPUThreshold,
+		AutoMemThreshold:   pm.config.MemoryThreshold,
 	}
 	pm.profiler = monitoring.NewAutoProfiler(profilerConfig)
 
@@ -232,7 +232,7 @@ func (pm *PerformanceManager) GetPerformanceReport() PerformanceReport {
 	alertStats := pm.alertManager.GetAlertStats()
 	workerStats := pm.workerPool.GetStats()
 	batchStats := pm.batchProcessor.GetStats()
-	
+
 	return PerformanceReport{
 		Timestamp:       time.Now(),
 		MetricsReport:   metricsReport,
@@ -259,12 +259,12 @@ type PerformanceReport struct {
 
 // SystemHealth avaliação da saúde do sistema
 type SystemHealth struct {
-	Overall     string // "healthy", "warning", "critical"
-	CPU         string
-	Memory      string
-	Cache       string
-	Processing  string
-	Errors      string
+	Overall    string // "healthy", "warning", "critical"
+	CPU        string
+	Memory     string
+	Cache      string
+	Processing string
+	Errors     string
 }
 
 // assessSystemHealth avalia a saúde geral do sistema
@@ -337,7 +337,7 @@ func (pm *PerformanceManager) assessSystemHealth() SystemHealth {
 // generateRecommendations gera recomendações de otimização
 func (pm *PerformanceManager) generateRecommendations() []string {
 	var recommendations []string
-	
+
 	metrics := pm.metricsCollector.GetMetrics()
 	cacheStats := pm.smartCache.GetCombinedStats()
 	workerStats := pm.workerPool.GetStats()
@@ -428,12 +428,12 @@ func (pm *PerformanceManager) checkAlertsAndMetrics() {
 // RunStressTest executa teste de stress do sistema
 func (pm *PerformanceManager) RunStressTest(duration time.Duration, concurrency int) StressTestResult {
 	startTime := time.Now()
-	
+
 	result := StressTestResult{
-		StartTime:       startTime,
-		Duration:        duration,
-		Concurrency:     concurrency,
-		InitialMetrics:  pm.metricsCollector.GetMetrics(),
+		StartTime:      startTime,
+		Duration:       duration,
+		Concurrency:    concurrency,
+		InitialMetrics: pm.metricsCollector.GetMetrics(),
 	}
 
 	// Cria snapshot inicial
@@ -508,25 +508,25 @@ func (pm *PerformanceManager) simulateOperation(workerID int) {
 
 // StressTestResult resultado do teste de stress
 type StressTestResult struct {
-	StartTime       time.Time
-	EndTime         time.Time
-	Duration        time.Duration
-	ActualDuration  time.Duration
-	Concurrency     int
-	InitialMetrics  monitoring.PerformanceMetrics
-	FinalMetrics    monitoring.PerformanceMetrics
-	Success         bool
+	StartTime      time.Time
+	EndTime        time.Time
+	Duration       time.Duration
+	ActualDuration time.Duration
+	Concurrency    int
+	InitialMetrics monitoring.PerformanceMetrics
+	FinalMetrics   monitoring.PerformanceMetrics
+	Success        bool
 }
 
 // GetOptimizationReport gera relatório de otimização
 func (pm *PerformanceManager) GetOptimizationReport() OptimizationReport {
 	cacheHealth := pm.smartCache.GetCacheHealth()
-	
+
 	return OptimizationReport{
-		Timestamp:         time.Now(),
-		CacheHealth:       cacheHealth,
-		SystemMetrics:     pm.metricsCollector.GetMetrics(),
-		Recommendations:   pm.generateRecommendations(),
+		Timestamp:            time.Now(),
+		CacheHealth:          cacheHealth,
+		SystemMetrics:        pm.metricsCollector.GetMetrics(),
+		Recommendations:      pm.generateRecommendations(),
 		OptimizationsApplied: pm.getRecentOptimizations(),
 	}
 }

@@ -21,13 +21,13 @@ func NewTemporalAnomalyDetector(config *AnalysisConfig) *TemporalAnomalyDetector
 func (d *TemporalAnomalyDetector) DetectFutureDates(ctx *AnalysisContext) []Anomaly {
 	anomalies := make([]Anomaly, 0)
 	now := time.Now()
-	
+
 	for matricula, data := range ctx.Colaboradores {
 		dataMap, ok := data.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Verificar data de admissão
 		if admissaoDate, err := d.extractDate(dataMap, "data_admissao"); err == nil {
 			if admissaoDate.After(now) {
@@ -44,18 +44,18 @@ func (d *TemporalAnomalyDetector) DetectFutureDates(ctx *AnalysisContext) []Anom
 					"temporal_future_detector",
 					"future_dates",
 				)
-				
+
 				anomaly.AddData("data_admissao", admissaoDate)
 				anomaly.AddData("data_atual", now)
 				anomaly.AddData("dias_no_futuro", int(admissaoDate.Sub(now).Hours()/24))
-				
+
 				anomaly.AddSuggestion("Corrigir data de admissão para data válida no passado")
 				anomaly.AddSuggestion("Verificar se houve erro de digitação no ano")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
 		}
-		
+
 		// Verificar data de desligamento
 		if desligamentoDate, err := d.extractDate(dataMap, "data_desligamento"); err == nil {
 			if desligamentoDate.After(now) {
@@ -72,38 +72,38 @@ func (d *TemporalAnomalyDetector) DetectFutureDates(ctx *AnalysisContext) []Anom
 					"temporal_future_detector",
 					"future_dates",
 				)
-				
+
 				anomaly.AddData("data_desligamento", desligamentoDate)
 				anomaly.AddData("data_atual", now)
 				anomaly.AddData("dias_no_futuro", int(desligamentoDate.Sub(now).Hours()/24))
-				
+
 				anomaly.AddSuggestion("Corrigir data de desligamento")
 				anomaly.AddSuggestion("Verificar se é uma previsão que deveria estar marcada diferentemente")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
 		}
-		
+
 		ctx.IncrementProcessed()
 	}
-	
+
 	return anomalies
 }
 
 // DetectInvalidDateSequences detecta sequências de datas inválidas
 func (d *TemporalAnomalyDetector) DetectInvalidDateSequences(ctx *AnalysisContext) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	for matricula, data := range ctx.Colaboradores {
 		dataMap, ok := data.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Extrair datas principais
 		admissaoDate, errAdmissao := d.extractDate(dataMap, "data_admissao")
 		desligamentoDate, errDesligamento := d.extractDate(dataMap, "data_desligamento")
-		
+
 		// Verificar sequência admissão -> desligamento
 		if errAdmissao == nil && errDesligamento == nil {
 			if desligamentoDate.Before(admissaoDate) {
@@ -120,18 +120,18 @@ func (d *TemporalAnomalyDetector) DetectInvalidDateSequences(ctx *AnalysisContex
 					"temporal_sequence_detector",
 					"invalid_date_sequence",
 				)
-				
+
 				anomaly.AddData("data_admissao", admissaoDate)
 				anomaly.AddData("data_desligamento", desligamentoDate)
 				anomaly.AddData("diferenca_dias", int(admissaoDate.Sub(desligamentoDate).Hours()/24))
-				
+
 				anomaly.AddSuggestion("Corrigir sequência de datas")
 				anomaly.AddSuggestion("Verificar se as datas foram invertidas")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
 		}
-		
+
 		// Verificar datas muito antigas
 		if errAdmissao == nil {
 			if admissaoDate.Before(d.config.MinAdmissionDate) {
@@ -148,43 +148,43 @@ func (d *TemporalAnomalyDetector) DetectInvalidDateSequences(ctx *AnalysisContex
 					"temporal_ancient_detector",
 					"ancient_date",
 				)
-				
+
 				anomaly.AddData("data_admissao", admissaoDate)
 				anomaly.AddData("data_minima", d.config.MinAdmissionDate)
 				anomaly.AddData("anos_atras", int(time.Since(admissaoDate).Hours()/24/365))
-				
+
 				anomaly.AddSuggestion("Verificar se a data está correta")
 				anomaly.AddSuggestion("Confirmar se colaborador ainda está ativo")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
 		}
-		
+
 		// Detectar períodos de férias/afastamentos problemáticos
 		anomalies = append(anomalies, d.detectPeriodAnomalies(matricula, dataMap)...)
-		
+
 		ctx.IncrementProcessed()
 	}
-	
+
 	return anomalies
 }
 
 // DetectWorkDayAnomalies detecta anomalias nos dias úteis
 func (d *TemporalAnomalyDetector) DetectWorkDayAnomalies(ctx *AnalysisContext) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	for matricula, data := range ctx.Colaboradores {
 		dataMap, ok := data.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		// Extrair dias úteis
 		diasUteis, err := d.extractNumericField(dataMap, "dias_uteis")
 		if err != nil {
 			continue
 		}
-		
+
 		// Verificar limites de dias úteis
 		if diasUteis > float64(d.config.MaxWorkDaysPerMonth) {
 			anomaly := NewAnomaly(
@@ -200,18 +200,18 @@ func (d *TemporalAnomalyDetector) DetectWorkDayAnomalies(ctx *AnalysisContext) [
 				"temporal_workday_detector",
 				"excessive_workdays",
 			)
-			
+
 			anomaly.AddData("dias_uteis", diasUteis)
 			anomaly.AddData("maximo_permitido", d.config.MaxWorkDaysPerMonth)
 			anomaly.AddData("excesso", diasUteis-float64(d.config.MaxWorkDaysPerMonth))
-			
+
 			anomaly.AddSuggestion("Verificar cálculo de dias úteis")
 			anomaly.AddSuggestion("Confirmar período de referência")
 			anomaly.AddSuggestion("Revisar feriados e finais de semana")
-			
+
 			anomalies = append(anomalies, anomaly)
 		}
-		
+
 		if diasUteis < 0 {
 			anomaly := NewAnomaly(
 				AnomalyTypeTemporal,
@@ -225,31 +225,31 @@ func (d *TemporalAnomalyDetector) DetectWorkDayAnomalies(ctx *AnalysisContext) [
 				"temporal_workday_detector",
 				"negative_workdays",
 			)
-			
+
 			anomaly.AddData("dias_uteis", diasUteis)
-			
+
 			anomaly.AddSuggestion("Corrigir erro de cálculo que resultou em valor negativo")
 			anomaly.AddSuggestion("Verificar fórmulas de cálculo de dias úteis")
-			
+
 			anomalies = append(anomalies, anomaly)
 		}
-		
+
 		ctx.IncrementProcessed()
 	}
-	
+
 	return anomalies
 }
 
 // detectPeriodAnomalies detecta anomalias em períodos de férias/afastamentos
 func (d *TemporalAnomalyDetector) detectPeriodAnomalies(matricula string, dataMap map[string]interface{}) []Anomaly {
 	anomalies := make([]Anomaly, 0)
-	
+
 	// Extrair data de admissão para validar períodos
 	admissaoDate, errAdmissao := d.extractDate(dataMap, "data_admissao")
 	if errAdmissao != nil {
 		return anomalies
 	}
-	
+
 	// Verificar período de férias se disponível
 	if feriasInicio, err1 := d.extractDate(dataMap, "ferias_inicio"); err1 == nil {
 		if feriasFim, err2 := d.extractDate(dataMap, "ferias_fim"); err2 == nil {
@@ -268,21 +268,21 @@ func (d *TemporalAnomalyDetector) detectPeriodAnomalies(matricula string, dataMa
 					"temporal_period_detector",
 					"vacation_before_admission",
 				)
-				
+
 				anomaly.AddData("ferias_inicio", feriasInicio)
 				anomaly.AddData("ferias_fim", feriasFim)
 				anomaly.AddData("data_admissao", admissaoDate)
-				
+
 				anomaly.AddSuggestion("Corrigir datas de férias")
 				anomaly.AddSuggestion("Verificar se são férias prêmio de emprego anterior")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
-			
+
 			// Verificar duração das férias
 			duracaoFerias := feriasFim.Sub(feriasInicio).Hours() / 24
 			tempoTrabalhado := time.Since(admissaoDate).Hours() / 24
-			
+
 			if duracaoFerias > 30 && tempoTrabalhado < 365 {
 				anomaly := NewAnomaly(
 					AnomalyTypeTemporal,
@@ -297,19 +297,19 @@ func (d *TemporalAnomalyDetector) detectPeriodAnomalies(matricula string, dataMa
 					"temporal_period_detector",
 					"excessive_vacation_new_employee",
 				)
-				
+
 				anomaly.AddData("duracao_ferias", duracaoFerias)
 				anomaly.AddData("tempo_trabalhado", tempoTrabalhado)
 				anomaly.AddData("data_admissao", admissaoDate)
-				
+
 				anomaly.AddSuggestion("Verificar se colaborador tem direito a tantos dias de férias")
 				anomaly.AddSuggestion("Confirmar cálculo proporcional de férias")
-				
+
 				anomalies = append(anomalies, anomaly)
 			}
 		}
 	}
-	
+
 	return anomalies
 }
 
@@ -319,7 +319,7 @@ func (d *TemporalAnomalyDetector) extractDate(dataMap map[string]interface{}, fi
 	if !exists {
 		return time.Time{}, fmt.Errorf("campo %s não encontrado", fieldName)
 	}
-	
+
 	switch v := value.(type) {
 	case time.Time:
 		return v, nil
@@ -333,13 +333,13 @@ func (d *TemporalAnomalyDetector) extractDate(dataMap map[string]interface{}, fi
 			"2006/01/02",
 			"01-02-2006",
 		}
-		
+
 		for _, format := range formats {
 			if date, err := time.Parse(format, v); err == nil {
 				return date, nil
 			}
 		}
-		
+
 		return time.Time{}, fmt.Errorf("formato de data inválido: %s", v)
 	default:
 		return time.Time{}, fmt.Errorf("tipo de data inválido: %T", value)
@@ -352,7 +352,7 @@ func (d *TemporalAnomalyDetector) extractNumericField(dataMap map[string]interfa
 	if !exists {
 		return 0, fmt.Errorf("campo %s não encontrado", fieldName)
 	}
-	
+
 	return extractNumericValue(value)
 }
 
@@ -363,10 +363,10 @@ func (d *TemporalAnomalyDetector) IsBusinessDay(date time.Time) bool {
 	if weekday == time.Saturday || weekday == time.Sunday {
 		return false
 	}
-	
+
 	// TODO: Implementar verificação de feriados nacionais
 	// Por enquanto, apenas considera segunda a sexta como dias úteis
-	
+
 	return true
 }
 
@@ -375,17 +375,17 @@ func (d *TemporalAnomalyDetector) CalculateBusinessDays(start, end time.Time) in
 	if start.After(end) {
 		return 0
 	}
-	
+
 	businessDays := 0
 	current := start
-	
+
 	for current.Before(end) || current.Equal(end) {
 		if d.IsBusinessDay(current) {
 			businessDays++
 		}
 		current = current.AddDate(0, 0, 1)
 	}
-	
+
 	return businessDays
 }
 
@@ -399,7 +399,7 @@ func (d *TemporalAnomalyDetector) GetQuarter(date time.Time) int {
 func (d *TemporalAnomalyDetector) IsValidWorkPeriod(start, end time.Time, expectedBusinessDays int) bool {
 	actualBusinessDays := d.CalculateBusinessDays(start, end)
 	tolerance := 2 // 2 dias de tolerância
-	
+
 	return abs(actualBusinessDays-expectedBusinessDays) <= tolerance
 }
 

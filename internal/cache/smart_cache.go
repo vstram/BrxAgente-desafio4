@@ -14,7 +14,7 @@ type SmartCache struct {
 
 // SmartCacheConfig configuração para o smart cache
 type SmartCacheConfig struct {
-	LLMMaxSize        int
+	LLMMaxSize       int
 	LLMTTLHours      int
 	DataMaxSizeBytes int64
 	DataTTLHours     int
@@ -219,7 +219,7 @@ func (sc *SmartCache) GetCacheHealth() CacheHealthReport {
 // CacheHealthReport relatório de saúde dos caches
 type CacheHealthReport struct {
 	Timestamp       time.Time
-	Overall         string   // "healthy", "fair", "poor"
+	Overall         string // "healthy", "fair", "poor"
 	LLMHealth       string
 	DataHealth      string
 	Issues          []string

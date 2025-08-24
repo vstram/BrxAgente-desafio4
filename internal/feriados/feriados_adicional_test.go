@@ -7,7 +7,7 @@ import (
 
 func TestObterFeriadosMunicipaisAdicional(t *testing.T) {
 	ano := 2025
-	
+
 	// Testar feriados municipais de São Paulo
 	spFeriados := ObterFeriadosMunicipais("São Paulo", "SP", ano)
 	// A função retorna 1 feriado para São Paulo
@@ -21,7 +21,7 @@ func TestObterFeriadosMunicipaisAdicional(t *testing.T) {
 	if len(rjFeriados) != 1 {
 		t.Errorf("Esperava 1 feriado municipal para Rio de Janeiro, obteve %d", len(rjFeriados))
 	}
-	
+
 	// Testar municípios sem feriados definidos
 	outrosFeriados := ObterFeriadosMunicipais("Outro Município", "SP", ano)
 	// A função retorna 0 feriados para municípios sem definição
@@ -63,12 +63,12 @@ func TestContarFeriadosNoPeriodoAdicional(t *testing.T) {
 	if contagem < 1 {
 		t.Errorf("Deveria haver ao menos 1 feriado em janeiro, obteve %d", contagem)
 	}
-	
+
 	// Testar contagem de feriados em junho (tem Corpus Christi)
 	inicioJunho := time.Date(ano, time.June, 1, 0, 0, 0, 0, time.UTC)
 	fimJunho := time.Date(ano, time.June, 30, 0, 0, 0, 0, time.UTC)
 	contagemJunho := ContarFeriadosNoPeriodo(inicioJunho, fimJunho, feriados)
-	
+
 	// Em junho temos Corpus Christi (19/06)
 	if contagemJunho != 1 {
 		t.Errorf("Deveria haver 1 feriado em junho (Corpus Christi), obteve %d", contagemJunho)

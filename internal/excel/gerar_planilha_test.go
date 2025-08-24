@@ -12,20 +12,20 @@ func TestGerarPlanilhaResultado(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700
 			ValorColaborador:  140.00, // 20% de 700
 		},
 		"002": {
-			Matricula:        "002",
-			Empresa:          "Empresa B",
-			Cargo:            "Gerente",
-			Sindicato:        "Rio Grande do Sul",
+			Matricula:         "002",
+			Empresa:           "Empresa B",
+			Cargo:             "Gerente",
+			Sindicato:         "Rio Grande do Sul",
 			DiasUteisEfetivos: 15,
 			ValorTotalVR:      525.00,
 			ValorEmpresa:      420.00, // 80% de 525
@@ -51,10 +51,10 @@ func TestGerarPlanilhaResultadoComTemplate(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700

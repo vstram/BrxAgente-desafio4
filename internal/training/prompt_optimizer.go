@@ -2,7 +2,7 @@ package training
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -12,19 +12,19 @@ import (
 
 // PromptTemplate representa um template de prompt otimizado
 type PromptTemplate struct {
-	Role         string `yaml:"role"`
-	Persona      string `yaml:"persona"`
-	Instructions string `yaml:"instructions"`
+	Role                string `yaml:"role"`
+	Persona             string `yaml:"persona"`
+	Instructions        string `yaml:"instructions"`
 	ContextInstructions string `yaml:"context_instructions,omitempty"`
 }
 
 // PromptConfig representa a configuração completa de prompts
 type PromptConfig struct {
-	SystemPrompts map[string]PromptTemplate `yaml:"system_prompts"`
-	ToolPrompts   map[string]ToolPrompt     `yaml:"tool_prompts"`
-	WorkflowPrompts map[string]WorkflowPrompt `yaml:"workflow_prompts"`
-	OptimizationTechniques OptimizationTechniques `yaml:"prompt_optimization"`
-	ValidationPrompts ValidationPrompts `yaml:"validation_prompts"`
+	SystemPrompts          map[string]PromptTemplate `yaml:"system_prompts"`
+	ToolPrompts            map[string]ToolPrompt     `yaml:"tool_prompts"`
+	WorkflowPrompts        map[string]WorkflowPrompt `yaml:"workflow_prompts"`
+	OptimizationTechniques OptimizationTechniques    `yaml:"prompt_optimization"`
+	ValidationPrompts      ValidationPrompts         `yaml:"validation_prompts"`
 }
 
 // ToolPrompt representa prompts específicos para ferramentas
@@ -50,45 +50,45 @@ type OptimizationTechniques struct {
 
 // OptimizationTechnique representa uma técnica específica
 type OptimizationTechnique struct {
-	Description    string   `yaml:"description"`
-	ExamplesCount  int      `yaml:"examples_count,omitempty"`
-	Format         string   `yaml:"format,omitempty"`
-	Keywords       []string `yaml:"keywords,omitempty"`
-	Personas       []string `yaml:"personas,omitempty"`
-	MaxTokens      int      `yaml:"max_tokens,omitempty"`
-	PriorityOrder  []string `yaml:"priority_order,omitempty"`
+	Description   string   `yaml:"description"`
+	ExamplesCount int      `yaml:"examples_count,omitempty"`
+	Format        string   `yaml:"format,omitempty"`
+	Keywords      []string `yaml:"keywords,omitempty"`
+	Personas      []string `yaml:"personas,omitempty"`
+	MaxTokens     int      `yaml:"max_tokens,omitempty"`
+	PriorityOrder []string `yaml:"priority_order,omitempty"`
 }
 
 // ValidationPrompts representa prompts para validação de qualidade
 type ValidationPrompts struct {
-	ResponseQuality ResponseQuality `yaml:"response_quality"`
+	ResponseQuality  ResponseQuality  `yaml:"response_quality"`
 	ConsistencyCheck ConsistencyCheck `yaml:"consistency_check"`
 }
 
 // ResponseQuality representa critérios de qualidade
 type ResponseQuality struct {
-	Criteria []string           `yaml:"criteria"`
-	Scoring  map[string]string  `yaml:"scoring"`
+	Criteria []string          `yaml:"criteria"`
+	Scoring  map[string]string `yaml:"scoring"`
 }
 
 // ConsistencyCheck representa verificação de consistência
 type ConsistencyCheck struct {
-	TestQuestions     []string `yaml:"test_questions"`
-	ExpectedPatterns  []string `yaml:"expected_patterns"`
+	TestQuestions    []string `yaml:"test_questions"`
+	ExpectedPatterns []string `yaml:"expected_patterns"`
 }
 
 // PromptOptimizer otimiza prompts para melhor performance
 type PromptOptimizer struct {
-	configPath   string
-	config       *PromptConfig
+	configPath       string
+	config           *PromptConfig
 	knowledgeManager *KnowledgeManager
-	loadedAt     time.Time
+	loadedAt         time.Time
 }
 
 // NewPromptOptimizer cria um novo otimizador de prompts
 func NewPromptOptimizer(configPath string, km *KnowledgeManager) *PromptOptimizer {
 	return &PromptOptimizer{
-		configPath: configPath,
+		configPath:       configPath,
 		knowledgeManager: km,
 	}
 }
@@ -97,24 +97,24 @@ func NewPromptOptimizer(configPath string, km *KnowledgeManager) *PromptOptimize
 func (po *PromptOptimizer) LoadPromptConfig() error {
 	// Carregar prompts de sistema
 	systemPromptsPath := filepath.Join(po.configPath, "prompts", "system_prompts.yaml")
-	systemData, err := ioutil.ReadFile(systemPromptsPath)
+	systemData, err := os.ReadFile(systemPromptsPath)
 	if err != nil {
 		return fmt.Errorf("erro ao carregar prompts de sistema: %v", err)
 	}
 
 	var systemConfig struct {
-		SystemPrompts map[string]PromptTemplate `yaml:"system_prompts"`
-		PromptOptimization OptimizationTechniques `yaml:"prompt_optimization"`
-		ValidationPrompts ValidationPrompts `yaml:"validation_prompts"`
+		SystemPrompts      map[string]PromptTemplate `yaml:"system_prompts"`
+		PromptOptimization OptimizationTechniques    `yaml:"prompt_optimization"`
+		ValidationPrompts  ValidationPrompts         `yaml:"validation_prompts"`
 	}
-	
+
 	if err := yaml.Unmarshal(systemData, &systemConfig); err != nil {
 		return fmt.Errorf("erro ao parsear prompts de sistema: %v", err)
 	}
 
 	// Carregar prompts de ferramentas
 	toolPromptsPath := filepath.Join(po.configPath, "prompts", "tool_prompts.yaml")
-	toolData, err := ioutil.ReadFile(toolPromptsPath)
+	toolData, err := os.ReadFile(toolPromptsPath)
 	if err != nil {
 		return fmt.Errorf("erro ao carregar prompts de ferramentas: %v", err)
 	}
@@ -122,14 +122,14 @@ func (po *PromptOptimizer) LoadPromptConfig() error {
 	var toolConfig struct {
 		ToolPrompts map[string]ToolPrompt `yaml:"tool_prompts"`
 	}
-	
+
 	if err := yaml.Unmarshal(toolData, &toolConfig); err != nil {
 		return fmt.Errorf("erro ao parsear prompts de ferramentas: %v", err)
 	}
 
 	// Carregar prompts de workflows
 	workflowPromptsPath := filepath.Join(po.configPath, "prompts", "workflow_prompts.yaml")
-	workflowData, err := ioutil.ReadFile(workflowPromptsPath)
+	workflowData, err := os.ReadFile(workflowPromptsPath)
 	if err != nil {
 		return fmt.Errorf("erro ao carregar prompts de workflows: %v", err)
 	}
@@ -137,7 +137,7 @@ func (po *PromptOptimizer) LoadPromptConfig() error {
 	var workflowConfig struct {
 		WorkflowPrompts map[string]WorkflowPrompt `yaml:"workflow_prompts"`
 	}
-	
+
 	if err := yaml.Unmarshal(workflowData, &workflowConfig); err != nil {
 		return fmt.Errorf("erro ao parsear prompts de workflows: %v", err)
 	}
@@ -145,10 +145,10 @@ func (po *PromptOptimizer) LoadPromptConfig() error {
 	// Montar configuração completa
 	po.config = &PromptConfig{
 		SystemPrompts:          systemConfig.SystemPrompts,
-		ToolPrompts:           toolConfig.ToolPrompts,
-		WorkflowPrompts:       workflowConfig.WorkflowPrompts,
+		ToolPrompts:            toolConfig.ToolPrompts,
+		WorkflowPrompts:        workflowConfig.WorkflowPrompts,
 		OptimizationTechniques: systemConfig.PromptOptimization,
-		ValidationPrompts:     systemConfig.ValidationPrompts,
+		ValidationPrompts:      systemConfig.ValidationPrompts,
 	}
 
 	po.loadedAt = time.Now()
@@ -218,7 +218,7 @@ func (po *PromptOptimizer) BuildToolPrompt(toolName string, parameters map[strin
 	}
 
 	var promptBuilder strings.Builder
-	
+
 	// Instrução base da ferramenta
 	promptBuilder.WriteString(toolPrompt.Instruction)
 	promptBuilder.WriteString("\n\n")
@@ -274,23 +274,23 @@ func (po *PromptOptimizer) OptimizeForTokens(originalPrompt string, targetTokens
 	// Implementação básica de otimização de tokens
 	lines := strings.Split(originalPrompt, "\n")
 	var optimizedLines []string
-	
+
 	currentTokens := len(strings.Fields(originalPrompt)) // Aproximação simples
-	
+
 	for _, line := range lines {
 		lineTokens := len(strings.Fields(line))
 		if currentTokens-lineTokens > targetTokens {
 			// Pular linhas menos importantes para reduzir tokens
-			if !strings.Contains(strings.ToLower(line), "importante") && 
-			   !strings.Contains(strings.ToLower(line), "crítico") &&
-			   !strings.Contains(strings.ToLower(line), "obrigatório") {
+			if !strings.Contains(strings.ToLower(line), "importante") &&
+				!strings.Contains(strings.ToLower(line), "crítico") &&
+				!strings.Contains(strings.ToLower(line), "obrigatório") {
 				currentTokens -= lineTokens
 				continue
 			}
 		}
 		optimizedLines = append(optimizedLines, line)
 	}
-	
+
 	return strings.Join(optimizedLines, "\n"), nil
 }
 
@@ -330,27 +330,27 @@ func (po *PromptOptimizer) ValidatePromptQuality(prompt string) (map[string]bool
 
 	criteria := po.config.ValidationPrompts.ResponseQuality.Criteria
 	results := make(map[string]bool)
-	
+
 	promptLower := strings.ToLower(prompt)
-	
+
 	for _, criterion := range criteria {
 		switch criterion {
 		case "Resposta cita fonte específica?":
-			results[criterion] = strings.Contains(promptLower, "política") || 
-								strings.Contains(promptLower, "fonte") ||
-								strings.Contains(promptLower, "referência")
+			results[criterion] = strings.Contains(promptLower, "política") ||
+				strings.Contains(promptLower, "fonte") ||
+				strings.Contains(promptLower, "referência")
 		case "Cálculo está completo e correto?":
-			results[criterion] = strings.Contains(promptLower, "cálculo") && 
-								strings.Contains(promptLower, "fórmula")
+			results[criterion] = strings.Contains(promptLower, "cálculo") &&
+				strings.Contains(promptLower, "fórmula")
 		case "Exemplo prático foi fornecido quando relevante?":
 			results[criterion] = strings.Contains(promptLower, "exemplo")
 		case "Linguagem é clara e profissional?":
 			// Verificação básica - na prática seria mais sofisticada
-			results[criterion] = !strings.Contains(promptLower, "gíria") && 
-								len(strings.Fields(prompt)) > 10
+			results[criterion] = !strings.Contains(promptLower, "gíria") &&
+				len(strings.Fields(prompt)) > 10
 		case "Confidencialidade foi mantida (só matrícula)?":
-			results[criterion] = !strings.Contains(promptLower, "nome") || 
-								strings.Contains(promptLower, "matrícula")
+			results[criterion] = !strings.Contains(promptLower, "nome") ||
+				strings.Contains(promptLower, "matrícula")
 		}
 	}
 

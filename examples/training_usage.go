@@ -17,10 +17,10 @@ func TrainingUsageExample() {
 
 	// Configurar caminhos
 	basePath := "./data/training"
-	
+
 	// Criar gerenciador de conhecimento
 	km := training.NewKnowledgeManager(basePath)
-	
+
 	// Carregar base de conhecimento
 	fmt.Println("📚 Carregando base de conhecimento...")
 	if err := km.LoadKnowledgeBase(); err != nil {
@@ -42,7 +42,7 @@ func TrainingUsageExample() {
 	// 2. Inicializar otimizador de prompts
 	fmt.Println("\n🔧 Configurando otimizador de prompts...")
 	po := training.NewPromptOptimizer(basePath, km)
-	
+
 	if err := po.LoadPromptConfig(); err != nil {
 		log.Fatalf("Erro ao carregar configuração de prompts: %v", err)
 	}
@@ -55,7 +55,7 @@ func TrainingUsageExample() {
 
 	// 3. Demonstrar busca de conhecimento relevante
 	fmt.Println("\n🔍 Testando busca de conhecimento relevante...")
-	
+
 	testQuestions := []string{
 		"Estagiários têm direito a VR?",
 		"Como calcular VR para admissão no dia 20?",
@@ -64,7 +64,7 @@ func TrainingUsageExample() {
 
 	for _, question := range testQuestions {
 		fmt.Printf("\n❓ Pergunta: %s\n", question)
-		
+
 		relevantKnowledge, err := km.FindRelevantKnowledge(question)
 		if err != nil {
 			fmt.Printf("   ❌ Erro: %v\n", err)
@@ -72,7 +72,7 @@ func TrainingUsageExample() {
 		}
 
 		fmt.Printf("   📋 Conhecimento relevante encontrado: %d itens\n", len(relevantKnowledge))
-		
+
 		for i, item := range relevantKnowledge {
 			if i >= 2 { // Mostrar apenas os 2 primeiros
 				break
@@ -93,14 +93,14 @@ func TrainingUsageExample() {
 	// 4. Inicializar sistema de feedback
 	fmt.Println("\n💬 Inicializando sistema de feedback...")
 	fs := training.NewFeedbackSystem(basePath+"/feedback", km)
-	
+
 	if err := fs.LoadFeedbackData(); err != nil {
 		fmt.Printf("⚠️  Dados de feedback não encontrados, criando novo: %v\n", err)
 	}
 
 	// Simular alguns feedbacks
 	fmt.Println("📊 Adicionando feedback de exemplo...")
-	
+
 	sampleFeedbacks := []training.ResponseFeedback{
 		{
 			Question:   "Estagiários têm direito a VR?",
@@ -111,20 +111,20 @@ func TrainingUsageExample() {
 			Category:   "elegibilidade",
 		},
 		{
-			Question:   "Como calcular VR para SINDPD?",
-			Response:   "Valor base R$ 467,00 para colaboradores SINDPD",
-			UserRating: 3,
+			Question:    "Como calcular VR para SINDPD?",
+			Response:    "Valor base R$ 467,00 para colaboradores SINDPD",
+			UserRating:  3,
 			Corrections: "Faltou explicar o cálculo proporcional",
-			Source:     "user",
-			Category:   "cálculos",
+			Source:      "user",
+			Category:    "cálculos",
 		},
 		{
-			Question:   "Qual a política para diretores?",
-			Response:   "Diretores não recebem VR",
-			UserRating: 2,
+			Question:    "Qual a política para diretores?",
+			Response:    "Diretores não recebem VR",
+			UserRating:  2,
 			Corrections: "Não citou a política específica (VR-004)",
-			Source:     "expert",
-			Category:   "elegibilidade",
+			Source:      "expert",
+			Category:    "elegibilidade",
 		},
 	}
 
@@ -145,7 +145,7 @@ func TrainingUsageExample() {
 	// Obter padrões de aprendizado
 	patterns := fs.GetLearningPatterns()
 	fmt.Printf("   • Padrões identificados: %d\n", len(patterns))
-	
+
 	for i, pattern := range patterns {
 		if i >= 3 { // Mostrar apenas os 3 primeiros
 			break
@@ -156,13 +156,13 @@ func TrainingUsageExample() {
 	// 5. Executar suíte de validação
 	fmt.Println("\n🧪 Executando suíte de validação...")
 	vs := training.NewValidationSuite(basePath+"/validation", km, fs)
-	
+
 	if err := vs.LoadTestSuite(); err != nil {
 		log.Fatalf("Erro ao carregar suíte de testes: %v", err)
 	}
 
 	fmt.Println("⏳ Executando todos os testes (pode demorar alguns segundos)...")
-	
+
 	testResults, err := vs.RunAllTests()
 	if err != nil {
 		log.Fatalf("Erro ao executar testes: %v", err)
@@ -170,7 +170,7 @@ func TrainingUsageExample() {
 
 	// Mostrar resultados dos testes
 	fmt.Printf("✅ Testes concluídos:\n")
-	
+
 	if summary, ok := testResults["summary"].(map[string]interface{}); ok {
 		fmt.Printf("   • Status geral: %v\n", summary["status"])
 		fmt.Printf("   • Taxa de aprovação: %.1f%%\n", summary["overall_pass_rate"].(float64)*100)
@@ -182,13 +182,13 @@ func TrainingUsageExample() {
 	// Mostrar breakdown por categoria
 	fmt.Printf("\n📊 Breakdown por categoria:\n")
 	categories := []string{"eligibility_tests", "calculation_tests", "consistency_tests", "quality_tests", "performance_tests"}
-	
+
 	for _, category := range categories {
 		if categoryResult, ok := testResults[category].(map[string]interface{}); ok {
 			passed := categoryResult["passed"].(int)
 			total := categoryResult["total"].(int)
 			passRate := categoryResult["pass_rate"].(float64)
-			
+
 			status := "✅"
 			if passRate < 0.9 {
 				status = "⚠️"
@@ -196,26 +196,26 @@ func TrainingUsageExample() {
 			if passRate < 0.8 {
 				status = "❌"
 			}
-			
+
 			fmt.Printf("   %s %s: %d/%d (%.1f%%)\n", status, category, passed, total, passRate*100)
 		}
 	}
 
 	// 6. Salvar resultados
 	fmt.Println("\n💾 Salvando resultados...")
-	
+
 	if err := vs.SaveTestResults(); err != nil {
 		fmt.Printf("⚠️  Erro ao salvar resultados dos testes: %v\n", err)
 	}
 
 	// 7. Gerar relatório de melhorias
 	fmt.Println("\n📈 Gerando relatório de melhorias...")
-	
+
 	improvementReport := fs.GenerateImprovementReport()
-	
+
 	if improvements, ok := improvementReport["priority_improvements"].([]map[string]interface{}); ok {
 		fmt.Printf("🎯 Principais áreas de melhoria:\n")
-		
+
 		for i, improvement := range improvements {
 			if i >= 3 { // Mostrar apenas as 3 principais
 				break
@@ -223,7 +223,7 @@ func TrainingUsageExample() {
 			area := improvement["area"].(string)
 			frequency := improvement["frequency"].(int)
 			suggestion := improvement["suggestion"].(string)
-			
+
 			fmt.Printf("   %d. %s (freq: %d)\n", i+1, area, frequency)
 			fmt.Printf("      💡 %s\n", suggestion)
 		}
@@ -231,11 +231,11 @@ func TrainingUsageExample() {
 
 	// 8. Demonstrar otimização de prompts
 	fmt.Println("\n🎨 Demonstrando otimização de prompts...")
-	
+
 	// Construir prompt para ferramenta
 	toolPrompt, err := po.BuildToolPrompt("calculate_vr_tool", map[string]interface{}{
-		"matricula": "MAT001234",
-		"sindicato": "SINDPD",
+		"matricula":        "MAT001234",
+		"sindicato":        "SINDPD",
 		"dias_trabalhados": 15,
 	})
 	if err != nil {
@@ -255,7 +255,7 @@ func TrainingUsageExample() {
 	// Finalizar
 	fmt.Println("\n🎉 Sistema de treinamento demonstrado com sucesso!")
 	fmt.Println("=" + strings.Repeat("=", 60))
-	
+
 	// Mostrar próximos passos
 	fmt.Println("\n📋 Próximos passos recomendados:")
 	fmt.Println("   1. Integrar com agente LangChain real")
@@ -263,7 +263,7 @@ func TrainingUsageExample() {
 	fmt.Println("   3. Implementar coleta contínua de feedback")
 	fmt.Println("   4. Expandir base de conhecimento com casos reais")
 	fmt.Println("   5. Otimizar prompts com base nos resultados")
-	
+
 	fmt.Printf("\n⏰ Demonstração concluída em: %v\n", time.Now().Format("15:04:05"))
 }
 
@@ -274,9 +274,9 @@ func DemonstrateFeedbackLoop() {
 
 	// Simular evolução do sistema ao longo do tempo
 	scenarios := []struct {
-		day   int
+		day      int
 		feedback string
-		rating int
+		rating   int
 	}{
 		{1, "Ótima resposta, muito clara", 5},
 		{2, "Faltou citar a política específica", 3},
@@ -287,7 +287,7 @@ func DemonstrateFeedbackLoop() {
 	}
 
 	fmt.Println("📊 Simulando evolução do sistema:")
-	
+
 	for _, scenario := range scenarios {
 		fmt.Printf("   Dia %2d: Rating %d/5 - %s\n", scenario.day, scenario.rating, scenario.feedback)
 	}
@@ -298,9 +298,9 @@ func DemonstrateFeedbackLoop() {
 		totalRating += float64(s.rating)
 	}
 	avgRating := totalRating / float64(len(scenarios))
-	
+
 	fmt.Printf("\n📈 Rating médio final: %.2f/5\n", avgRating)
-	
+
 	if avgRating >= 4.5 {
 		fmt.Println("🎉 Sistema está performando excelentemente!")
 	} else if avgRating >= 4.0 {

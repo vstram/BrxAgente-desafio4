@@ -6,54 +6,54 @@ import (
 	"log"
 	"strings"
 	"time"
-	
+
+	"BrxAgente-desafio4/internal/agent/tools"
 	"BrxAgente-desafio4/internal/excel"
 	"BrxAgente-desafio4/internal/intelligence"
 	"BrxAgente-desafio4/internal/workflows"
-	"BrxAgente-desafio4/internal/agent/tools"
 )
 
 // VRAgentIntegration fornece integração completa do agente IA com sistema VR
-// Conforme especificado no PRD_AGENTE_IA.md - transformando o sistema reativo 
+// Conforme especificado no PRD_AGENTE_IA.md - transformando o sistema reativo
 // em uma plataforma proativa de automação inteligente
 type VRAgentIntegration struct {
 	// Componentes core do agente
-	agentInstance    interface{} // Referência ao agente principal
-	
+	agentInstance interface{} // Referência ao agente principal
+
 	// Sistemas integrados
-	excelService     *excel.Service
-	analyzer         *intelligence.Analyzer
-	orchestrator     *workflows.Orchestrator
-	
+	excelService *excel.Service
+	analyzer     *intelligence.Analyzer
+	orchestrator *workflows.Orchestrator
+
 	// Ferramentas especializadas conforme PRD
 	readExcelTool    *tools.ReadExcelTool
 	calculateVRTool  *tools.CalculateVRTool
 	validateDataTool *tools.ValidateDataTool
-	
+
 	// Estado e configuração
-	config           AgentIntegrationConfig
-	isEnabled        bool
-	logger          *log.Logger
+	config    AgentIntegrationConfig
+	isEnabled bool
+	logger    *log.Logger
 }
 
 // AgentIntegrationConfig configuração da integração do agente
 type AgentIntegrationConfig struct {
 	// Configurações LLM
-	ModelName           string            `json:"model_name"`
-	Temperature         float64           `json:"temperature"`
-	MaxTokens          int               `json:"max_tokens"`
-	
+	ModelName   string  `json:"model_name"`
+	Temperature float64 `json:"temperature"`
+	MaxTokens   int     `json:"max_tokens"`
+
 	// Configurações de monitoramento
-	EnableDetailedLogging bool            `json:"enable_detailed_logging"`
-	EnableMetrics        bool            `json:"enable_metrics"`
-	
+	EnableDetailedLogging bool `json:"enable_detailed_logging"`
+	EnableMetrics         bool `json:"enable_metrics"`
+
 	// Configurações de segurança
-	ValidateInputs       bool            `json:"validate_inputs"`
-	SanitizeOutputs      bool            `json:"sanitize_outputs"`
-	
+	ValidateInputs  bool `json:"validate_inputs"`
+	SanitizeOutputs bool `json:"sanitize_outputs"`
+
 	// Configurações personalizáveis
-	CustomPrompts        map[string]string `json:"custom_prompts"`
-	Metadata            map[string]string `json:"metadata"`
+	CustomPrompts map[string]string `json:"custom_prompts"`
+	Metadata      map[string]string `json:"metadata"`
 }
 
 // NewVRAgentIntegration cria nova instância da integração completa
@@ -67,22 +67,22 @@ func NewVRAgentIntegration(
 	logger := log.Default()
 	orchestratorConfig := workflows.OrchestratorConfig{
 		MaxConcurrentWorkflows: 3,
-		DefaultTimeout:        30 * time.Minute,
-		EnableRollback:        true,
-		DetailedLogging:       config.EnableDetailedLogging,
+		DefaultTimeout:         30 * time.Minute,
+		EnableRollback:         true,
+		DetailedLogging:        config.EnableDetailedLogging,
 	}
 	orchestrator := workflows.NewOrchestrator(
-		&workflows.DefaultLogger{Logger: logger}, 
+		&workflows.DefaultLogger{Logger: logger},
 		orchestratorConfig,
 	)
-	
+
 	// Inicializar ferramentas especializadas
 	readExcelTool := tools.NewReadExcelTool()
 	readExcelTool.SetExcelService(excelService)
-	
+
 	calculateVRTool := tools.NewCalculateVRTool()
 	validateDataTool := tools.NewValidateDataTool()
-	
+
 	integration := &VRAgentIntegration{
 		excelService:     excelService,
 		analyzer:         analyzer,
@@ -94,7 +94,7 @@ func NewVRAgentIntegration(
 		isEnabled:        true,
 		logger:           logger,
 	}
-	
+
 	return integration, nil
 }
 
@@ -104,9 +104,9 @@ func (v *VRAgentIntegration) ProcessarVRMensal(ctx context.Context, anoMes strin
 	if !v.isEnabled {
 		return "", fmt.Errorf("agente não está habilitado")
 	}
-	
+
 	v.logger.Printf("Iniciando processamento VR para %s", anoMes)
-	
+
 	// Por enquanto, retorna uma simulação do processamento
 	// TODO: Implementar integração completa com workflows quando disponível
 	return fmt.Sprintf("Processamento VR iniciado para %s no diretório %s", anoMes, diretorioPlanilhas), nil
@@ -118,14 +118,14 @@ func (v *VRAgentIntegration) AnalisarAnomalias(ctx context.Context, diretorioPla
 	if !v.isEnabled {
 		return nil, fmt.Errorf("agente não está habilitado")
 	}
-	
+
 	v.logger.Printf("Iniciando análise de anomalias em %s", diretorioPlanilhas)
-	
+
 	// Usar analyzer para detectar anomalias
 	if v.analyzer == nil {
 		return nil, fmt.Errorf("analyzer não disponível")
 	}
-	
+
 	// Simular análise de anomalias (implementação real usaria dados reais)
 	report := &intelligence.AnomalyReport{
 		GeneratedAt:         time.Now(),
@@ -138,7 +138,7 @@ func (v *VRAgentIntegration) AnalisarAnomalias(ctx context.Context, diretorioPla
 			OverallScore: 95.0,
 		},
 	}
-	
+
 	v.logger.Printf("Análise de anomalias concluída: %d anomalias encontradas", report.TotalAnomalies)
 	return report, nil
 }
@@ -149,12 +149,12 @@ func (v *VRAgentIntegration) ConsultarPoliticas(ctx context.Context, pergunta st
 	if !v.isEnabled {
 		return "", fmt.Errorf("agente não está habilitado")
 	}
-	
+
 	v.logger.Printf("Consultando políticas: %s", pergunta)
-	
+
 	// Construir resposta contextual baseada na pergunta
 	resposta := v.gerarRespostaPolitica(pergunta)
-	
+
 	return resposta, nil
 }
 
@@ -163,10 +163,10 @@ func (v *VRAgentIntegration) InteragirComChat(ctx context.Context, mensagem stri
 	if !v.isEnabled {
 		return "", fmt.Errorf("agente não está habilitado")
 	}
-	
+
 	// Classificar tipo de mensagem para roteamento inteligente
 	tipoMensagem := v.classificarMensagem(mensagem)
-	
+
 	switch tipoMensagem {
 	case "processamento_vr":
 		return v.handleProcessamentoVR(ctx, mensagem)
@@ -192,12 +192,12 @@ func (v *VRAgentIntegration) AskWithSystemPrompt(question string, systemPrompt s
 	if !v.isEnabled {
 		return "", fmt.Errorf("agente não está habilitado")
 	}
-	
+
 	// Se o system prompt contém dados consolidados, usar resposta mais inteligente
 	if strings.Contains(systemPrompt, "Contexto dos dados:") {
 		return v.gerarRespostaComContexto(question, systemPrompt), nil
 	}
-	
+
 	// Fallback para comportamento padrão
 	ctx := context.Background()
 	return v.InteragirComChat(ctx, question)
@@ -217,27 +217,27 @@ func (v *VRAgentIntegration) GetStatusInterface() interface{} {
 
 func (v *VRAgentIntegration) classificarMensagem(mensagem string) string {
 	mensagemLower := strings.ToLower(mensagem)
-	
+
 	// Palavras-chave para processamento VR
 	if containsAny(mensagemLower, []string{"processar", "calcular", "gerar vr", "planilha", "workflow"}) {
 		return "processamento_vr"
 	}
-	
+
 	// Palavras-chave para anomalias
 	if containsAny(mensagemLower, []string{"anomalia", "estranho", "problema", "erro", "inconsistên"}) {
 		return "anomalias"
 	}
-	
+
 	// Palavras-chave para políticas
 	if containsAny(mensagemLower, []string{"política", "regra", "como", "quando", "elegível"}) {
 		return "politicas"
 	}
-	
+
 	// Palavras-chave para status
 	if containsAny(mensagemLower, []string{"status", "andamento", "progresso", "executando"}) {
 		return "status"
 	}
-	
+
 	return "geral"
 }
 
@@ -260,7 +260,7 @@ func (v *VRAgentIntegration) handleGeneralQuery(ctx context.Context, mensagem st
 
 func (v *VRAgentIntegration) gerarRespostaPolitica(pergunta string) string {
 	perguntaLower := strings.ToLower(pergunta)
-	
+
 	if strings.Contains(perguntaLower, "eligib") || strings.Contains(perguntaLower, "quem") {
 		return `**Elegibilidade para Vale Refeição:**
 
@@ -271,7 +271,7 @@ func (v *VRAgentIntegration) gerarRespostaPolitica(pergunta string) string {
 
 *Fonte: Regulamentação interna baseada na CLT*`
 	}
-	
+
 	if strings.Contains(perguntaLower, "calcul") || strings.Contains(perguntaLower, "valor") {
 		return `**Cálculo do Vale Refeição:**
 
@@ -282,7 +282,7 @@ func (v *VRAgentIntegration) gerarRespostaPolitica(pergunta string) string {
 
 *Fonte: Política de Benefícios da empresa*`
 	}
-	
+
 	return `Sou um consultor especializado em políticas de Vale Refeição. Posso ajudar com:
 
 • Regras de elegibilidade
@@ -316,39 +316,39 @@ type DadosConsolidados struct {
 func (v *VRAgentIntegration) gerarRespostaComContexto(question string, systemPrompt string) string {
 	// Extrair informações do contexto consolidado
 	questionLower := strings.ToLower(question)
-	
+
 	// Extrair dados consolidados do system prompt
 	contextData := v.extrairDadosConsolidados(systemPrompt)
-	
+
 	// Usar ferramentas especializadas para análises avançadas
 	if strings.Contains(questionLower, "ler planilha") || strings.Contains(questionLower, "arquivo excel") {
 		return v.executarLeituraInteligente(question, contextData)
 	}
-	
+
 	if strings.Contains(questionLower, "calcular vr") || strings.Contains(questionLower, "valor colaborador") {
 		return v.executarCalculoInteligente(question, contextData)
 	}
-	
+
 	if strings.Contains(questionLower, "validar") || strings.Contains(questionLower, "inconsistência") {
 		return v.executarValidacaoInteligente(question, contextData)
 	}
-	
+
 	if strings.Contains(questionLower, "anomalia") || strings.Contains(questionLower, "detectar problema") {
 		return v.executarDeteccaoAnomalias(question, contextData)
 	}
-	
+
 	// Gerar resposta baseada na pergunta e contexto
 	if strings.Contains(questionLower, "quantos colaboradores") || strings.Contains(questionLower, "total") {
-		return fmt.Sprintf("Com base nos dados consolidados:\n\n• **Total de colaboradores processados**: %s\n• **Valor total de VR**: %s\n• **Status**: Dados prontos para análise", 
+		return fmt.Sprintf("Com base nos dados consolidados:\n\n• **Total de colaboradores processados**: %s\n• **Valor total de VR**: %s\n• **Status**: Dados prontos para análise",
 			contextData.TotalColaboradores, contextData.ValorTotal)
 	}
-	
+
 	if strings.Contains(questionLower, "sindicato") || strings.Contains(questionLower, "categoria") {
 		return "Com base nos dados consolidados, posso analisar:\n\n• Distribuição por sindicatos\n• Valores específicos por categoria\n• Regras aplicadas por grupo\n\n*Dados consolidados disponíveis para análise detalhada*"
 	}
-	
+
 	// Resposta padrão com contexto
-	return fmt.Sprintf("Com base nos dados consolidados (%s colaboradores processados):\n\n%s\n\n*Resposta gerada com contexto dos dados carregados*", 
+	return fmt.Sprintf("Com base nos dados consolidados (%s colaboradores processados):\n\n%s\n\n*Resposta gerada com contexto dos dados carregados*",
 		contextData.TotalColaboradores, v.gerarRespostaGeral(question))
 }
 
@@ -358,7 +358,7 @@ func (v *VRAgentIntegration) extrairDadosConsolidados(systemPrompt string) Dados
 		ValorTotal:         "R$ 0,00",
 		DataProcessamento:  "N/A",
 	}
-	
+
 	// Extrair total de colaboradores
 	if strings.Contains(systemPrompt, "Total de colaboradores:") {
 		// Buscar padrão "Total de colaboradores: X"
@@ -372,7 +372,7 @@ func (v *VRAgentIntegration) extrairDadosConsolidados(systemPrompt string) Dados
 			}
 		}
 	}
-	
+
 	// Extrair valor total
 	if strings.Contains(systemPrompt, "Valor total VR:") {
 		lines := strings.Split(systemPrompt, "\n")
@@ -385,7 +385,7 @@ func (v *VRAgentIntegration) extrairDadosConsolidados(systemPrompt string) Dados
 			}
 		}
 	}
-	
+
 	return dados
 }
 
@@ -394,7 +394,7 @@ func (v *VRAgentIntegration) executarLeituraInteligente(question string, context
 	// Identificar arquivo a ser lido baseado na pergunta
 	var fileName string
 	questionLower := strings.ToLower(question)
-	
+
 	if strings.Contains(questionLower, "ativos") {
 		fileName = "ATIVOS.xlsx"
 	} else if strings.Contains(questionLower, "desligados") {
@@ -406,15 +406,15 @@ func (v *VRAgentIntegration) executarLeituraInteligente(question string, context
 	} else {
 		fileName = "ATIVOS.xlsx" // Default
 	}
-	
+
 	// Executar ferramenta ReadExcel
 	input := fmt.Sprintf(`{"file_path": "files/%s", "max_rows": 10}`, fileName)
 	result, err := v.readExcelTool.Execute(input)
-	
+
 	if err != nil {
 		return fmt.Sprintf("❌ **Erro ao ler planilha**: %s\n\n*Usando ferramentas especializadas de análise*", err.Error())
 	}
-	
+
 	return fmt.Sprintf("📊 **Análise de Planilha Executada**:\n\n%s\n\n*Resultado obtido com ReadExcelTool especializada*", result)
 }
 
@@ -423,11 +423,11 @@ func (v *VRAgentIntegration) executarCalculoInteligente(question string, context
 	// Para demonstração, usar dados de exemplo
 	input := `{"matricula": "12345", "mes_referencia": "2024-08"}`
 	result, err := v.calculateVRTool.Execute(input)
-	
+
 	if err != nil {
 		return fmt.Sprintf("❌ **Erro no cálculo de VR**: %s\n\n*Usando CalculateVRTool especializada*", err.Error())
 	}
-	
+
 	return fmt.Sprintf("💰 **Cálculo de VR Executado**:\n\n%s\n\n*Resultado obtido com CalculateVRTool especializada*", result)
 }
 
@@ -436,11 +436,11 @@ func (v *VRAgentIntegration) executarValidacaoInteligente(question string, conte
 	// Executar validação usando a ferramenta
 	input := `{"tipo": "dados_consolidados", "dados": {}}`
 	result, err := v.validateDataTool.Execute(input)
-	
+
 	if err != nil {
 		return fmt.Sprintf("❌ **Erro na validação**: %s\n\n*Usando ValidateDataTool especializada*", err.Error())
 	}
-	
+
 	return fmt.Sprintf("✅ **Validação Executada**:\n\n%s\n\n*Resultado obtido com ValidateDataTool especializada*", result)
 }
 
@@ -449,8 +449,8 @@ func (v *VRAgentIntegration) executarDeteccaoAnomalias(question string, contextD
 	if v.analyzer == nil {
 		return "⚠️ **Analyzer não disponível**: Sistema de detecção de anomalias não inicializado\n\n*Funcionalidade em desenvolvimento*"
 	}
-	
-	return fmt.Sprintf("🔍 **Detecção de Anomalias Executada**:\n\n• **Colaboradores analisados**: %s\n• **Padrões verificados**: Valores extremos, inconsistências de dados\n• **Status**: Análise concluída com sucesso\n• **Recomendação**: Dados dentro dos padrões esperados\n\n*Análise realizada com Intelligence.Analyzer*", 
+
+	return fmt.Sprintf("🔍 **Detecção de Anomalias Executada**:\n\n• **Colaboradores analisados**: %s\n• **Padrões verificados**: Valores extremos, inconsistências de dados\n• **Status**: Análise concluída com sucesso\n• **Recomendação**: Dados dentro dos padrões esperados\n\n*Análise realizada com Intelligence.Analyzer*",
 		contextData.TotalColaboradores)
 }
 
@@ -468,10 +468,10 @@ func (v *VRAgentIntegration) Disable() {
 // GetMetrics retorna métricas do agente
 func (v *VRAgentIntegration) GetMetrics() map[string]interface{} {
 	return map[string]interface{}{
-		"enabled":             v.isEnabled,
-		"integration_active":  true,
-		"advanced_features":   true,
-		"uptime_seconds":      time.Now().Unix(),
+		"enabled":            v.isEnabled,
+		"integration_active": true,
+		"advanced_features":  true,
+		"uptime_seconds":     time.Now().Unix(),
 	}
 }
 

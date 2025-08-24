@@ -12,10 +12,10 @@ func TestSalvarPlanilhaEmDownloads(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700
@@ -35,10 +35,10 @@ func TestSalvarPlanilhaEmDownloadsComTemplate(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700

@@ -30,10 +30,10 @@ func TestSalvarPlanilhaEmDownloadsAdicional(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700
@@ -53,7 +53,7 @@ func TestSalvarPlanilhaEmDownloadsAdicional(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Erro ao obter diretório de Downloads: %v", err)
 		}
-		
+
 		caminhoArquivo := filepath.Join(diretorioDownloads, nomeArquivo)
 		if _, err := os.Stat(caminhoArquivo); os.IsNotExist(err) {
 			t.Error("Arquivo de resultado não foi criado")
@@ -68,10 +68,10 @@ func TestSalvarPlanilhaEmDownloadsComTemplateAdicional(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700
@@ -81,7 +81,7 @@ func TestSalvarPlanilhaEmDownloadsComTemplateAdicional(t *testing.T) {
 
 	// Caminho para o template (usando uma planilha existente como template)
 	caminhoTemplate := filepath.Join("..", "..", "files", "VR MENSAL 05.2025.xlsx")
-	
+
 	// Testar salvar planilha em Downloads com template
 	nomeArquivo := "teste_vr_resultado_template_unit_test_adicional.xlsx"
 	err := SalvarPlanilhaEmDownloadsComTemplate(colaboradores, caminhoTemplate, nomeArquivo)
@@ -94,7 +94,7 @@ func TestSalvarPlanilhaEmDownloadsComTemplateAdicional(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Erro ao obter diretório de Downloads: %v", err)
 		}
-		
+
 		caminhoArquivo := filepath.Join(diretorioDownloads, nomeArquivo)
 		if _, err := os.Stat(caminhoArquivo); os.IsNotExist(err) {
 			t.Error("Arquivo de resultado com template não foi criado")
@@ -114,7 +114,7 @@ func TestVerificarPermissoesDiretorioAdicional(t *testing.T) {
 	if err != nil {
 		t.Errorf("Erro ao verificar permissões do diretório temporário: %v", err)
 	}
-	
+
 	// Testar com diretório que não existe
 	diretorioInexistente := filepath.Join(t.TempDir(), "diretorio_inexistente")
 	err = VerificarPermissoesDiretorio(diretorioInexistente)
@@ -127,20 +127,20 @@ func TestGerarPlanilhaResultadoAdicional(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700
 			ValorColaborador:  140.00, // 20% de 700
 		},
 		"002": {
-			Matricula:        "002",
-			Empresa:          "Empresa B",
-			Cargo:            "Gerente",
-			Sindicato:        "Rio Grande do Sul",
+			Matricula:         "002",
+			Empresa:           "Empresa B",
+			Cargo:             "Gerente",
+			Sindicato:         "Rio Grande do Sul",
 			DiasUteisEfetivos: 15,
 			ValorTotalVR:      525.00,
 			ValorEmpresa:      420.00, // 80% de 525
@@ -167,10 +167,10 @@ func TestGerarPlanilhaResultadoComTemplateAdicional(t *testing.T) {
 	// Criar dados de teste
 	colaboradores := map[string]*modelo.Colaborador{
 		"001": {
-			Matricula:        "001",
-			Empresa:          "Empresa A",
-			Cargo:            "Analista",
-			Sindicato:        "Paraná",
+			Matricula:         "001",
+			Empresa:           "Empresa A",
+			Cargo:             "Analista",
+			Sindicato:         "Paraná",
 			DiasUteisEfetivos: 20,
 			ValorTotalVR:      700.00,
 			ValorEmpresa:      560.00, // 80% de 700
@@ -200,40 +200,40 @@ func TestLerPlanilhaAdicional(t *testing.T) {
 	t.Run("ArquivoValido", func(t *testing.T) {
 		// Usando uma planilha de exemplo que sabemos que existe
 		caminho := filepath.Join("..", "..", "files", "ATIVOS.xlsx")
-		
+
 		f, err := LerPlanilha(caminho)
-		
+
 		// Verificando se não houve erro
 		if err != nil {
 			t.Errorf("Erro inesperado ao ler arquivo válido: %v", err)
 			return
 		}
-		
+
 		// Verificando se o arquivo foi retornado corretamente
 		if f == nil {
 			t.Error("Arquivo retornado é nil")
 			return
 		}
-		
+
 		// Fechando o arquivo
 		err = f.Close()
 		if err != nil {
 			t.Errorf("Erro ao fechar o arquivo: %v", err)
 		}
 	})
-	
+
 	// Teste com um arquivo inexistente
 	t.Run("ArquivoInexistente", func(t *testing.T) {
 		caminho := filepath.Join("..", "..", "files", "INEXISTENTE.xlsx")
-		
+
 		f, err := LerPlanilha(caminho)
-		
+
 		// Verificando se houve erro (como esperado)
 		if err == nil {
 			t.Error("Esperava-se um erro ao ler arquivo inexistente, mas não houve erro")
 			return
 		}
-		
+
 		// Verificando se o arquivo retornado é nil (como esperado)
 		if f != nil {
 			t.Error("Esperava-se nil ao ler arquivo inexistente, mas foi retornado um arquivo")
