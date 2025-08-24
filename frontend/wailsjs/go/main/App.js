@@ -14,6 +14,10 @@ export function AskAI(arg1) {
   return window['go']['main']['App']['AskAI'](arg1);
 }
 
+export function AskAIBasic(arg1) {
+  return window['go']['main']['App']['AskAIBasic'](arg1);
+}
+
 export function CancelWorkflow() {
   return window['go']['main']['App']['CancelWorkflow']();
 }
@@ -28,6 +32,10 @@ export function CreateHistoricalDataFromCurrent(arg1, arg2) {
 
 export function DetectTrends(arg1) {
   return window['go']['main']['App']['DetectTrends'](arg1);
+}
+
+export function FixOllamaConfig() {
+  return window['go']['main']['App']['FixOllamaConfig']();
 }
 
 export function GenerateForecast(arg1, arg2) {
@@ -70,6 +78,10 @@ export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
 
+export function IsAgentEnabled() {
+  return window['go']['main']['App']['IsAgentEnabled']();
+}
+
 export function PredictTrends(arg1) {
   return window['go']['main']['App']['PredictTrends'](arg1);
 }
@@ -80,6 +92,10 @@ export function RealizarAnaliseOrquestrada(arg1) {
 
 export function SelecionarDiretorio() {
   return window['go']['main']['App']['SelecionarDiretorio']();
+}
+
+export function SetAgentEnabled(arg1) {
+  return window['go']['main']['App']['SetAgentEnabled'](arg1);
 }
 
 export function SetChatContext() {

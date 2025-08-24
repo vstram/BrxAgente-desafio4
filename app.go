@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -172,6 +175,11 @@ func (a *App) startup(ctx context.Context) {
 	// Initialize chat
 	a.chat = chat.NewChat(cfg)
 	
+	// Fix any existing Ollama configuration issues
+	if err := a.FixOllamaConfig(); err != nil {
+		fmt.Printf("Warning: Failed to fix Ollama config: %v\n", err)
+	}
+	
 	// Initialize Basic VR Agent for optimal performance
 	fmt.Println("Initializing VR Agent...")
 	
@@ -184,6 +192,7 @@ func (a *App) startup(ctx context.Context) {
 		fmt.Printf("Warning: Failed to initialize VR agent: %v\n", err)
 		fmt.Println("Chat will use fallback services (OpenAI/Ollama)")
 	} else {
+		a.vrAgent = basicAgent  // Assign to App instance
 		a.chat.SetAgent(basicAgent)
 		fmt.Println("VR Agent initialized successfully")
 	}
@@ -286,6 +295,64 @@ func (a *App) GetConfig() (*config.Config, error) {
 	return a.cfg, nil
 }
 
+// reloadConfig reloads configuration from file
+func (a *App) reloadConfig() error {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return fmt.Errorf("falha ao recarregar configuração: %w", err)
+	}
+	
+	a.cfg = cfg
+	fmt.Printf("Configuration reloaded successfully\n")
+	return nil
+}
+
+// FixOllamaConfig corrige configuração existente do Ollama se necessário
+func (a *App) FixOllamaConfig() error {
+	if a.cfg == nil {
+		return fmt.Errorf("configuração não inicializada")
+	}
+	
+	originalURL := a.cfg.OllamaConfig.BaseURL
+	if originalURL == "" {
+		return nil // Nada para corrigir
+	}
+	
+	// Apply the same URL fixing logic
+	fixed := originalURL
+	
+	// Add http:// if missing
+	if !strings.HasPrefix(fixed, "http://") && !strings.HasPrefix(fixed, "https://") {
+		fixed = "http://" + fixed
+	}
+	
+	// Fix various localhost patterns
+	if strings.HasPrefix(fixed, "http://:") {
+		fixed = strings.Replace(fixed, "http://:", "http://localhost:", 1)
+	} else if fixed == "http://11434" || strings.HasPrefix(fixed, "http://11434") {
+		fixed = strings.Replace(fixed, "http://11434", "http://localhost:11434", 1)
+	} else if strings.Contains(fixed, "://11434") {
+		fixed = strings.Replace(fixed, "://11434", "://localhost:11434", 1)
+	}
+	
+	if originalURL != fixed {
+		fmt.Printf("Fixing existing Ollama URL from '%s' to '%s'\n", originalURL, fixed)
+		a.cfg.OllamaConfig.BaseURL = fixed
+		
+		// Save fixed configuration
+		if err := config.SaveConfig(a.cfg); err != nil {
+			return fmt.Errorf("falha ao salvar configuração corrigida: %w", err)
+		}
+		
+		// Update chat configuration
+		if a.chat != nil {
+			a.chat.UpdateConfig(a.cfg)
+		}
+	}
+	
+	return nil
+}
+
 // SetOpenAIKey define a chave da API do OpenAI
 func (a *App) SetOpenAIKey(key string) error {
 	// Validate the key format
@@ -306,23 +373,85 @@ func (a *App) SetOpenAIKey(key string) error {
 	if err := config.SaveConfig(a.cfg); err != nil {
 		return fmt.Errorf("falha ao salvar a configuração: %w", err)
 	}
+	
+	// Reload configuration to ensure consistency
+	if err := a.reloadConfig(); err != nil {
+		fmt.Printf("Warning: Failed to reload config after save: %v\n", err)
+	}
+	
+	// Update chat configuration
+	if a.chat != nil {
+		a.chat.UpdateConfig(a.cfg)
+	}
 
 	return nil
 }
 
 // SetOllamaConfig define a configuração do Ollama
 func (a *App) SetOllamaConfig(ollamaConfig config.OllamaConfig) error {
+	// Debug input
+	fmt.Printf("SetOllamaConfig called with: BaseURL='%s', Model='%s'\n", ollamaConfig.BaseURL, ollamaConfig.Model)
+	
+	// Auto-fix common URL issues
+	if ollamaConfig.BaseURL != "" {
+		originalURL := ollamaConfig.BaseURL
+		
+		// Add http:// if missing
+		if !strings.HasPrefix(ollamaConfig.BaseURL, "http://") && !strings.HasPrefix(ollamaConfig.BaseURL, "https://") {
+			ollamaConfig.BaseURL = "http://" + ollamaConfig.BaseURL
+		}
+		
+		// Fix various localhost patterns
+		if strings.HasPrefix(ollamaConfig.BaseURL, "http://:") {
+			// http://:11434 -> http://localhost:11434
+			ollamaConfig.BaseURL = strings.Replace(ollamaConfig.BaseURL, "http://:", "http://localhost:", 1)
+		} else if ollamaConfig.BaseURL == "http://11434" || strings.HasPrefix(ollamaConfig.BaseURL, "http://11434") {
+			// http://11434 -> http://localhost:11434
+			ollamaConfig.BaseURL = strings.Replace(ollamaConfig.BaseURL, "http://11434", "http://localhost:11434", 1)
+		} else if strings.Contains(ollamaConfig.BaseURL, "://11434") {
+			// Any protocol with just port
+			ollamaConfig.BaseURL = strings.Replace(ollamaConfig.BaseURL, "://11434", "://localhost:11434", 1)
+		}
+		
+		// Also handle cases like "localhost:11434" without protocol
+		if strings.HasPrefix(ollamaConfig.BaseURL, "http://localhost:") || strings.HasPrefix(ollamaConfig.BaseURL, "https://localhost:") {
+			// Already correct
+		} else if strings.HasPrefix(ollamaConfig.BaseURL, "http://") && !strings.Contains(ollamaConfig.BaseURL[7:], ":") && len(ollamaConfig.BaseURL) < 12 {
+			// Something like http://11434 - add localhost
+			port := ollamaConfig.BaseURL[7:]
+			ollamaConfig.BaseURL = "http://localhost:" + port
+		}
+		
+		if originalURL != ollamaConfig.BaseURL {
+			fmt.Printf("Auto-corrected URL from '%s' to '%s'\n", originalURL, ollamaConfig.BaseURL)
+		}
+	}
+	
 	// Validate the configuration
 	if err := config.ValidateOllamaConfig(ollamaConfig); err != nil {
+		fmt.Printf("Ollama config validation failed: %v\n", err)
 		return fmt.Errorf("configuração do Ollama inválida: %w", err)
 	}
 
 	// Update config
 	a.cfg.OllamaConfig = ollamaConfig
+	
+	// Debug updated config
+	fmt.Printf("Updated config: BaseURL='%s', Model='%s'\n", a.cfg.OllamaConfig.BaseURL, a.cfg.OllamaConfig.Model)
 
 	// Save config
 	if err := config.SaveConfig(a.cfg); err != nil {
 		return fmt.Errorf("falha ao salvar a configuração: %w", err)
+	}
+	
+	// Reload configuration to ensure consistency
+	if err := a.reloadConfig(); err != nil {
+		fmt.Printf("Warning: Failed to reload config after save: %v\n", err)
+	}
+	
+	// Update chat configuration
+	if a.chat != nil {
+		a.chat.UpdateConfig(a.cfg)
 	}
 
 	return nil
@@ -353,8 +482,43 @@ func (a *App) TestOllamaConnection(ollamaConfig config.OllamaConfig) (bool, erro
 		return false, fmt.Errorf("configuração do Ollama inválida: %w", err)
 	}
 
-	// In a real implementation, we would test the connection by making an API call
-	// For now, we'll just return true if the configuration is valid
+	// Test actual connection to Ollama
+	return a.testOllamaAPI(ollamaConfig)
+}
+
+// testOllamaAPI tests the actual Ollama API connection
+func (a *App) testOllamaAPI(ollamaConfig config.OllamaConfig) (bool, error) {
+	
+	// Try to list models first
+	url := ollamaConfig.BaseURL
+	if url[len(url)-1] != '/' {
+		url += "/"
+	}
+	url += "api/tags"
+	
+	fmt.Printf("Testing Ollama API at: %s\n", url)
+	
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	
+	resp, err := client.Get(url)
+	if err != nil {
+		return false, fmt.Errorf("falha ao conectar com Ollama: %w", err)
+	}
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != 200 {
+		return false, fmt.Errorf("Ollama retornou status %d", resp.StatusCode)
+	}
+	
+	// Try to read response to see available models
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, fmt.Errorf("falha ao parsear resposta do Ollama: %w", err)
+	}
+	
+	fmt.Printf("Ollama connection successful. Available models info: %+v\n", result)
 	return true, nil
 }
 
@@ -426,6 +590,95 @@ func (a *App) GetConsolidatedData() (map[string]*modelo.Colaborador, error) {
 	}
 	
 	return copia, nil
+}
+
+// IsAgentEnabled retorna se o agente de IA está habilitado
+func (a *App) IsAgentEnabled() bool {
+	if a.vrAgent == nil {
+		return false
+	}
+	return a.vrAgent.IsEnabled()
+}
+
+// SetAgentEnabled ativa/desativa o agente de IA
+func (a *App) SetAgentEnabled(enabled bool) error {
+	if a.vrAgent == nil {
+		return fmt.Errorf("agente não inicializado")
+	}
+	
+	if enabled {
+		a.vrAgent.Enable()
+		fmt.Printf("Agente de IA habilitado\n")
+	} else {
+		a.vrAgent.Disable()
+		fmt.Printf("Agente de IA desabilitado\n")
+	}
+	
+	return nil
+}
+
+// AskAIBasic faz uma pergunta usando apenas o comportamento anterior (sem agente)
+func (a *App) AskAIBasic(question string) (string, error) {
+	fmt.Printf("AskAIBasic called with question: %.100s...\n", question)
+	
+	// Debug configuration
+	openAIStatus := "not configured"
+	if a.cfg.OpenAIKey != "" && len(a.cfg.OpenAIKey) > 10 {
+		openAIStatus = a.cfg.OpenAIKey[:10] + "..."
+	}
+	fmt.Printf("Debug - OpenAI Key: %s\n", openAIStatus)
+	fmt.Printf("Debug - Ollama BaseURL: %s\n", a.cfg.OllamaConfig.BaseURL)
+	fmt.Printf("Debug - Ollama Model: %s\n", a.cfg.OllamaConfig.Model)
+	
+	// Get system prompt with consolidated data context
+	systemPrompt, err := a.GetSystemPrompt()
+	if err != nil {
+		fmt.Printf("Warning: Failed to get system prompt with context: %v\n", err)
+		// Fallback to basic prompt
+		systemPrompt = `Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
+		Você está ajudando um usuário a entender os resultados do processamento de dados de colaboradores.
+		Os dados dos colaboradores são identificados exclusivamente por uma MATRICULA, por razões de confidencialidade.
+		Seja claro, preciso e objetivo em suas respostas.`
+	}
+
+	// Create empty context for now
+	var context []chat.Message
+
+	// Try OpenAI first if configured
+	if a.cfg.OpenAIKey != "" {
+		fmt.Printf("Trying OpenAI...\n")
+		response, err := a.chat.AskOpenAI(question, context)
+		if err == nil {
+			fmt.Printf("Basic chat response from OpenAI: %.100s...\n", response)
+			return response, nil
+		}
+		fmt.Printf("OpenAI failed: %v\n", err)
+	}
+	
+	// Try Ollama if configured
+	if a.cfg.OllamaConfig.BaseURL != "" && a.cfg.OllamaConfig.Model != "" {
+		fmt.Printf("Trying Ollama...\n")
+		response, err := a.chat.AskOllama(question, systemPrompt)
+		if err == nil {
+			fmt.Printf("Basic chat response from Ollama: %.100s...\n", response)
+			return response, nil
+		}
+		fmt.Printf("Ollama failed: %v\n", err)
+	}
+	
+	// Final check: print detailed configuration status
+	fmt.Printf("=== CONFIGURATION DEBUG ===\n")
+	fmt.Printf("Config object: %+v\n", a.cfg)
+	if a.cfg != nil {
+		fmt.Printf("OpenAI Key exists: %v (length: %d)\n", a.cfg.OpenAIKey != "", len(a.cfg.OpenAIKey))
+		fmt.Printf("Ollama BaseURL: '%s' (empty: %v)\n", a.cfg.OllamaConfig.BaseURL, a.cfg.OllamaConfig.BaseURL == "")
+		fmt.Printf("Ollama Model: '%s' (empty: %v)\n", a.cfg.OllamaConfig.Model, a.cfg.OllamaConfig.Model == "")
+	} else {
+		fmt.Printf("Config is nil!\n")
+	}
+	fmt.Printf("===========================\n")
+	
+	return "", fmt.Errorf("nenhum serviço de IA configurado. Configure OpenAI (chave de API) ou Ollama (URL e modelo) nas configurações")
 }
 
 // Helper method to add system logs

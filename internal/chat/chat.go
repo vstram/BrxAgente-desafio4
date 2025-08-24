@@ -52,6 +52,7 @@ type OllamaOptions struct {
 	Temperature float64 `json:"temperature,omitempty"`
 	TopP        float64 `json:"top_p,omitempty"`
 	TopK        int     `json:"top_k,omitempty"`
+	NumPredict  int     `json:"num_predict,omitempty"`
 }
 
 // OllamaResponse represents a response from the Ollama API
@@ -139,9 +140,9 @@ func (c *Chat) AskOpenAI(question string, context []Message) (string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.cfg.OpenAIKey)
 
-	// Create HTTP client with timeout
+	// Create HTTP client with extended timeout for large contexts
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 120 * time.Second, // Increased from 30s to 120s for large prompts
 	}
 
 	// Send request
@@ -178,22 +179,14 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 		return "", fmt.Errorf("configuração do Ollama não encontrada")
 	}
 
-	// Prepare the context data as a string
-	contextDataStr := c.formatContextData()
-
-	// Print debug information
-	fmt.Printf("AskOllama: Tamanho dos dados de contexto formatados: %d caracteres\n", len(contextDataStr))
-
-	// Prepend context data to the system prompt
+	// The systemPrompt already includes context data, so use it as-is
+	// The adaptive context will be implemented in a future version
 	fullSystemPrompt := systemPrompt
-	if contextDataStr != "" {
-		fullSystemPrompt = fmt.Sprintf("Contexto dos dados:\n%s\n\n%s", contextDataStr, systemPrompt)
-	}
 
-	// Print debug information
+	// Print debug information  
 	fmt.Printf("AskOllama: Tamanho do prompt completo: %d caracteres\n", len(fullSystemPrompt))
 
-	// Create request
+	// Create request with response limits to prevent timeouts
 	request := OllamaRequest{
 		Model:  c.cfg.OllamaConfig.Model,
 		Prompt: question,
@@ -201,6 +194,9 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 		System: fullSystemPrompt,
 		Options: OllamaOptions{
 			Temperature: 0.7,
+			NumPredict:  500, // Limit response to ~500 tokens to prevent long processing
+			TopK:        40,  // Limit vocabulary for faster processing
+			TopP:        0.9, // Focus on most likely tokens
 		},
 	}
 
@@ -209,6 +205,9 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("falha ao serializar requisição: %w", err)
 	}
+	
+	// Debug: log the request being sent to Ollama
+	fmt.Printf("Ollama Request JSON: %s\n", string(jsonData))
 
 	// Create full URL
 	url := c.cfg.OllamaConfig.BaseURL
@@ -216,6 +215,9 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 		url += "/"
 	}
 	url += "api/generate"
+	
+	// Debug: log the URL being used
+	fmt.Printf("Ollama URL: %s\n", url)
 
 	// Create HTTP request
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
@@ -226,9 +228,9 @@ func (c *Chat) AskOllama(question string, systemPrompt string) (string, error) {
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
-	// Create HTTP client with timeout
+	// Create HTTP client with extended timeout for large contexts
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 120 * time.Second, // Increased from 30s to 120s for large prompts
 	}
 
 	// Send request
@@ -272,43 +274,94 @@ func (c *Chat) GetContextDataAsString() string {
 
 // formatContextData formats the context data as a string for inclusion in the prompt
 func (c *Chat) formatContextData() string {
+	return c.formatContextDataWithDetail(5) // Default to 5 detailed entries
+}
+
+// formatContextDataWithDetail formats context data with configurable detail level
+func (c *Chat) formatContextDataWithDetail(maxDetailed int) string {
 	if len(c.contextData) == 0 {
 		return ""
 	}
 
-	// Create a more detailed summary of the data
+	// Create summary of the data with smart truncation
 	var summary strings.Builder
-	summary.WriteString(fmt.Sprintf("Dados de %d colaboradores disponíveis:\n", len(c.contextData)))
-
-	// Add details for each collaborator (limiting to 10 for brevity)
-	count := 0
+	total := len(c.contextData)
+	
+	summary.WriteString(fmt.Sprintf("Dados de %d colaboradores disponíveis:\n", total))
+	
+	// Calculate totals first
+	var totalVR, totalEmpresa, totalColaborador float64
+	var totalDiasUteis int
+	sindicatos := make(map[string]int)
+	empresas := make(map[string]int)
+	
 	for _, colaborador := range c.contextData {
-		// if count >= 10 {
-		// 	summary.WriteString(fmt.Sprintf("... e mais %d colaboradores\n", len(c.contextData)-10))
-		// 	break
-		// }
-
-		// Format the collaborator data in a more structured way
-		summary.WriteString(fmt.Sprintf(
-			"Colaborador %d:\n  Matrícula: %s\n  Empresa: %s\n  Sindicato: %s\n  Valor Total VR: R$ %.2f\n  Valor Empresa: R$ %.2f\n  Valor Colaborador: R$ %.2f\n  Dias Úteis: %d\n\n",
-			count+1,
-			colaborador.Matricula,
-			colaborador.Empresa,
-			colaborador.Sindicato,
-			colaborador.ValorTotalVR,
-			colaborador.ValorEmpresa,
-			colaborador.ValorColaborador,
-			colaborador.DiasUteisEfetivos,
-		))
-		count++
+		totalVR += colaborador.ValorTotalVR
+		totalEmpresa += colaborador.ValorEmpresa
+		totalColaborador += colaborador.ValorColaborador
+		totalDiasUteis += colaborador.DiasUteisEfetivos
+		sindicatos[colaborador.Sindicato]++
+		empresas[colaborador.Empresa]++
+	}
+	
+	// Add summary statistics
+	summary.WriteString(fmt.Sprintf("\n=== RESUMO GERAL ===\n"))
+	summary.WriteString(fmt.Sprintf("Total de colaboradores: %d\n", total))
+	summary.WriteString(fmt.Sprintf("Valor total VR: R$ %.2f\n", totalVR))
+	summary.WriteString(fmt.Sprintf("Valor total empresa: R$ %.2f\n", totalEmpresa))
+	summary.WriteString(fmt.Sprintf("Valor total colaborador: R$ %.2f\n", totalColaborador))
+	summary.WriteString(fmt.Sprintf("Total dias úteis: %d\n", totalDiasUteis))
+	
+	summary.WriteString("\nDistribuição por sindicato:\n")
+	for sindicato, count := range sindicatos {
+		summary.WriteString(fmt.Sprintf("  %s: %d colaboradores\n", sindicato, count))
+	}
+	
+	summary.WriteString("\nDistribuição por empresa:\n")
+	for empresa, count := range empresas {
+		summary.WriteString(fmt.Sprintf("  %s: %d colaboradores\n", empresa, count))
+	}
+	
+	// Add some detailed examples (limited to maxDetailed)
+	if total > 0 {
+		detailedCount := maxDetailed
+		if total < maxDetailed {
+			detailedCount = total
+		}
+		summary.WriteString(fmt.Sprintf("\n=== EXEMPLOS DETALHADOS (primeiros %d) ===\n", detailedCount))
+		count := 0
+		for _, colaborador := range c.contextData {
+			if count >= maxDetailed {
+				summary.WriteString(fmt.Sprintf("... e mais %d colaboradores com dados detalhados disponíveis\n", total-maxDetailed))
+				break
+			}
+			
+			summary.WriteString(fmt.Sprintf(
+				"Colaborador %d: Matrícula=%s, Empresa=%s, Sindicato=%s, VR=R$%.2f, Dias=%d\n",
+				count+1,
+				colaborador.Matricula,
+				colaborador.Empresa,
+				colaborador.Sindicato,
+				colaborador.ValorTotalVR,
+				colaborador.DiasUteisEfetivos,
+			))
+			count++
+		}
 	}
 
 	return summary.String()
 }
 
+
 // SetAgent configura o agente de IA para o chat
 func (c *Chat) SetAgent(agent AgentInterface) {
 	c.agent = agent
+}
+
+// UpdateConfig atualiza a configuração do chat
+func (c *Chat) UpdateConfig(cfg *config.Config) {
+	c.cfg = cfg
+	fmt.Printf("Chat configuration updated - Ollama URL: %s, Model: %s\n", cfg.OllamaConfig.BaseURL, cfg.OllamaConfig.Model)
 }
 
 // Ask sends a question to the configured AI service and returns the response

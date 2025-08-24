@@ -13,6 +13,8 @@ export function AnalyzePatterns(arg1:string):Promise<Array<intelligence.Consumpt
 
 export function AskAI(arg1:string):Promise<string>;
 
+export function AskAIBasic(arg1:string):Promise<string>;
+
 export function CancelWorkflow():Promise<void>;
 
 export function ClearAgentLogs():Promise<void>;
@@ -20,6 +22,8 @@ export function ClearAgentLogs():Promise<void>;
 export function CreateHistoricalDataFromCurrent(arg1:string,arg2:time.Time):Promise<void>;
 
 export function DetectTrends(arg1:string):Promise<intelligence.TrendAnalysisResult>;
+
+export function FixOllamaConfig():Promise<void>;
 
 export function GenerateForecast(arg1:string,arg2:number):Promise<predicoes.ConsumptionForecast>;
 
@@ -41,11 +45,15 @@ export function GetWorkflowHistory():Promise<Array<main.WorkflowExecution>>;
 
 export function Greet(arg1:string):Promise<string>;
 
+export function IsAgentEnabled():Promise<boolean>;
+
 export function PredictTrends(arg1:string):Promise<predicoes.Prediction>;
 
 export function RealizarAnaliseOrquestrada(arg1:string):Promise<string>;
 
 export function SelecionarDiretorio():Promise<string>;
+
+export function SetAgentEnabled(arg1:boolean):Promise<void>;
 
 export function SetChatContext():Promise<void>;
 

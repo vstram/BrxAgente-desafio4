@@ -67,42 +67,25 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		return nil, fmt.Errorf("configuração inválida: %w", err)
 	}
 
-	// Criar serviços
-	excelSvc := excel.NewService()
+	// Criar apenas serviços essenciais para máxima estabilidade
+	var excelSvc *excel.Service
+	var toolRegistry *tools.ToolRegistry
+	var memoryBuffer *memory.ConversationBuffer
+	var orchestrator *workflows.Orchestrator
+	var analyzer *intelligence.Analyzer
 	
-	// Criar registry de ferramentas com todas as ferramentas padrão
-	toolRegistry, err := tools.GetDefaultToolRegistry()
-	if err != nil {
-		return nil, fmt.Errorf("erro ao criar registry de ferramentas: %w", err)
-	}
-	
-	// Configurar memory management
-	memoryBuffer := memory.NewConversationBuffer(
-		memory.WithMemoryKey("history"),
-		memory.WithInputKey("input"),
-		memory.WithOutputKey("output"),
-	)
-	
-	// Configurar orquestrador de workflows
-	orchestratorConfig := workflows.OrchestratorConfig{
-		MaxConcurrentWorkflows: 5,
-		DefaultTimeout:         5 * time.Minute,
-		EnableRollback:         true,
-		DetailedLogging:        agentConfig.DebugMode,
-	}
-	
-	orchestrator := workflows.NewOrchestrator(
-		&workflows.DefaultLogger{Logger: log.Default()}, 
-		orchestratorConfig,
-	)
-	
-	// Configurar analisador de anomalias
-	analysisConfig := intelligence.DefaultAnalysisConfig()
+	// Inicialização condicional para evitar overhead
 	if agentConfig.DebugMode {
-		analysisConfig.EnableParallelProcessing = true
-		analysisConfig.ConfidenceThreshold = 60.0 // Threshold mais baixo em debug
+		// Apenas se debug estiver ativado, criar componentes avançados
+		excelSvc = excel.NewService()
+		
+		var toolErr error
+		toolRegistry, toolErr = tools.GetDefaultToolRegistry()
+		if toolErr != nil {
+			// Se falhar, continuar sem ferramentas - não é crítico
+			fmt.Printf("Warning: Failed to create tool registry: %v\n", toolErr)
+		}
 	}
-	analyzer := intelligence.NewAnalyzer(analysisConfig)
 	
 	agent := &VRAgent{
 		config:       agentConfig,
@@ -138,9 +121,19 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		agent.logger.Printf("Aviso: Falha ao registrar workflows padrão: %v", err)
 	}
 	
-	// Log de inicialização
+	// Log de inicialização com verificação de nil
+	toolCount := 0
+	if toolRegistry != nil {
+		toolCount = toolRegistry.Count()
+	}
+	
+	workflowCount := 0
+	if agent.orchestrator != nil {
+		workflowCount = len(agent.orchestrator.ListWorkflows())
+	}
+	
 	agent.logger.Printf("VRAgent inicializado com sucesso - Enabled: %v, Model: %s, Tools: %d, Workflows: %d", 
-		agentConfig.Enabled, agentConfig.Model, toolRegistry.Count(), len(agent.orchestrator.ListWorkflows()))
+		agentConfig.Enabled, agentConfig.Model, toolCount, workflowCount)
 	
 	return agent, nil
 }
@@ -165,16 +158,12 @@ func (a *VRAgent) Ask(question string) (string, error) {
 	
 	a.status.TotalRequests++
 	
-	// Usar LangChain com memory quando disponível, senão fallback para chat service
+	// Usar apenas chat service para máxima simplicidade e estabilidade
 	var response string
 	var err error
 	
-	if a.chain != nil && a.memory != nil {
-		response, err = a.askWithLangChain(question)
-	} else {
-		// Fallback para chat service existente
-		response, err = a.chatService.Ask(question, "", []chat.Message{})
-	}
+	// Sempre usar fallback para chat service - mais estável
+	response, err = a.chatService.Ask(question, "", []chat.Message{})
 	
 	if err != nil {
 		a.status.ErrorCount++
@@ -219,6 +208,10 @@ func (a *VRAgent) askWithLangChain(question string) (string, error) {
 
 // getToolsContext retorna informações sobre ferramentas disponíveis para o contexto
 func (a *VRAgent) getToolsContext() string {
+	if a.toolRegistry == nil {
+		return "Nenhuma ferramenta específica disponível."
+	}
+	
 	tools := a.toolRegistry.ListNames()
 	if len(tools) == 0 {
 		return "Nenhuma ferramenta específica disponível."
@@ -451,6 +444,12 @@ func (a *VRAgent) updateStatus(state, task string) {
 
 // registerDefaultWorkflows registra workflows padrão no orquestrador
 func (a *VRAgent) registerDefaultWorkflows() error {
+	// Só registrar workflows se orchestrator estiver disponível
+	if a.orchestrator == nil {
+		a.logger.Printf("Orchestrator não disponível - pulando registro de workflows")
+		return nil
+	}
+	
 	// Registrar workflow de validação simples
 	simpleValidation := workflows.NewSimpleValidationWorkflow()
 	if err := a.orchestrator.RegisterWorkflow(simpleValidation); err != nil {

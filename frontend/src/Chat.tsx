@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './Chat.css';
-import { AskAI, GetSystemPrompt } from "../wailsjs/go/main/App";
+import { AskAI, AskAIBasic, GetSystemPrompt, IsAgentEnabled, SetAgentEnabled } from "../wailsjs/go/main/App";
 
 // Importando ícones
 import ChatIcon from './assets/icons/chat.svg';
@@ -23,7 +23,21 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState('');
+  const [isAgentEnabled, setIsAgentEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load initial agent state
+  useEffect(() => {
+    const loadAgentState = async () => {
+      try {
+        const enabled = await IsAgentEnabled();
+        setIsAgentEnabled(enabled);
+      } catch (err) {
+        console.error('Error loading agent state:', err);
+      }
+    };
+    loadAgentState();
+  }, []);
 
   // Scroll to bottom of messages
   useEffect(() => {
@@ -46,8 +60,10 @@ function Chat() {
     setIsLoading(true);
 
     try {
-      // Get AI response
-      const response = await AskAI(inputValue);
+      // Get AI response - use agent if enabled, otherwise use basic mode
+      const response = isAgentEnabled 
+        ? await AskAI(inputValue)
+        : await AskAIBasic(inputValue);
       
       // Add AI message
       const aiMessage: Message = {
@@ -86,6 +102,24 @@ function Chat() {
     setMessages([]);
   };
 
+  const toggleAgent = async () => {
+    try {
+      const newState = !isAgentEnabled;
+      await SetAgentEnabled(newState);
+      setIsAgentEnabled(newState);
+    } catch (err: any) {
+      console.error('Error toggling agent:', err);
+      // Show error message in chat
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Erro ao alterar o estado do agente: ${err?.message || err?.toString() || 'Erro desconhecido'}`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
   const inspectSystemPrompt = async () => {
     try {
       // Get the system prompt from the backend
@@ -106,6 +140,13 @@ function Chat() {
             <div className="chat-header">
               <h3>Assistente de Dados</h3>
               <div className="chat-header-actions">
+                <button 
+                  className={`chat-agent-toggle ${isAgentEnabled ? 'enabled' : 'disabled'}`} 
+                  onClick={toggleAgent}
+                  title={isAgentEnabled ? 'Agente IA Avançado Ativado' : 'Modo Básico Ativado'}
+                >
+                  {isAgentEnabled ? '🧠' : '💬'}
+                </button>
                 <button className="chat-inspect-btn" onClick={inspectSystemPrompt}>
                   <img src={EyeIcon} alt="Inspecionar" className="icon" />
                 </button>
@@ -121,13 +162,21 @@ function Chat() {
             <div className="chat-messages">
               {messages.length === 0 ? (
                 <div className="chat-welcome">
-                  <p>Olá! Sou seu assistente de dados. Posso ajudar você a entender os resultados do processamento de VR/VA.</p>
+                  <p>
+                    Olá! Sou seu assistente de dados. 
+                    {isAgentEnabled 
+                      ? ' Estou funcionando em modo avançado com Agente IA 🧠' 
+                      : ' Estou funcionando em modo básico 💬'
+                    }
+                  </p>
+                  <p>Posso ajudar você a entender os resultados do processamento de VR/VA.</p>
                   <p>Exemplos de perguntas:</p>
                   <ul>
                     <li>Quantos colaboradores foram processados?</li>
                     <li>Qual o valor total de VR concedido?</li>
                     <li>Quais colaboradores estão com desligamento neste mês?</li>
                   </ul>
+                  <p><small>💡 Use o botão {isAgentEnabled ? '🧠' : '💬'} no cabeçalho para alternar entre os modos.</small></p>
                 </div>
               ) : (
                 messages.map((message) => (
