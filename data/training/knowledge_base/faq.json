@@ -1,0 +1,181 @@
+{
+  "faq": {
+    "common_questions": [
+      {
+        "id": "faq_001",
+        "question": "Como é calculado o VR para colaborador que trabalha meio período?",
+        "answer": "Colaboradores com carga horária inferior a 6 horas diárias não têm direito ao Vale Refeição conforme política interna VR-001.",
+        "category": "elegibilidade",
+        "frequency": "alta",
+        "related_policies": ["VR-001"],
+        "keywords": ["meio período", "carga horária", "6 horas"]
+      },
+      {
+        "id": "faq_002", 
+        "question": "O que acontece se um colaborador for promovido a diretor no meio do mês?",
+        "answer": "A partir da data da promoção, o colaborador perde o direito ao VR. Recebe apenas o proporcional aos dias trabalhados como não-diretor.",
+        "category": "mudança_status",
+        "frequency": "baixa",
+        "related_policies": ["VR-004"],
+        "keywords": ["promoção", "diretor", "meio do mês"]
+      },
+      {
+        "id": "faq_003",
+        "question": "Colaborador em home office tem direito a VR?",
+        "answer": "Sim. O local de trabalho (presencial ou home office) não afeta o direito ao Vale Refeição. O critério é a carga horária e vínculo CLT.",
+        "category": "modalidade_trabalho",
+        "frequency": "alta", 
+        "related_policies": ["VR-001"],
+        "keywords": ["home office", "remoto", "presencial"]
+      },
+      {
+        "id": "faq_004",
+        "question": "Como proceder com colaborador que teve COVID-19 e ficou afastado?",
+        "answer": "Afastamento por COVID-19 segue as mesmas regras de licença médica: até 15 dias recebe VR proporcional, acima de 15 dias fica sem VR no mês.",
+        "category": "afastamento",
+        "frequency": "média",
+        "related_policies": ["VR-008"],
+        "keywords": ["COVID", "licença médica", "afastamento"]
+      },
+      {
+        "id": "faq_005",
+        "question": "Colaborador transferido de sindicato no meio do mês, qual valor usar?",
+        "answer": "Aplica-se o valor do sindicato vigente na data de fechamento da folha (último dia do mês). Em caso de mudança, usar o valor do sindicato de destino.",
+        "category": "transferencia",
+        "frequency": "baixa",
+        "related_policies": ["VR-009"],
+        "keywords": ["transferência", "mudança sindicato", "meio do mês"]
+      },
+      {
+        "id": "faq_006",
+        "question": "E se houver erro no cálculo de VR de meses anteriores?",
+        "answer": "Erros identificados devem ser corrigidos no mês seguinte. Valores a maior são descontados, valores a menor são creditados. Documentar a correção no sistema.",
+        "category": "correcoes",
+        "frequency": "média", 
+        "related_policies": ["VR-010"],
+        "keywords": ["erro", "correção", "mês anterior", "ajuste"]
+      },
+      {
+        "id": "faq_007",
+        "question": "Colaborador que retorna de licença maternidade/paternidade tem direito integral?",
+        "answer": "Sim. Licenças maternidade/paternidade são diferentes de licenças médicas. Colaborador retorna com direito integral ao VR do mês.",
+        "category": "licencas_especiais",
+        "frequency": "média",
+        "related_policies": ["VR-011"],
+        "keywords": ["maternidade", "paternidade", "retorno", "integral"]
+      },
+      {
+        "id": "faq_008",
+        "question": "Como calcular VR para mês que tem ponte/emenda de feriado?",
+        "answer": "Pontes e emendas de feriados são consideradas no cálculo de dias úteis. Se a empresa oficializar ponte, reduz os dias úteis do mês para todos.",
+        "category": "feriados",
+        "frequency": "média",
+        "related_policies": ["VR-012"],
+        "keywords": ["ponte", "emenda", "feriado", "dias úteis"]
+      },
+      {
+        "id": "faq_009",
+        "question": "Terceirizado que vira CLT no meio do mês tem direito?",
+        "answer": "Sim. A partir da data de admissão como CLT, aplica-se a regra padrão: admissão até dia 15 = integral, após dia 15 = proporcional.",
+        "category": "mudanca_vinculo",
+        "frequency": "baixa",
+        "related_policies": ["VR-005"],
+        "keywords": ["terceirizado", "CLT", "admissão", "mudança vínculo"]
+      },
+      {
+        "id": "faq_010",
+        "question": "O que fazer quando planilha tem dados incompletos ou inconsistentes?",
+        "answer": "Dados inconsistentes devem ser reportados ao RH para correção. Casos não corrigidos são processados com valor zero e justificativa documentada.",
+        "category": "qualidade_dados",
+        "frequency": "alta",
+        "related_policies": ["VR-013"],
+        "keywords": ["dados incompletos", "inconsistentes", "erro planilha"]
+      }
+    ],
+    "edge_cases": [
+      {
+        "id": "edge_001",
+        "scenario": "Colaborador admitido e desligado no mesmo mês",
+        "question": "Como calcular VR para quem foi admitido e desligado no mesmo mês?",
+        "answer": "Aplica-se a regra mais restritiva: se admissão após dia 15 OU desligamento comunicado após dia 15, não recebe VR. Se ambos dentro das regras, recebe proporcional aos dias efetivamente trabalhados.",
+        "complexity": "alta",
+        "requires_manual_review": true,
+        "example": "Admitido dia 18, desligado dia 25 (comunicado dia 20) = R$ 0,00"
+      },
+      {
+        "id": "edge_002",
+        "scenario": "Múltiplos afastamentos no mesmo mês",
+        "question": "Colaborador com férias E licença médica no mesmo mês?",
+        "answer": "Soma-se todos os dias de afastamento. Se total > 15 dias OU licença médica sozinha > 15 dias, VR = zero. Senão, proporcional aos dias trabalhados.",
+        "complexity": "alta",
+        "requires_manual_review": true,
+        "example": "5 dias férias + 12 dias licença = 17 dias total = R$ 0,00"
+      },
+      {
+        "id": "edge_003",
+        "scenario": "Mudança de sindicato com valores diferentes",
+        "question": "Colaborador transferido do SINDPD (R$ 467) para SINDAC (R$ 460) no dia 20?",
+        "answer": "Usa-se o valor do sindicato de destino (SINDAC - R$ 460) para todo o mês. A transferência é considerada mudança definitiva.",
+        "complexity": "média",
+        "requires_manual_review": false,
+        "example": "SINDPD→SINDAC dia 20 = R$ 460,00 (valor SINDAC)"
+      },
+      {
+        "id": "edge_004", 
+        "scenario": "Colaborador com duas matrículas",
+        "question": "E se colaborador aparece com duas matrículas diferentes na planilha?",
+        "answer": "Caso crítico que requer intervenção manual. Sistema deve alertar para duplicação e aguardar correção do RH antes de processar.",
+        "complexity": "crítica",
+        "requires_manual_review": true,
+        "example": "MAT001234 e MAT005678 mesmo CPF = ERRO - Requer correção"
+      }
+    ],
+    "troubleshooting": [
+      {
+        "problem": "Sistema calculou VR diferente do esperado",
+        "possible_causes": [
+          "Dados de afastamento não atualizados",
+          "Feriados não considerados corretamente",
+          "Mudança de sindicato não refletida",
+          "Erro na planilha de colaboradores"
+        ],
+        "resolution_steps": [
+          "1. Verificar dados na planilha de origem",
+          "2. Conferir cálculo manual do caso específico", 
+          "3. Validar regras aplicadas pelo sistema",
+          "4. Documentar correção se necessária"
+        ]
+      },
+      {
+        "problem": "Muitas anomalias detectadas",
+        "possible_causes": [
+          "Planilhas com dados desatualizados",
+          "Mudanças de política não comunicadas",
+          "Problemas na estrutura dos arquivos",
+          "Período atípico (muitos feriados, greves, etc.)"
+        ],
+        "resolution_steps": [
+          "1. Analisar padrão das anomalias",
+          "2. Verificar se há mudanças não documentadas",
+          "3. Validar estrutura das planilhas",
+          "4. Ajustar sensibilidade de detecção se necessário"
+        ]
+      },
+      {
+        "problem": "Colaborador questiona valor do VR",
+        "possible_causes": [
+          "Não compreende regras de proporcionalidade",
+          "Afastamento não informado corretamente",
+          "Mudança de sindicato não comunicada",
+          "Expectativa de valor diferente"
+        ],
+        "resolution_steps": [
+          "1. Consultar cálculo detalhado do colaborador",
+          "2. Explicar regras aplicadas",
+          "3. Verificar se dados estão corretos",
+          "4. Corrigir se identificado erro"
+        ]
+      }
+    ]
+  }
+}

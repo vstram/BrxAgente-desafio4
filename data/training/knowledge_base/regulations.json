@@ -1,0 +1,146 @@
+{
+  "regulations": {
+    "clt_articles": [
+      {
+        "id": "art7_clt",
+        "article": "Art. 7º da CLT",
+        "description": "Direitos dos trabalhadores urbanos e rurais",
+        "relevance": "Base legal para benefícios alimentares",
+        "text": "São direitos dos trabalhadores urbanos e rurais, além de outros que visem à melhoria de sua condição social",
+        "application": "Fundamento legal para concessão do Vale Refeição como benefício social"
+      }
+    ],
+    "labor_laws": [
+      {
+        "id": "lei_estagio",
+        "law": "Lei 11.788/2008",
+        "name": "Lei do Estágio",
+        "description": "Dispõe sobre o estágio de estudantes",
+        "relevant_articles": [
+          {
+            "article": "Art. 12",
+            "text": "O estagiário poderá receber bolsa ou outra forma de contraprestação",
+            "interpretation": "VR não é obrigatório para estagiários, é política interna da empresa"
+          }
+        ]
+      },
+      {
+        "id": "lei_aprendizagem",
+        "law": "Lei 10.097/2000",
+        "name": "Lei da Aprendizagem",
+        "description": "Altera dispositivos da CLT para regular a formação técnico-profissional",
+        "relevant_articles": [
+          {
+            "article": "Art. 428",
+            "text": "Contrato de aprendizagem é o contrato de trabalho especial",
+            "interpretation": "Aprendizes têm contrato especial, benefícios seguem política específica"
+          }
+        ]
+      }
+    ],
+    "collective_agreements": [
+      {
+        "id": "acordo_sindpd_2025",
+        "syndicate": "SINDPD",
+        "year": 2025,
+        "effective_period": "01/05/2025 a 30/04/2026",
+        "clauses": [
+          {
+            "clause": "Cláusula 15ª - Auxílio Alimentação",
+            "text": "A empresa concederá auxílio alimentação no valor de R$ 467,00 mensais",
+            "conditions": [
+              "Colaboradores com jornada mínima de 6 horas",
+              "Não se aplica a diretores e estagiários"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "acordo_sindac_2025",
+        "syndicate": "SINDAC", 
+        "year": 2025,
+        "effective_period": "01/03/2025 a 28/02/2026",
+        "clauses": [
+          {
+            "clause": "Cláusula 12ª - Vale Alimentação",
+            "text": "Será fornecido vale alimentação no valor de R$ 460,00 por mês",
+            "conditions": [
+              "Colaboradores em regime CLT",
+              "Carga horária superior a 6 horas diárias"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "acordo_sindmet_2025",
+        "syndicate": "SINDMET",
+        "year": 2025, 
+        "effective_period": "01/05/2025 a 30/04/2026",
+        "clauses": [
+          {
+            "clause": "Cláusula 18ª - Benefício Alimentar",
+            "text": "Vale alimentação de R$ 460,00 mensais para a categoria",
+            "conditions": [
+              "Metalúrgicos com contrato CLT",
+              "Jornada integral ou parcial > 6h"
+            ]
+          }
+        ]
+      }
+    ],
+    "internal_policies": [
+      {
+        "id": "policy_vr_001",
+        "name": "Política de Vale Refeição",
+        "version": "2.1",
+        "effective_date": "2025-01-01",
+        "sections": [
+          {
+            "section": "1. Objetivo",
+            "content": "Estabelecer critérios para concessão do benefício de Vale Refeição aos colaboradores"
+          },
+          {
+            "section": "2. Abrangência", 
+            "content": "Aplica-se a todos os colaboradores CLT com carga horária igual ou superior a 6 horas diárias"
+          },
+          {
+            "section": "3. Exclusões",
+            "content": "Estão excluídos: estagiários, aprendizes, diretores, terceirizados e consultores externos"
+          }
+        ]
+      }
+    ],
+    "ministry_guidelines": [
+      {
+        "id": "mt_portaria_vr",
+        "source": "Ministério do Trabalho",
+        "document": "Portaria sobre Benefícios Alimentares",
+        "guidelines": [
+          "Benefícios alimentares são considerados salário utilidade quando obrigatórios",
+          "Empresas podem conceder benefícios voluntários sem configurar salário",
+          "Necessária transparência nos critérios de concessão"
+        ]
+      }
+    ],
+    "compliance_requirements": [
+      {
+        "requirement": "Isonomia",
+        "description": "Mesmos critérios devem ser aplicados a colaboradores em situações similares",
+        "risk_level": "Alto",
+        "mitigation": "Documentar todos os casos e aplicar regras consistentemente"
+      },
+      {
+        "requirement": "Documentação",
+        "description": "Todas as decisões sobre VR devem ser documentadas e rastreáveis",
+        "risk_level": "Médio", 
+        "mitigation": "Manter logs de processamento e justificativas para exceções"
+      },
+      {
+        "requirement": "Auditoria",
+        "description": "Processos devem permitir auditoria interna e externa",
+        "risk_level": "Médio",
+        "mitigation": "Relatórios mensais e trilha de auditoria completa"
+      }
+    ]
+  }
+}

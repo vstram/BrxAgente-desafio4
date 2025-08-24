@@ -1,0 +1,339 @@
+{
+  "test_cases": {
+    "basic_eligibility": [
+      {
+        "id": "eligibility_001",
+        "question": "Estagiários têm direito a Vale Refeição?",
+        "expected_answer_contains": [
+          "Não",
+          "estagiários",
+          "excluídos",
+          "Política VR-003"
+        ],
+        "expected_confidence": 0.98,
+        "category": "elegibilidade",
+        "priority": "high"
+      },
+      {
+        "id": "eligibility_002", 
+        "question": "Colaborador com 4 horas diárias tem direito a VR?",
+        "expected_answer_contains": [
+          "Não",
+          "6 horas",
+          "mínima",
+          "Política VR-001"
+        ],
+        "expected_confidence": 0.95,
+        "category": "elegibilidade",
+        "priority": "high"
+      },
+      {
+        "id": "eligibility_003",
+        "question": "Diretores recebem Vale Refeição?",
+        "expected_answer_contains": [
+          "Não",
+          "diretores",
+          "excluídos",
+          "Política VR-004"
+        ],
+        "expected_confidence": 0.97,
+        "category": "elegibilidade", 
+        "priority": "high"
+      }
+    ],
+    "calculation_scenarios": [
+      {
+        "id": "calc_001",
+        "question": "Como calcular VR para colaborador admitido dia 10 do mês?",
+        "input_data": {
+          "data_admissao": "10/01/2025",
+          "sindicato": "SINDPD",
+          "dias_uteis_mes": 22
+        },
+        "expected_calculation": {
+          "valor": 467.00,
+          "reasoning": "Admissão até dia 15 = valor integral",
+          "formula": "valor_base_sindicato"
+        },
+        "expected_answer_contains": [
+          "467,00",
+          "integral", 
+          "dia 15",
+          "Política VR-005"
+        ],
+        "category": "cálculos",
+        "priority": "critical"
+      },
+      {
+        "id": "calc_002",
+        "question": "Qual o VR para admissão no dia 20 em mês de 22 dias úteis?",
+        "input_data": {
+          "data_admissao": "20/01/2025",
+          "sindicato": "SINDAC",
+          "dias_uteis_mes": 22,
+          "dias_restantes": 9
+        },
+        "expected_calculation": {
+          "valor": 188.18,
+          "reasoning": "Proporcional aos dias úteis restantes",
+          "formula": "(9/22) × 460,00"
+        },
+        "expected_answer_contains": [
+          "188,18",
+          "proporcional",
+          "9 dias",
+          "22 dias"
+        ],
+        "category": "cálculos",
+        "priority": "critical"
+      },
+      {
+        "id": "calc_003",
+        "question": "Colaborador com 20 dias de licença médica, qual VR?",
+        "input_data": {
+          "tipo_afastamento": "LICENCA_MEDICA",
+          "dias_afastamento": 20,
+          "sindicato": "SINDMET"
+        },
+        "expected_calculation": {
+          "valor": 0.00,
+          "reasoning": "Licença médica > 15 dias = sem VR",
+          "formula": "0"
+        },
+        "expected_answer_contains": [
+          "0,00",
+          "20 dias",
+          "15 dias",
+          "Política VR-008"
+        ],
+        "category": "cálculos",
+        "priority": "critical"
+      }
+    ],
+    "edge_cases": [
+      {
+        "id": "edge_001",
+        "question": "Colaborador admitido dia 15 e desligado dia 25 (comunicado dia 20)?",
+        "input_data": {
+          "data_admissao": "15/01/2025",
+          "data_desligamento": "25/01/2025", 
+          "data_comunicacao": "20/01/2025",
+          "sindicato": "SINDPD"
+        },
+        "expected_calculation": {
+          "valor": 0.00,
+          "reasoning": "Comunicação após dia 15 = sem VR",
+          "formula": "0"
+        },
+        "expected_answer_contains": [
+          "0,00",
+          "comunicado",
+          "dia 15",
+          "Política VR-006"
+        ],
+        "category": "casos_limite",
+        "priority": "high"
+      },
+      {
+        "id": "edge_002",
+        "question": "Estagiário efetivado como CLT no dia 18, qual VR?",
+        "input_data": {
+          "data_efetivacao": "18/01/2025",
+          "status_anterior": "estagiario",
+          "status_novo": "ativo",
+          "sindicato": "SINDPD",
+          "dias_uteis_mes": 22
+        },
+        "expected_calculation": {
+          "valor": 148.50,
+          "reasoning": "Efetivação após dia 15 = proporcional",
+          "formula": "(7/22) × 467,00"
+        },
+        "expected_answer_contains": [
+          "148,50",
+          "efetivação",
+          "7 dias",
+          "proporcional"
+        ],
+        "category": "casos_limite",
+        "priority": "high"
+      }
+    ],
+    "consistency_checks": [
+      {
+        "id": "consistency_001",
+        "description": "Mesma pergunta deve gerar mesma resposta",
+        "test_question": "Estagiários têm direito a VR?",
+        "repeat_count": 5,
+        "expected_consistency": 100,
+        "tolerance": 0,
+        "category": "consistência"
+      },
+      {
+        "id": "consistency_002",
+        "description": "Cálculos idênticos devem ter mesmo resultado",
+        "test_scenario": {
+          "data_admissao": "20/01/2025",
+          "sindicato": "SINDPD", 
+          "dias_uteis": 22
+        },
+        "repeat_count": 3,
+        "expected_result": 169.55,
+        "tolerance": 0.01,
+        "category": "consistência"
+      }
+    ],
+    "response_quality": [
+      {
+        "id": "quality_001",
+        "question": "Como é calculado o VR para colaborador do SINDPD?",
+        "quality_criteria": {
+          "cites_source": true,
+          "provides_calculation": true,
+          "uses_example": true,
+          "maintains_confidentiality": true,
+          "professional_language": true
+        },
+        "min_score": 4.0,
+        "category": "qualidade"
+      },
+      {
+        "id": "quality_002",
+        "question": "Explique o cálculo para admissão no dia 25",
+        "quality_criteria": {
+          "step_by_step": true,
+          "shows_formula": true,
+          "explains_reasoning": true,
+          "cites_policy": true,
+          "correct_values": true
+        },
+        "min_score": 4.5,
+        "category": "qualidade"
+      }
+    ],
+    "knowledge_coverage": [
+      {
+        "id": "coverage_001",
+        "area": "Políticas de Elegibilidade",
+        "test_questions": [
+          "Quem tem direito a VR?",
+          "Estagiários têm direito?", 
+          "E os diretores?",
+          "Qual a carga horária mínima?"
+        ],
+        "expected_coverage": 100,
+        "category": "cobertura"
+      },
+      {
+        "id": "coverage_002",
+        "area": "Cálculos por Sindicato",
+        "test_questions": [
+          "Valor do VR para SINDPD?",
+          "Qual o valor do SINDAC?",
+          "SINDMET tem que valor?",
+          "Diferença entre sindicatos?"
+        ],
+        "expected_coverage": 100,
+        "category": "cobertura"
+      },
+      {
+        "id": "coverage_003",
+        "area": "Regras de Afastamento",
+        "test_questions": [
+          "Como calcular VR com férias?",
+          "E licença médica?",
+          "Falta injustificada afeta?",
+          "Limite para licença médica?"
+        ],
+        "expected_coverage": 95,
+        "category": "cobertura"
+      }
+    ],
+    "performance_benchmarks": [
+      {
+        "id": "perf_001",
+        "test_type": "response_time",
+        "question": "Estagiários têm direito a VR?",
+        "max_response_time_seconds": 3.0,
+        "expected_avg_time": 1.5,
+        "category": "performance"
+      },
+      {
+        "id": "perf_002", 
+        "test_type": "complex_calculation",
+        "question": "Calcule VR para admissão dia 20 com 5 dias de férias",
+        "max_response_time_seconds": 5.0,
+        "expected_avg_time": 3.0,
+        "category": "performance"
+      }
+    ],
+    "regression_tests": [
+      {
+        "id": "regression_001",
+        "description": "Mudanças no sistema não devem quebrar respostas básicas",
+        "baseline_questions": [
+          "Estagiários têm direito a VR?",
+          "Qual o valor para SINDPD?",
+          "Como calcular admissão dia 20?"
+        ],
+        "baseline_answers": [
+          "Não. Estagiários são expressamente excluídos",
+          "R$ 467,00 mensais",
+          "Proporcional aos dias úteis restantes"
+        ],
+        "tolerance": 0.9,
+        "category": "regressão"
+      }
+    ]
+  },
+  "validation_metrics": {
+    "accuracy": {
+      "description": "Percentual de respostas corretas",
+      "calculation": "correct_answers / total_answers",
+      "target": 0.95,
+      "minimum": 0.90
+    },
+    "completeness": {
+      "description": "Percentual de perguntas que o sistema consegue responder",
+      "calculation": "answered_questions / total_questions",
+      "target": 0.90,
+      "minimum": 0.80
+    },
+    "consistency": {
+      "description": "Mesma pergunta gera mesma resposta",
+      "calculation": "identical_responses / repeated_questions",
+      "target": 1.0,
+      "minimum": 0.95
+    },
+    "response_time": {
+      "description": "Tempo médio de resposta em segundos",
+      "target": 3.0,
+      "maximum": 5.0
+    },
+    "source_citation": {
+      "description": "Percentual de respostas que citam fonte",
+      "calculation": "responses_with_source / total_responses",
+      "target": 0.95,
+      "minimum": 0.85
+    }
+  },
+  "test_execution": {
+    "automated_run": {
+      "schedule": "daily",
+      "environment": "staging",
+      "notification": ["tech-lead@company.com"],
+      "failure_threshold": 0.10
+    },
+    "manual_validation": {
+      "frequency": "weekly", 
+      "reviewer": "business_analyst",
+      "sample_size": 20,
+      "focus_areas": ["edge_cases", "new_policies"]
+    },
+    "regression_suite": {
+      "trigger": "before_production_deploy",
+      "coverage": "all_critical_paths",
+      "pass_criteria": "zero_regressions"
+    }
+  }
+}

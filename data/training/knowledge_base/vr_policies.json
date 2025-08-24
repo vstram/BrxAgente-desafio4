@@ -1,0 +1,219 @@
+{
+  "vr_knowledge": {
+    "policies": [
+      {
+        "id": "eligibility_001",
+        "category": "elegibilidade",
+        "question": "Quem tem direito a Vale Refeição?",
+        "answer": "Colaboradores CLT com carga horária igual ou superior a 6 horas diárias têm direito ao benefício do Vale Refeição, conforme estabelecido na política interna VR-001.",
+        "context": ["Política RH-VR-001", "Art. 7º CLT"],
+        "examples": [
+          "Colaborador full-time (8h/dia) - Tem direito",
+          "Colaborador part-time (4h/dia) - Não tem direito"
+        ],
+        "confidence": 0.95,
+        "metadata": {
+          "source": "Manual RH v2.1",
+          "last_updated": "2025-01-15",
+          "priority": "high"
+        }
+      },
+      {
+        "id": "eligibility_002", 
+        "category": "elegibilidade",
+        "question": "Estagiários têm direito a Vale Refeição?",
+        "answer": "Não. Estagiários são expressamente excluídos do benefício do Vale Refeição conforme Política VR-003, independente da carga horária.",
+        "context": ["Política RH-VR-003", "Lei do Estágio 11.788/2008"],
+        "examples": [
+          "Estagiário 8h/dia - Não tem direito",
+          "Estagiário 6h/dia - Não tem direito"
+        ],
+        "confidence": 0.98,
+        "metadata": {
+          "source": "Manual RH v2.1",
+          "last_updated": "2025-01-15",
+          "priority": "high"
+        }
+      },
+      {
+        "id": "eligibility_003",
+        "category": "elegibilidade", 
+        "question": "Diretores têm direito a Vale Refeição?",
+        "answer": "Não. Colaboradores em cargos de diretoria são excluídos do benefício conforme Política VR-004, pois possuem outras modalidades de remuneração alimentar.",
+        "context": ["Política RH-VR-004"],
+        "examples": [
+          "Diretor Executivo - Não tem direito",
+          "Diretor Técnico - Não tem direito"
+        ],
+        "confidence": 0.97,
+        "metadata": {
+          "source": "Manual RH v2.1",
+          "last_updated": "2025-01-15",
+          "priority": "high"
+        }
+      },
+      {
+        "id": "eligibility_004",
+        "category": "elegibilidade",
+        "question": "Aprendizes têm direito a Vale Refeição?",
+        "answer": "Não. Aprendizes são excluídos do benefício do Vale Refeição conforme Política VR-003, seguindo as mesmas regras dos estagiários.",
+        "context": ["Política RH-VR-003", "Lei da Aprendizagem 10.097/2000"],
+        "examples": [
+          "Aprendiz maior de idade - Não tem direito",
+          "Aprendiz menor de idade - Não tem direito"
+        ],
+        "confidence": 0.96,
+        "metadata": {
+          "source": "Manual RH v2.1",
+          "last_updated": "2025-01-15",
+          "priority": "high"
+        }
+      }
+    ],
+    "calculations": [
+      {
+        "id": "calc_001",
+        "scenario": "Admissão no meio do mês (até dia 15)",
+        "rule": "Colaborador admitido até o dia 15 do mês recebe valor integral do VR",
+        "formula": "valor_base_sindicato",
+        "context": ["Política VR-005"],
+        "examples": [
+          {
+            "case": "Admissão dia 10/01/2025",
+            "calculation": "Valor integral: R$ 467,00",
+            "reasoning": "Admissão até dia 15 = valor integral"
+          },
+          {
+            "case": "Admissão dia 15/01/2025", 
+            "calculation": "Valor integral: R$ 467,00",
+            "reasoning": "Dia 15 inclusive = valor integral"
+          }
+        ],
+        "confidence": 0.99
+      },
+      {
+        "id": "calc_002",
+        "scenario": "Admissão no meio do mês (após dia 15)",
+        "rule": "Colaborador admitido após o dia 15 do mês recebe valor proporcional aos dias úteis restantes",
+        "formula": "(dias_uteis_restantes / dias_uteis_totais) * valor_base",
+        "context": ["Política VR-005"],
+        "examples": [
+          {
+            "case": "Admissão dia 20/01/2025 (22 dias úteis no mês)",
+            "calculation": "(8 dias restantes / 22 dias totais) × R$ 467,00 = R$ 169,55",
+            "reasoning": "Proporcional aos dias úteis restantes"
+          }
+        ],
+        "confidence": 0.98
+      },
+      {
+        "id": "calc_003",
+        "scenario": "Desligamento no meio do mês",
+        "rule": "Colaborador desligado recebe VR proporcional se comunicado até dia 15, não recebe se comunicado após dia 15",
+        "formula": "comunicado_ate_dia_15 ? (dias_trabalhados / dias_uteis_totais) * valor_base : 0",
+        "context": ["Política VR-006"],
+        "examples": [
+          {
+            "case": "Desligamento dia 25, comunicado dia 12",
+            "calculation": "(12 dias / 22 dias) × R$ 467,00 = R$ 254,45",
+            "reasoning": "Comunicado até dia 15 = VR proporcional"
+          },
+          {
+            "case": "Desligamento dia 25, comunicado dia 20",
+            "calculation": "R$ 0,00",
+            "reasoning": "Comunicado após dia 15 = sem VR"
+          }
+        ],
+        "confidence": 0.97
+      },
+      {
+        "id": "calc_004",
+        "scenario": "Afastamento por férias",
+        "rule": "Colaborador em férias recebe VR proporcional aos dias trabalhados no mês",
+        "formula": "(dias_trabalhados / dias_uteis_totais) * valor_base",
+        "context": ["Política VR-007"],
+        "examples": [
+          {
+            "case": "Férias de 15 dias em mês de 22 dias úteis",
+            "calculation": "(7 dias trabalhados / 22 dias totais) × R$ 467,00 = R$ 148,50", 
+            "reasoning": "VR proporcional aos dias efetivamente trabalhados"
+          }
+        ],
+        "confidence": 0.96
+      },
+      {
+        "id": "calc_005",
+        "scenario": "Afastamento por licença médica",
+        "rule": "Licença médica até 15 dias: VR proporcional. Acima de 15 dias: sem VR",
+        "formula": "dias_licenca <= 15 ? (dias_trabalhados / dias_uteis_totais) * valor_base : 0",
+        "context": ["Política VR-008"],
+        "examples": [
+          {
+            "case": "Licença médica de 10 dias",
+            "calculation": "(12 dias trabalhados / 22 dias totais) × R$ 467,00 = R$ 254,45",
+            "reasoning": "Licença ≤ 15 dias = VR proporcional"
+          },
+          {
+            "case": "Licença médica de 20 dias",
+            "calculation": "R$ 0,00",
+            "reasoning": "Licença > 15 dias = sem VR"
+          }
+        ],
+        "confidence": 0.94
+      }
+    ],
+    "syndicates": [
+      {
+        "id": "sindpd",
+        "name": "SINDPD",
+        "vr_value": 467.00,
+        "description": "Sindicato dos Profissionais em Processamento de Dados",
+        "special_rules": [
+          "Valor diferenciado para categoria de TI",
+          "Reajuste anual conforme acordo coletivo"
+        ]
+      },
+      {
+        "id": "sindac",
+        "name": "SINDAC", 
+        "vr_value": 460.00,
+        "description": "Sindicato dos Trabalhadores em Empresas de Assessoria e Consultoria",
+        "special_rules": [
+          "Valor padrão para consultores",
+          "Mesmo reajuste do SINDPD"
+        ]
+      },
+      {
+        "id": "sindmet",
+        "name": "SINDMET",
+        "vr_value": 460.00, 
+        "description": "Sindicato dos Metalúrgicos",
+        "special_rules": [
+          "Valor alinhado com convenção metalúrgica",
+          "Reajustes semestrais"
+        ]
+      }
+    ],
+    "holidays": [
+      {
+        "type": "nacional",
+        "description": "Feriados nacionais são aplicados para todos os colaboradores",
+        "examples": [
+          "01/01 - Confraternização Universal",
+          "21/04 - Tiradentes", 
+          "01/05 - Dia do Trabalhador",
+          "07/09 - Independência do Brasil",
+          "12/10 - Nossa Senhora Aparecida",
+          "02/11 - Finados",
+          "15/11 - Proclamação da República",
+          "25/12 - Natal"
+        ]
+      },
+      {
+        "type": "estadual_municipal",
+        "description": "Feriados estaduais e municipais aplicados conforme localização da unidade de trabalho",
+        "note": "Devem ser consultados na planilha feriados.xlsx específica do ano"
+      }
+    ]
+  }
+}

@@ -1,0 +1,271 @@
+workflow_prompts:
+  # Prompt para workflow principal de processamento completo
+  complete_vr_processing:
+    name: "Processamento Completo de VR"
+    description: "Executa fluxo completo: validação → cálculo → relatório → notificação"
+    
+    orchestrator_prompt: |
+      Você está executando o WORKFLOW COMPLETO de processamento de VR.
+      
+      🎯 OBJETIVO: Processar planilhas de VR do início ao fim de forma automatizada
+      
+      📋 SEQUÊNCIA OBRIGATÓRIA:
+      1. VALIDAÇÃO: Verificar integridade dos arquivos de entrada
+      2. LEITURA: Extrair dados das planilhas Excel
+      3. CONSOLIDAÇÃO: Unificar dados de colaboradores, afastamentos e feriados  
+      4. CÁLCULO: Aplicar regras e calcular VR para cada colaborador
+      5. DETECÇÃO: Identificar anomalias nos resultados
+      6. RELATÓRIO: Gerar planilha final e relatórios
+      7. NOTIFICAÇÃO: Comunicar resultados aos stakeholders
+      
+      ⚠️ PONTOS DE PARADA OBRIGATÓRIOS:
+      - Erros críticos na validação → PARAR e reportar
+      - >10 anomalias críticas → PAUSAR para revisão manual
+      - Falha na geração de relatórios → PARAR e reportar
+      
+      ✅ CRITÉRIOS DE SUCESSO:
+      - Todos os colaboradores processados
+      - <5% de anomalias detectadas
+      - Relatórios gerados com sucesso
+      - Notificações enviadas
+      
+      📊 COMUNICAÇÃO DE PROGRESSO:
+      A cada etapa, reporte:
+      - Status atual (iniciando/executando/concluído)
+      - Tempo decorrido
+      - Próxima ação
+      - Problemas encontrados (se houver)
+
+  # Workflow de validação apenas
+  validation_only:
+    name: "Validação de Planilhas"
+    description: "Executa apenas validação completa dos dados de entrada"
+    
+    validator_prompt: |
+      Você está executando VALIDAÇÃO COMPLETA dos dados de entrada.
+      
+      🔍 OBJETIVO: Garantir qualidade e consistência dos dados antes do processamento
+      
+      📝 CHECKLIST DE VALIDAÇÃO:
+      
+      1. ESTRUTURA DOS ARQUIVOS:
+         ✓ colaboradores.xlsx existe e tem colunas obrigatórias
+         ✓ afastamentos.xlsx existe e tem estrutura correta
+         ✓ feriados.xlsx existe e tem datas válidas
+      
+      2. INTEGRIDADE DOS DADOS:
+         ✓ Matrículas únicas e no formato correto
+         ✓ Datas em formato válido (DD/MM/YYYY)
+         ✓ Sindicatos reconhecidos (SINDPD, SINDAC, SINDMET)
+         ✓ Status válidos (ATIVO, INATIVO, DESLIGADO)
+      
+      3. CONSISTÊNCIA LÓGICA:
+         ✓ Data admissão < data desligamento (quando aplicável)
+         ✓ Afastamentos não sobrepostos
+         ✓ Matrículas existem em colaboradores.xlsx
+         ✓ Tipos de afastamento válidos
+      
+      4. COMPLETUDE:
+         ✓ Campos obrigatórios preenchidos
+         ✓ Dados suficientes para cálculos
+         ✓ Referências entre planilhas funcionais
+      
+      📊 RELATÓRIO FINAL:
+      - Total de registros por arquivo
+      - Problemas encontrados (críticos, médios, baixos)
+      - Recomendações para correção
+      - Aprovação ou rejeição para processamento
+
+  # Workflow de detecção de anomalias
+  anomaly_detection:
+    name: "Detecção de Anomalias"
+    description: "Analisa dados já processados para identificar inconsistências"
+    
+    detector_prompt: |
+      Você está executando DETECÇÃO AVANÇADA DE ANOMALIAS.
+      
+      🕵️ OBJETIVO: Identificar padrões suspeitos e inconsistências nos dados de VR
+      
+      🔬 ALGORITMOS DE DETECÇÃO:
+      
+      1. ANÁLISE ESTATÍSTICA:
+         • Outliers (valores >2 desvios padrão)
+         • Distribuições anômalas por sindicato
+         • Variações bruscas vs. mês anterior
+      
+      2. VALIDAÇÃO DE REGRAS:
+         • Colaboradores ativos com VR = 0 (sem justificativa)
+         • Valores muito acima/abaixo do esperado
+         • Inconsistências status vs. valor
+      
+      3. PADRÕES TEMPORAIS:
+         • Afastamentos recorrentes suspeitos
+         • Mudanças de sindicato incomuns
+         • Admissões/desligamentos em massa
+      
+      4. COMPARAÇÃO HISTÓRICA:
+         • Desvios significativos vs. histórico
+         • Colaboradores com padrão alterado
+         • Tendências anômalas por área/sindicato
+      
+      🚨 CLASSIFICAÇÃO DE SEVERIDADE:
+      - CRÍTICA: Impacta valor/elegibilidade → Revisão obrigatória
+      - MÉDIA: Inconsistência provável → Verificação recomendada
+      - BAIXA: Padrão incomum → Monitoramento
+      
+      📋 AÇÕES AUTOMÁTICAS:
+      - Anomalias críticas → Pausar e alertar
+      - Anomalias médias → Documentar e continuar
+      - Anomalias baixas → Registrar para análise
+
+  # Workflow de geração de relatórios
+  report_generation:
+    name: "Geração de Relatórios"
+    description: "Cria relatórios executivos e detalhados dos resultados"
+    
+    reporter_prompt: |
+      Você está executando GERAÇÃO COMPLETA DE RELATÓRIOS.
+      
+      📊 OBJETIVO: Criar documentação abrangente dos resultados de processamento
+      
+      📋 RELATÓRIOS A GERAR:
+      
+      1. PLANILHA FINAL (vr-[mes]-[ano].xlsx):
+         • Todos os colaboradores com valores calculados
+         • Colunas: MATRICULA, SINDICATO, DIAS_UTEIS, VALOR_VR, OBSERVACOES
+         • Formatação profissional e filtros
+      
+      2. RESUMO EXECUTIVO (resumo-executivo-[mes].xlsx):
+         • Totais por sindicato
+         • Comparativo com mês anterior
+         • Estatísticas principais
+         • Destaques e alertas
+      
+      3. RELATÓRIO DE ANOMALIAS (anomalias-[mes].xlsx):
+         • Lista completa de anomalias detectadas
+         • Classificação por severidade
+         • Ações recomendadas
+         • Status de resolução
+      
+      4. LOG DE AUDITORIA (auditoria-[mes].txt):
+         • Trilha completa do processamento
+         • Decisões automáticas tomadas
+         • Intervenções manuais registradas
+         • Timestamps de todas as operações
+      
+      📐 PADRÕES DE FORMATAÇÃO:
+      - Headers em negrito e coloridos
+      - Valores monetários formatados (R$ X.XXX,XX)
+      - Datas no padrão brasileiro
+      - Status coloridos (verde=OK, amarelo=atenção, vermelho=erro)
+      
+      ✅ VALIDAÇÃO FINAL:
+      - Todos os arquivos gerados com sucesso
+      - Tamanhos de arquivo coerentes
+      - Somas e totais conferidos
+      - Sem dados corrompidos ou ausentes
+
+  # Workflow de análise preditiva
+  predictive_analysis:
+    name: "Análise Preditiva de Tendências"
+    description: "Analisa padrões históricos e prevê tendências futuras"
+    
+    predictor_prompt: |
+      Você está executando ANÁLISE PREDITIVA DE TENDÊNCIAS.
+      
+      🔮 OBJETIVO: Identificar padrões e prever comportamentos futuros
+      
+      📈 ANÁLISES A REALIZAR:
+      
+      1. TENDÊNCIAS DE CONSUMO:
+         • Evolução mensal por sindicato
+         • Crescimento/declínio de colaboradores
+         • Variações sazonais identificadas
+         • Projeções próximos 3-6 meses
+      
+      2. PADRÕES DE AFASTAMENTO:
+         • Frequência por tipo de afastamento
+         • Sazonalidade (férias, licenças)
+         • Colaboradores com padrão recorrente
+         • Previsão de impacto futuro
+      
+      3. ANÁLISE ECONÔMICA:
+         • Evolução dos valores de VR
+         • Impacto de reajustes sindicais
+         • Projeções de custos organizacionais
+         • Cenários otimista/realista/pessimista
+      
+      4. DETECÇÃO DE RISCOS:
+         • Colaboradores em risco de inconsistências
+         • Sindicatos com padrões anômalos
+         • Períodos de maior complexidade
+         • Alertas preventivos
+      
+      📊 MODELOS PREDITIVOS:
+      - Regressão linear para tendências
+      - Análise sazonal para padrões cíclicos  
+      - Machine learning para padrões complexos
+      - Confidence intervals para todas as previsões
+      
+      🎯 ENTREGÁVEIS:
+      - Relatório de tendências (PDF)
+      - Gráficos e visualizações
+      - Recomendações estratégicas
+      - Alertas preventivos automatizados
+
+workflow_coordination:
+  orchestration_patterns:
+    sequential:
+      description: "Workflows executados em sequência (um após o outro)"
+      use_case: "Processamento completo, validação → cálculo → relatório"
+      error_handling: "Falha em uma etapa para toda a execução"
+    
+    parallel:
+      description: "Workflows executados simultaneamente"
+      use_case: "Análises independentes, relatórios múltiplos"
+      error_handling: "Falhas isoladas não afetam outros workflows"
+    
+    conditional:
+      description: "Próxima etapa depende do resultado da anterior"  
+      use_case: "Detecção de anomalias → validação manual se necessário"
+      error_handling: "Lógica de decisão baseada em resultados"
+
+  progress_reporting:
+    frequency: "A cada 30 segundos ou mudança de etapa"
+    format: |
+      ```
+      🔄 [NOME_WORKFLOW] - [STATUS]
+      ████████████████████░░░░ [PERCENTUAL]%
+      
+      📋 Etapa atual: [DESCRIÇÃO]
+      ⏱️  Tempo decorrido: [MINUTOS]m [SEGUNDOS]s
+      ⏳ Estimativa restante: [TEMPO_ESTIMADO]
+      
+      📊 Progresso detalhado:
+      • [ETAPA_1]: ✅ Concluída ([TEMPO])
+      • [ETAPA_2]: 🔄 Em andamento...
+      • [ETAPA_3]: ⏳ Aguardando
+      
+      ⚠️ Alertas: [QUANTIDADE] ([CRÍTICOS] críticos)
+      ```
+
+  error_recovery:
+    strategies:
+      retry:
+        description: "Tentar novamente operação falhada"
+        max_attempts: 3
+        backoff: "Exponencial (1s, 2s, 4s)"
+      
+      skip:
+        description: "Pular etapa não-crítica e continuar"
+        conditions: "Apenas para erros não-bloqueantes"
+        logging: "Registrar skip para auditoria"
+      
+      fallback:
+        description: "Usar método alternativo"
+        examples: "API falhou → usar arquivo local"
+        
+      manual_intervention:
+        description: "Pausar e solicitar intervenção humana"
+        triggers: "Erros críticos, muitas anomalias"
+        notification: "Alertar stakeholders imediatamente"

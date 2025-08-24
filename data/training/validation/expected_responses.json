@@ -1,0 +1,231 @@
+{
+  "expected_responses": {
+    "eligibility_questions": {
+      "estagiarios_direito_vr": {
+        "question": "Estagiários têm direito a Vale Refeição?",
+        "golden_answer": "Não. Estagiários são expressamente excluídos do benefício do Vale Refeição conforme Política VR-003, independente da carga horária.",
+        "key_elements": {
+          "negation": "Não",
+          "category": "estagiários",
+          "exclusion_explicit": "excluídos",
+          "policy_reference": "Política VR-003",
+          "independence_clause": "independente da carga horária"
+        },
+        "acceptable_variations": [
+          "Estagiários não têm direito ao VR segundo a Política VR-003",
+          "Não. Conforme Política VR-003, estagiários são excluídos do benefício",
+          "Política VR-003 exclui expressamente os estagiários do Vale Refeição"
+        ],
+        "unacceptable_responses": [
+          "Depende da carga horária",
+          "Sim, se trabalharem mais de 6 horas",
+          "Não especificado nas políticas"
+        ]
+      },
+      "carga_horaria_minima": {
+        "question": "Qual a carga horária mínima para ter direito a VR?",
+        "golden_answer": "A carga horária mínima é de 6 horas diárias, conforme estabelecido na Política VR-001. Colaboradores com jornada inferior não têm direito ao benefício.",
+        "key_elements": {
+          "minimum_hours": "6 horas",
+          "frequency": "diárias",
+          "policy_reference": "Política VR-001",
+          "exclusion_below": "jornada inferior não têm direito"
+        }
+      },
+      "diretores_vr": {
+        "question": "Diretores recebem Vale Refeição?",
+        "golden_answer": "Não. Colaboradores em cargos de diretoria são excluídos do benefício conforme Política VR-004, pois possuem outras modalidades de remuneração alimentar.",
+        "key_elements": {
+          "negation": "Não",
+          "position": "diretoria",
+          "exclusion": "excluídos",
+          "policy_reference": "Política VR-004",
+          "alternative_reason": "outras modalidades de remuneração"
+        }
+      }
+    },
+    "calculation_responses": {
+      "admissao_ate_dia_15": {
+        "question": "Como calcular VR para colaborador admitido no dia 10?",
+        "golden_answer": "Colaborador admitido até o dia 15 do mês recebe valor integral do VR conforme Política VR-005. Para SINDPD seria R$ 467,00, SINDAC/SINDMET seria R$ 460,00.",
+        "calculation_steps": [
+          "Verificar data de admissão: dia 10",
+          "Aplicar regra: até dia 15 = valor integral", 
+          "Consultar valor do sindicato",
+          "Resultado: valor base completo"
+        ],
+        "key_elements": {
+          "rule": "até dia 15",
+          "result": "valor integral",
+          "policy_reference": "Política VR-005",
+          "sindicate_values": true
+        }
+      },
+      "admissao_apos_dia_15": {
+        "question": "Colaborador admitido dia 20 em mês de 22 dias úteis, qual VR?",
+        "golden_answer": "Para admissão após o dia 15, aplica-se cálculo proporcional (Política VR-005). Dias restantes: 9 dias úteis. Para SINDPD: (9÷22) × R$ 467,00 = R$ 191,05",
+        "calculation_steps": [
+          "Data admissão: dia 20 (após dia 15)",
+          "Aplicar regra proporcional",
+          "Calcular dias úteis restantes: 9 dias",
+          "Fórmula: (9÷22) × valor_base",
+          "SINDPD: (9÷22) × R$ 467,00 = R$ 191,05"
+        ],
+        "key_elements": {
+          "rule": "proporcional",
+          "remaining_days": "9 dias",
+          "total_days": "22 dias",
+          "formula": "(9÷22) × valor_base",
+          "policy_reference": "Política VR-005"
+        }
+      },
+      "licenca_medica_longa": {
+        "question": "Colaborador com 20 dias de licença médica, qual VR?",
+        "golden_answer": "Licenças médicas superiores a 15 dias resultam em VR zero conforme Política VR-008. Como são 20 dias (>15), o colaborador não recebe VR no mês.",
+        "calculation_steps": [
+          "Identificar tipo: licença médica",
+          "Contabilizar dias: 20 dias",
+          "Aplicar regra: >15 dias = VR zero",
+          "Resultado: R$ 0,00"
+        ],
+        "key_elements": {
+          "leave_type": "licença médica",
+          "days_count": "20 dias",
+          "threshold": "15 dias",
+          "result": "VR zero",
+          "policy_reference": "Política VR-008"
+        }
+      }
+    },
+    "complex_scenarios": {
+      "multiplos_afastamentos": {
+        "question": "Colaborador com 10 dias de férias e 8 dias de licença médica?",
+        "golden_answer": "Múltiplos afastamentos são somados. Total: 18 dias. Como licença médica individual (8 dias) ≤ 15 dias, calcula-se proporcional: (4 dias trabalhados ÷ 22 dias) × valor_base.",
+        "calculation_steps": [
+          "Somar afastamentos: 10 + 8 = 18 dias",
+          "Verificar regra licença: 8 dias ≤ 15 = OK",
+          "Calcular dias trabalhados: 22 - 18 = 4 dias",
+          "Aplicar proporcional: (4÷22) × valor_base"
+        ],
+        "key_elements": {
+          "multiple_leaves": true,
+          "total_days_off": "18 dias",
+          "medical_check": "8 dias ≤ 15",
+          "worked_days": "4 dias",
+          "proportional_calc": true
+        }
+      },
+      "mudanca_sindicato": {
+        "question": "Colaborador transferido de SINDPD para SINDAC no dia 18?",
+        "golden_answer": "Para transferência de sindicato, aplica-se o valor do sindicato de destino para todo o mês (Política VR-009). Valor final: R$ 460,00 (valor SINDAC).",
+        "key_elements": {
+          "transfer_rule": "sindicato de destino",
+          "whole_month": "todo o mês",
+          "final_value": "R$ 460,00",
+          "destination_syndicate": "SINDAC",
+          "policy_reference": "Política VR-009"
+        }
+      }
+    },
+    "validation_responses": {
+      "valor_muito_alto": {
+        "scenario": "VR calculado de R$ 920,00 para sindicato SINDPD",
+        "expected_validation": {
+          "is_anomaly": true,
+          "severity": "crítica",
+          "description": "Valor 197% acima da média do sindicato (R$ 467,00 base)",
+          "possible_causes": [
+            "Duplicação de registro",
+            "Erro na fórmula de cálculo",
+            "Dados corrompidos"
+          ],
+          "recommended_action": "Revisar dados de entrada e recalcular",
+          "confidence": 0.98
+        }
+      },
+      "ativo_sem_vr": {
+        "scenario": "Colaborador ativo com VR R$ 0,00 sem afastamentos",
+        "expected_validation": {
+          "is_anomaly": true,
+          "severity": "média",
+          "description": "Colaborador ativo deveria ter VR > 0",
+          "possible_causes": [
+            "Status incorreto",
+            "Dados de elegibilidade ausentes",
+            "Erro no processamento"
+          ],
+          "recommended_action": "Verificar dados do colaborador",
+          "confidence": 0.85
+        }
+      }
+    },
+    "error_scenarios": {
+      "dados_insuficientes": {
+        "question": "Como calcular VR sem informar o sindicato?",
+        "expected_response": "Para calcular o VR corretamente, é necessário informar o sindicato do colaborador, pois cada sindicato possui valor base diferente: SINDPD (R$ 467,00), SINDAC (R$ 460,00), SINDMET (R$ 460,00).",
+        "key_elements": {
+          "requirement_stated": "necessário informar o sindicato",
+          "reason_explained": "valor base diferente",
+          "values_provided": true,
+          "helpful_tone": true
+        }
+      },
+      "cenario_nao_coberto": {
+        "question": "Como calcular VR para colaborador extraterrestre?",
+        "expected_response": "Este cenário não está coberto pelas políticas atuais de VR. Recomendo consultar o RH para definir procedimento específico para situações não contempladas nas normas vigentes.",
+        "key_elements": {
+          "limitation_acknowledged": true,
+          "escalation_suggested": "consultar o RH",
+          "professional_tone": true
+        }
+      }
+    }
+  },
+  "response_templates": {
+    "basic_calculation": {
+      "structure": [
+        "📋 Dados do caso",
+        "⚖️ Regra aplicável", 
+        "💰 Cálculo passo-a-passo",
+        "✅ Resultado final",
+        "📚 Fonte/Política"
+      ],
+      "example": "📋 Colaborador SINDPD admitido dia 20\n⚖️ Admissão após dia 15 = proporcional (Política VR-005)\n💰 Cálculo: (9 dias ÷ 22 dias) × R$ 467,00 = R$ 191,05\n✅ VR final: R$ 191,05\n📚 Fonte: Política VR-005"
+    },
+    "eligibility_check": {
+      "structure": [
+        "Resposta direta (Sim/Não)",
+        "Justificativa da regra",
+        "Referência à política",
+        "Exemplo prático (se relevante)"
+      ],
+      "example": "Não. Estagiários são expressamente excluídos do benefício conforme Política VR-003, independente da carga horária.\n\nExemplo: Estagiário com 8h/dia ainda não tem direito ao VR."
+    },
+    "anomaly_alert": {
+      "structure": [
+        "🚨 Alerta de anomalia",
+        "📊 Dados detectados",
+        "🔍 Possíveis causas",
+        "💡 Ação recomendada",
+        "📈 Nível de confiança"
+      ],
+      "example": "🚨 ANOMALIA DETECTADA\n📊 Valor: R$ 920,00 (200% acima da média)\n🔍 Possível duplicação de dados\n💡 Revisar planilha de origem\n📈 Confiança: 98%"
+    }
+  },
+  "quality_standards": {
+    "mandatory_elements": {
+      "source_citation": "Toda resposta sobre políticas deve citar fonte específica",
+      "calculation_detail": "Cálculos devem mostrar fórmula e valores intermediários",
+      "confidentiality": "Usar apenas matrículas, nunca nomes de colaboradores",
+      "professional_tone": "Linguagem formal mas acessível",
+      "accuracy": "Valores monetários com 2 decimais, datas no formato brasileiro"
+    },
+    "prohibited_elements": {
+      "personal_info": "Nunca incluir nomes, CPFs ou dados pessoais",
+      "speculation": "Não inventar políticas ou valores não documentados", 
+      "ambiguity": "Evitar respostas vagas ou não-conclusivas",
+      "inconsistency": "Mesma pergunta deve ter mesma resposta",
+      "technical_jargon": "Evitar termos muito técnicos sem explicação"
+    }
+  }
+}

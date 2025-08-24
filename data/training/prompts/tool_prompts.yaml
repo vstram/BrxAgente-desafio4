@@ -1,0 +1,237 @@
+tool_prompts:
+  # Prompts para ferramentas de dados
+  read_excel_tool:
+    instruction: |
+      Você está usando a ferramenta ReadExcelTool para ler planilhas Excel.
+      
+      OBJETIVO: Extrair dados estruturados das planilhas de VR
+      
+      VALIDAÇÕES OBRIGATÓRIAS:
+      1. Verificar se arquivo existe e é acessível
+      2. Validar estrutura das colunas (nomes e tipos)
+      3. Identificar dados faltantes ou inconsistentes
+      4. Contar registros válidos
+      
+      FORMATO DE SAÍDA:
+      ```
+      📊 LEITURA CONCLUÍDA:
+      • Arquivo: [nome do arquivo]
+      • Registros: [total] ([válidos] válidos, [inválidos] com problemas)
+      • Colunas: [lista das colunas encontradas]
+      • Problemas: [lista de inconsistências se houver]
+      ```
+      
+      EM CASO DE ERRO:
+      - Descreva claramente o problema
+      - Sugira possíveis soluções
+      - Não interrompa processamento desnecessariamente
+
+  calculate_vr_tool:
+    instruction: |
+      Você está usando a CalculateVRTool para calcular valores de VR.
+      
+      PROCESSO OBRIGATÓRIO:
+      1. Validar dados de entrada (matrícula, sindicato, datas)
+      2. Aplicar regras de elegibilidade
+      3. Calcular dias úteis e afastamentos
+      4. Aplicar fórmulas específicas
+      5. Gerar justificativa detalhada
+      
+      REGRAS CRÍTICAS:
+      - Estagiários, diretores, aprendizes = R$ 0,00
+      - Admissão após dia 15 = proporcional
+      - Licença médica > 15 dias = R$ 0,00
+      - Desligamento comunicado após dia 15 = R$ 0,00
+      
+      FORMATO DE SAÍDA:
+      ```
+      💰 CÁLCULO EXECUTADO:
+      • Matrícula: [código]
+      • Base: R$ [valor_base] ([sindicato])
+      • Dias trabalhados: [dias] de [total]
+      • Valor final: R$ [resultado]
+      • Regra: [regra aplicada]
+      • Observação: [justificativa]
+      ```
+
+  validate_data_tool:
+    instruction: |
+      Você está usando a ValidateDataTool para validar consistência dos dados.
+      
+      VALIDAÇÕES ESSENCIAIS:
+      1. Estrutura dos arquivos (colunas obrigatórias)
+      2. Tipos de dados (datas, números, textos)
+      3. Relacionamentos (matrículas válidas)
+      4. Consistência lógica (datas, valores)
+      5. Completude dos dados
+      
+      CRITÉRIOS DE ANOMALIA:
+      - Matrícula duplicada ou inválida
+      - Datas inconsistentes (admissão > desligamento)
+      - Sindicatos não reconhecidos
+      - Afastamentos sobrepostos
+      - Status inconsistente com dados
+      
+      FORMATO DE RELATÓRIO:
+      ```
+      ✅ VALIDAÇÃO COMPLETA:
+      📂 Arquivos validados: [quantidade]
+      👥 Registros verificados: [total]
+      
+      ⚠️ PROBLEMAS ENCONTRADOS:
+      • Críticos: [quantidade] (impedem processamento)
+      • Médios: [quantidade] (requerem atenção)  
+      • Baixos: [quantidade] (informativos)
+      
+      📋 DETALHES:
+      [listar problemas específicos]
+      ```
+
+  generate_report_tool:
+    instruction: |
+      Você está usando a GenerateReportTool para criar relatórios de VR.
+      
+      TIPOS DE RELATÓRIO:
+      1. Executivo (resumo alto nível)
+      2. Detalhado (todos os colaboradores)
+      3. Anomalias (apenas problemas)
+      4. Auditoria (trilha completa)
+      
+      ESTRUTURA OBRIGATÓRIA:
+      - Cabeçalho (período, data de geração)
+      - Resumo executivo (totais por sindicato)
+      - Detalhamento conforme tipo
+      - Rodapé (assinatura digital, disclaimers)
+      
+      FORMATO DE CONFIRMAÇÃO:
+      ```
+      📊 RELATÓRIO GERADO:
+      • Tipo: [tipo do relatório]
+      • Registros: [quantidade]
+      • Arquivo: [caminho/nome]
+      • Tamanho: [tamanho do arquivo]
+      • Tempo: [tempo de geração]
+      
+      📈 ESTATÍSTICAS:
+      • SINDPD: [quantidade] colaboradores - R$ [total]
+      • SINDAC: [quantidade] colaboradores - R$ [total]
+      • SINDMET: [quantidade] colaboradores - R$ [total]
+      • TOTAL: R$ [valor_total]
+      ```
+
+  # Prompts para ferramentas de análise
+  anomaly_detector_tool:
+    instruction: |
+      Você está usando a AnomalyDetectorTool para identificar inconsistências.
+      
+      ALGORITMOS DE DETECÇÃO:
+      1. Análise estatística (outliers, desvios)
+      2. Validação de regras de negócio
+      3. Comparação com histórico
+      4. Detecção de padrões suspeitos
+      
+      CLASSIFICAÇÃO DE ANOMALIAS:
+      - CRÍTICA: Erro que afeta valor ou elegibilidade
+      - MÉDIA: Inconsistência que requer verificação
+      - BAIXA: Padrão incomum mas não necessariamente erro
+      
+      FORMATO DE ALERTA:
+      ```
+      🚨 ANOMALIA DETECTADA:
+      • Severidade: [CRÍTICA/MÉDIA/BAIXA]
+      • Tipo: [categoria da anomalia]
+      • Matrícula: [código]
+      • Descrição: [detalhes do problema]
+      • Valor atual: R$ [valor]
+      • Valor esperado: R$ [referência]
+      • Confiança: [0-100%]
+      • Ação sugerida: [o que fazer]
+      ```
+
+  pattern_analyzer_tool:
+    instruction: |
+      Você está usando a PatternAnalyzerTool para análise de padrões históricos.
+      
+      ANÁLISES DISPONÍVEIS:
+      1. Tendências temporais (crescimento, sazonalidade)
+      2. Padrões por sindicato (distribuições)
+      3. Comportamento de afastamentos
+      4. Correlações entre variáveis
+      
+      MÉTRICA DE CONFIANÇA:
+      - Alta (>90%): Padrão claramente identificado
+      - Média (70-90%): Tendência provável
+      - Baixa (<70%): Dados insuficientes
+      
+      FORMATO DE ANÁLISE:
+      ```
+      📈 PADRÃO IDENTIFICADO:
+      • Tipo: [categoria do padrão]
+      • Período: [intervalo analisado]
+      • Tendência: [crescimento/estável/declínio]
+      • Magnitude: [percentual/valor]
+      • Confiança: [alta/média/baixa] ([%])
+      • Fatores: [principais influenciadores]
+      • Projeção: [previsão próximo período]
+      ```
+
+  # Prompts para notificações e comunicação
+  send_notification_tool:
+    instruction: |
+      Você está usando a SendNotificationTool para comunicar resultados.
+      
+      TIPOS DE NOTIFICAÇÃO:
+      1. Sucesso (processamento concluído)
+      2. Alerta (anomalias detectadas)
+      3. Erro (falhas críticas)
+      4. Informativo (status, progresso)
+      
+      FORMATO DE MENSAGEM:
+      - Assunto claro e objetivo
+      - Resumo executivo no início
+      - Detalhes organizados por prioridade
+      - Ações requeridas claramente identificadas
+      - Links/anexos relevantes
+      
+      TEMPLATE PADRÃO:
+      ```
+      📧 NOTIFICAÇÃO ENVIADA:
+      • Para: [destinatários]
+      • Assunto: [título da mensagem]
+      • Tipo: [sucesso/alerta/erro/info]
+      • Anexos: [arquivos incluídos]
+      • Status: [enviada/erro/pendente]
+      ```
+
+tool_execution_guidelines:
+  error_handling:
+    - "Sempre capture e reporte erros específicos"
+    - "Não interrompa workflow por erros não-críticos"
+    - "Sugira ações corretivas quando possível"
+    - "Documente todos os problemas encontrados"
+  
+  performance:
+    - "Processe em lotes para grandes volumes"
+    - "Use cache quando apropriado"
+    - "Monitore uso de memória"
+    - "Reporte progresso para workflows longos"
+  
+  security:
+    - "Valide todos os inputs antes do processamento"
+    - "Não exponha dados sensíveis em logs"
+    - "Use apenas matrículas como identificadores"
+    - "Mantenha auditoria de todas as operações"
+
+output_formatting:
+  consistency_rules:
+    - "Valores monetários: sempre R$ X.XX (2 decimais)"
+    - "Datas: formato DD/MM/YYYY"
+    - "Percentuais: X.X% (1 decimal)"
+    - "Quantidades: números inteiros sem separadores"
+    - "Status: MAIÚSCULAS (ATIVO, INATIVO, etc.)"
+  
+  structure:
+    - "Use emojis para categorização visual"
+    - "Organize informações em blocos lógicos" 
+    - "Destaque informações críticas"
+    - "Inclua sempre fonte/referência quando aplicável"

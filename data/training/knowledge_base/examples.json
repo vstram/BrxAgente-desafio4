@@ -1,0 +1,275 @@
+{
+  "practical_examples": [
+    {
+      "id": "example_001",
+      "title": "Caso Completo: Admissão com Afastamento",
+      "scenario": "Colaborador admitido dia 20 com licença médica de 3 dias no mesmo mês",
+      "input_data": {
+        "matricula": "MAT001234",
+        "sindicato": "SINDPD",
+        "data_admissao": "2025-09-20",
+        "status": "ativo",
+        "afastamentos": [
+          {
+            "tipo": "LICENCA_MEDICA",
+            "data_inicio": "2025-09-25",
+            "data_fim": "2025-09-27"
+          }
+        ]
+      },
+      "step_by_step_calculation": {
+        "step_1": {
+          "description": "Verificar regra de admissão",
+          "rule": "Admissão após dia 15 = proporcional",
+          "result": "Aplicar cálculo proporcional"
+        },
+        "step_2": {
+          "description": "Calcular dias úteis do mês",
+          "calculation": "Setembro/2025 = 22 dias úteis",
+          "result": "22 dias úteis totais"
+        },
+        "step_3": {
+          "description": "Calcular dias disponíveis para trabalho (pós-admissão)",
+          "calculation": "20/09 a 30/09 = 9 dias úteis disponíveis",
+          "result": "9 dias úteis disponíveis"
+        },
+        "step_4": {
+          "description": "Descontar afastamento médico",
+          "calculation": "25, 26, 27/09 = 3 dias úteis de licença",
+          "result": "3 dias de afastamento"
+        },
+        "step_5": {
+          "description": "Calcular dias efetivamente trabalhados",
+          "calculation": "9 dias disponíveis - 3 dias licença = 6 dias",
+          "result": "6 dias trabalhados"
+        },
+        "step_6": {
+          "description": "Aplicar fórmula proporcional",
+          "calculation": "(6 ÷ 22) × R$ 467,00 = R$ 127,27",
+          "result": "VR = R$ 127,27"
+        }
+      },
+      "expected_result": {
+        "valor_vr": 127.27,
+        "observacoes": "Admissão após dia 15 + licença médica 3 dias",
+        "confidence": 0.98
+      },
+      "key_learning": "Admissões tardias combinadas com afastamentos requerem cálculo cumulativo dos descontos"
+    },
+    {
+      "id": "example_002", 
+      "title": "Caso Limite: Desligamento no Último Dia",
+      "scenario": "Colaborador desligado no último dia útil, comunicado dia 10",
+      "input_data": {
+        "matricula": "MAT002345",
+        "sindicato": "SINDAC", 
+        "data_admissao": "2020-03-15",
+        "data_desligamento": "2025-09-30",
+        "data_comunicacao_desligamento": "2025-09-10",
+        "status": "desligado"
+      },
+      "step_by_step_calculation": {
+        "step_1": {
+          "description": "Verificar regra de desligamento",
+          "rule": "Comunicado até dia 15 = direito ao VR proporcional",
+          "result": "Tem direito ao VR"
+        },
+        "step_2": {
+          "description": "Calcular dias trabalhados",
+          "calculation": "01/09 a 30/09 = 22 dias úteis completos",
+          "result": "22 dias trabalhados"
+        },
+        "step_3": {
+          "description": "Aplicar valor integral",
+          "calculation": "Trabalhou mês completo = valor integral",
+          "result": "VR = R$ 460,00 (valor SINDAC)"
+        }
+      },
+      "expected_result": {
+        "valor_vr": 460.00,
+        "observacoes": "Desligamento comunicado até dia 15 - valor integral",
+        "confidence": 0.99
+      },
+      "key_learning": "Data de comunicação do desligamento é mais importante que data efetiva do desligamento"
+    },
+    {
+      "id": "example_003",
+      "title": "Caso Complexo: Múltiplos Afastamentos",
+      "scenario": "Colaborador com férias, licença médica e falta injustificada no mesmo mês",
+      "input_data": {
+        "matricula": "MAT003456",
+        "sindicato": "SINDMET",
+        "data_admissao": "2018-01-10", 
+        "status": "ativo",
+        "afastamentos": [
+          {
+            "tipo": "FERIAS",
+            "data_inicio": "2025-09-02",
+            "data_fim": "2025-09-06"
+          },
+          {
+            "tipo": "LICENCA_MEDICA", 
+            "data_inicio": "2025-09-15",
+            "data_fim": "2025-09-18"
+          },
+          {
+            "tipo": "FALTA_INJUSTIFICADA",
+            "data_inicio": "2025-09-25",
+            "data_fim": "2025-09-25"
+          }
+        ]
+      },
+      "step_by_step_calculation": {
+        "step_1": {
+          "description": "Listar todos os afastamentos",
+          "calculation": "Férias: 5 dias + Licença: 4 dias + Falta: 1 dia = 10 dias total",
+          "result": "10 dias de afastamento total"
+        },
+        "step_2": {
+          "description": "Verificar regra de licença médica",
+          "rule": "Licença ≤ 15 dias = permite VR proporcional",
+          "result": "4 dias licença < 15 = OK"
+        },
+        "step_3": {
+          "description": "Calcular dias trabalhados",
+          "calculation": "22 dias úteis - 10 dias afastamento = 12 dias",
+          "result": "12 dias efetivamente trabalhados"
+        },
+        "step_4": {
+          "description": "Aplicar fórmula proporcional",
+          "calculation": "(12 ÷ 22) × R$ 460,00 = R$ 250,91",
+          "result": "VR = R$ 250,91"
+        }
+      },
+      "expected_result": {
+        "valor_vr": 250.91,
+        "observacoes": "Múltiplos afastamentos: 5d férias + 4d licença + 1d falta",
+        "confidence": 0.96
+      },
+      "key_learning": "Múltiplos afastamentos são somados, mas licença médica ≤15 dias ainda permite VR proporcional"
+    },
+    {
+      "id": "example_004",
+      "title": "Caso Especial: Mudança de Sindicato",
+      "scenario": "Colaborador transferido de SINDPD para SINDAC no meio do mês",
+      "input_data": {
+        "matricula": "MAT004567",
+        "sindicato_origem": "SINDPD",
+        "sindicato_destino": "SINDAC", 
+        "data_transferencia": "2025-09-18",
+        "data_admissao": "2019-05-20",
+        "status": "ativo"
+      },
+      "step_by_step_calculation": {
+        "step_1": {
+          "description": "Identificar sindicato válido para o mês",
+          "rule": "Usar sindicato vigente no final do mês",
+          "result": "SINDAC (sindicato de destino)"
+        },
+        "step_2": {
+          "description": "Aplicar valor do sindicato destino",
+          "calculation": "Valor SINDAC = R$ 460,00",
+          "result": "Base de cálculo = R$ 460,00"
+        },
+        "step_3": {
+          "description": "Calcular VR integral (sem afastamentos)",
+          "calculation": "Trabalhou mês completo = valor integral",
+          "result": "VR = R$ 460,00"
+        }
+      },
+      "expected_result": {
+        "valor_vr": 460.00,
+        "observacoes": "Transferência SINDPD→SINDAC dia 18 - valor SINDAC",
+        "confidence": 0.97
+      },
+      "key_learning": "Transferência de sindicato aplica valor do sindicato de destino para todo o mês"
+    },
+    {
+      "id": "example_005",
+      "title": "Caso Crítico: Estagiário Efetivado",
+      "scenario": "Estagiário efetivado como CLT no meio do mês",
+      "input_data": {
+        "matricula": "MAT005678",
+        "status_anterior": "estagiario",
+        "data_efetivacao": "2025-09-22",
+        "sindicato": "SINDPD",
+        "status_atual": "ativo"
+      },
+      "step_by_step_calculation": {
+        "step_1": {
+          "description": "Verificar período como estagiário",
+          "rule": "Estagiários não têm direito a VR",
+          "result": "01/09 a 21/09 = sem direito"
+        },
+        "step_2": {
+          "description": "Verificar período como CLT",
+          "rule": "Efetivação após dia 15 = VR proporcional",
+          "result": "22/09 a 30/09 = direito proporcional"
+        },
+        "step_3": {
+          "description": "Calcular dias úteis como CLT",
+          "calculation": "22/09 a 30/09 = 7 dias úteis",
+          "result": "7 dias trabalhados como CLT"
+        },
+        "step_4": {
+          "description": "Aplicar fórmula proporcional",
+          "calculation": "(7 ÷ 22) × R$ 467,00 = R$ 148,50",
+          "result": "VR = R$ 148,50"
+        }
+      },
+      "expected_result": {
+        "valor_vr": 148.50,
+        "observacoes": "Efetivação CLT após dia 15 - proporcional 7 dias",
+        "confidence": 0.95
+      },
+      "key_learning": "Mudança de status (estagiário→CLT) segue regra de admissão para o novo período"
+    }
+  ],
+  "validation_examples": [
+    {
+      "id": "validation_001",
+      "test_case": "VR muito acima da média",
+      "input": {
+        "valor_calculado": 920.00,
+        "valor_base_sindicato": 460.00,
+        "media_sindicato": 458.50
+      },
+      "expected_validation": {
+        "is_anomaly": true,
+        "severity": "crítica",
+        "reason": "Valor 200% acima da média",
+        "suggested_action": "Revisar cálculo - possível duplicação"
+      }
+    },
+    {
+      "id": "validation_002", 
+      "test_case": "Colaborador ativo com VR zerado",
+      "input": {
+        "valor_calculado": 0.00,
+        "status": "ativo",
+        "afastamentos": []
+      },
+      "expected_validation": {
+        "is_anomaly": true,
+        "severity": "média",
+        "reason": "Colaborador ativo sem VR e sem afastamentos",
+        "suggested_action": "Verificar dados de entrada"
+      }
+    },
+    {
+      "id": "validation_003",
+      "test_case": "Padrão de afastamento incomum",
+      "input": {
+        "afastamentos_consecutivos_meses": 6,
+        "tipo_afastamento": "LICENCA_MEDICA",
+        "valor_calculado": 0.00
+      },
+      "expected_validation": {
+        "is_anomaly": true,
+        "severity": "baixa",
+        "reason": "Padrão de licenças médicas consecutivas",
+        "suggested_action": "Verificar se colaborador ainda está ativo"
+      }
+    }
+  ]
+}
