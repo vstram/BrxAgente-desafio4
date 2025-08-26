@@ -159,6 +159,7 @@ function Chat() {
               </div>
             </div>
             
+            
             <div className="chat-messages">
               {messages.length === 0 ? (
                 <div className="chat-welcome">

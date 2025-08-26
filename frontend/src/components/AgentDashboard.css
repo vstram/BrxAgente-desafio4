@@ -72,6 +72,29 @@
   color: var(--text-secondary);
 }
 
+.error-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.error-tip {
+  font-size: 0.85em;
+  max-width: 400px;
+  padding: 12px;
+  background: var(--background-color);
+  border-radius: 8px;
+  border-left: 3px solid var(--warning-color);
+  color: var(--text-primary) !important;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.error-tip strong {
+  color: var(--warning-color);
+}
+
 /* No Data State */
 .agent-dashboard.no-data {
   justify-content: center;

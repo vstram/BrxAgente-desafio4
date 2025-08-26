@@ -31,6 +31,8 @@ export function GenerateRecommendations(arg1:string):Promise<intelligence.Recomm
 
 export function GetAgentStatus():Promise<main.AgentStatus>;
 
+export function GetAgentStatusSimple():Promise<string>;
+
 export function GetConfig():Promise<config.Config>;
 
 export function GetConsolidatedData():Promise<Record<string, modelo.Colaborador>>;

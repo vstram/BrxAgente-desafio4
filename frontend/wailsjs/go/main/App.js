@@ -50,6 +50,10 @@ export function GetAgentStatus() {
   return window['go']['main']['App']['GetAgentStatus']();
 }
 
+export function GetAgentStatusSimple() {
+  return window['go']['main']['App']['GetAgentStatusSimple']();
+}
+
 export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }

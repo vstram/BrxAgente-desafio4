@@ -463,6 +463,49 @@
   }
 }
 
+/* Agent Dashboard no Chat - REMOVIDO */
+/*
+.chat-agent-dashboard {
+  border-bottom: 1px solid var(--divider-color);
+  background: var(--surface-color);
+}
+
+.chat-dashboard {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.dashboard-divider {
+  height: 1px;
+  background: var(--divider-color);
+  margin: 0;
+}
+
+.chat-dashboard-btn {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-dashboard-btn:hover {
+  background-color: var(--hover-color);
+}
+
+.chat-dashboard-btn .icon {
+  width: 18px;
+  height: 18px;
+  filter: var(--icon-filter);
+}
+*/
+
 /* Responsividade */
 @media (max-width: 768px) {
   .chat-toggle-btn {
@@ -478,4 +521,10 @@
   .chat-send-btn {
     padding: 0 20px;
   }
+  
+  /*
+  .chat-agent-dashboard {
+    padding: 0;
+  }
+  */
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AgentDashboardProps, AgentStatus } from '../types/agent';
 import { useAgentStatus } from '../hooks/useAgentStatus';
+import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 import WorkflowProgress from './WorkflowProgress';
 import AgentLogs from './AgentLogs';
 import './AgentDashboard.css';
@@ -17,6 +18,13 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({
   compactMode = false,
   refreshInterval = 2000
 }) => {
+  // Monitor de performance
+  const { metrics } = usePerformanceMonitor({
+    enabled: true,
+    componentName: 'AgentDashboard',
+    logInterval: 3000
+  });
+  
   const {
     dashboardData,
     isConnected,
@@ -149,16 +157,26 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({
 
   // Error state
   if (error || !isConnected) {
+    const isTimeoutError = error && error.includes('carregamento dos dados está demorando');
+    
     return (
       <div className={`agent-dashboard error ${className}`}>
         <div className="error-content">
-          <span className="error-icon">⚠️</span>
-          <h3>Erro de Conexão</h3>
+          <span className="error-icon">{isTimeoutError ? '⏳' : '⚠️'}</span>
+          <h3>{isTimeoutError ? 'Carregamento Lento' : 'Erro de Conexão'}</h3>
           <p>{error || 'Não foi possível conectar ao agente'}</p>
-          <button className="btn primary-btn" onClick={refreshData}>
-            <img src={RefreshIcon} alt="Tentar novamente" className="btn-icon" />
-            Tentar Novamente
-          </button>
+          <div className="error-actions">
+            <button className="btn primary-btn" onClick={refreshData}>
+              <img src={RefreshIcon} alt="Tentar novamente" className="btn-icon" />
+              Tentar Novamente
+            </button>
+            {isTimeoutError && (
+              <p className="error-tip">
+                💡 <strong>Dica:</strong> Com muitos dados processados, o carregamento pode demorar. 
+                O dashboard funcionará normalmente após o processamento ser concluído.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );
