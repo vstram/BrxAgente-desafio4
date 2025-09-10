@@ -37,7 +37,7 @@ func (a *App) RealizarAnaliseOrquestrada(diretorioPlanilhas string) (string, err
 	}
 
 	// Salvar planilha de resultado na pasta de Downloads usando o mês extraído da planilha DESLIGADOS
-	nomeArquivo := fmt.Sprintf("VR_Mensal %02d.%d.xlsx", mes, ano)
+	nomeArquivo := fmt.Sprintf("VR MENSAL %02d.%d.xlsx", mes, ano)
 	if err := excel.SalvarPlanilhaEmDownloads(colaboradores, nomeArquivo); err != nil {
 		return "", fmt.Errorf("erro ao salvar planilha de resultado: %w", err)
 	}
