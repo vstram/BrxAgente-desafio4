@@ -224,6 +224,10 @@ func NewVRIdentificationStep(excelService *excel.Service, config VRWorkflowConfi
 }
 
 func (s *VRIdentificationStep) Execute(ctx *WorkflowContext) error {
+	if ctx == nil {
+		return fmt.Errorf("workflow context não pode ser nil")
+	}
+	
 	if ctx.Logger != nil {
 		ctx.Logger.Info("Identificando planilhas no diretório: " + s.config.PlanilhasDirectory)
 	}

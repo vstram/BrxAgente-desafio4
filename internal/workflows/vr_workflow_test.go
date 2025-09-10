@@ -1,7 +1,7 @@
 package workflows
 
 import (
-	// "context" // TODO: Usar quando necessário
+	"context"
 	"testing"
 	"time"
 
@@ -97,8 +97,14 @@ func TestVRWorkflow_StepExecution(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			step := tt.stepFunc()
-			// TODO: Corrigir NewWorkflowContext quando signature estiver definida
-			ctx := (*WorkflowContext)(nil)
+			// Criar um WorkflowContext válido em vez de nil usando o constructor
+			ctx := NewWorkflowContext(
+				context.Background(),
+				"test-workflow",
+				"test-execution-id",
+				map[string]interface{}{},
+				nil, // Logger pode ser nil
+			)
 
 			err := step.Execute(ctx)
 			if (err != nil) != tt.wantErr {
@@ -114,8 +120,14 @@ func TestVRProcessingResult_BuildResult(t *testing.T) {
 	}
 
 	workflow := NewVRWorkflow(nil, nil, nil, nil, config)
-	// TODO: Corrigir NewWorkflowContext quando signature estiver definida
-	ctx := (*WorkflowContext)(nil)
+	// Criar um WorkflowContext válido em vez de nil
+	ctx := NewWorkflowContext(
+		context.Background(),
+		"test-workflow",
+		"test-execution-id",
+		map[string]interface{}{},
+		nil, // Logger pode ser nil
+	)
 
 	// Simular dados no contexto
 	ctx.Set("total_colaboradores", 1000)
@@ -165,8 +177,14 @@ func TestVRWorkflowSteps_Configuration(t *testing.T) {
 
 	// Testar step de insights
 	insightsStep := NewVRInsightsStep(nil, config)
-	// TODO: Corrigir NewWorkflowContext quando signature estiver definida
-	ctx := (*WorkflowContext)(nil)
+	// Criar um WorkflowContext válido em vez de nil
+	ctx := NewWorkflowContext(
+		context.Background(),
+		"test-workflow",
+		"test-execution-id",
+		map[string]interface{}{},
+		nil, // Logger pode ser nil
+	)
 
 	if !insightsStep.CanSkip(ctx) {
 		t.Error("Insights step deveria ser pulado quando GerarInsights = false")
@@ -215,8 +233,14 @@ func TestVRWorkflow_ErrorHandling(t *testing.T) {
 	}
 
 	workflow := NewVRWorkflow(nil, nil, nil, nil, config)
-	// TODO: Corrigir NewWorkflowContext quando signature estiver definida
-	ctx := (*WorkflowContext)(nil)
+	// Criar um WorkflowContext válido em vez de nil
+	ctx := NewWorkflowContext(
+		context.Background(),
+		"test-workflow",
+		"test-execution-id",
+		map[string]interface{}{},
+		nil, // Logger pode ser nil
+	)
 
 	// Simular execução que deve falhar no primeiro step
 	err := workflow.Execute(ctx)
@@ -244,8 +268,14 @@ func TestVRWorkflow_ContextUsage(t *testing.T) {
 
 	// TODO: Corrigir quando services estiverem disponíveis
 	_ = NewVRWorkflow(nil, nil, nil, nil, config)
-	// TODO: Corrigir NewWorkflowContext quando signature estiver definida
-	ctx := (*WorkflowContext)(nil)
+	// Criar um WorkflowContext válido em vez de nil
+	ctx := NewWorkflowContext(
+		context.Background(),
+		"test-workflow",
+		"test-execution-id",
+		map[string]interface{}{},
+		nil, // Logger pode ser nil
+	)
 
 	// Simular dados que seriam adicionados pelos steps
 	ctx.Set("planilhas_encontradas", []string{"teste.xlsx"})
