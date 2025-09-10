@@ -20,10 +20,10 @@ func GerarPlanilhaResultado(colaboradores map[string]*modelo.Colaborador, caminh
 	sheetName := "Planilha1"
 	f.SetSheetName("Sheet1", sheetName)
 
-	// Criar os cabeçalhos da planilha (sem NOME, conforme Nota de Confidencialidade)
+	// Criar os cabeçalhos da planilha conforme modelo VR MENSAL 05.2025.xlsx
 	cabecalhos := []string{
-		"EMPRESA", "MATRICULA", "CARGO", "SINDICATO",
-		"REF", "DIAS", "VR", "DESCONTO", "VALOR",
+		"Matricula", "Admissão", "Sindicato do Colaborador", "Competência",
+		"Dias", "VALOR DIÁRIO VR", "TOTAL", "Custo empresa", "Desconto profissional", "OBS GERAL",
 	}
 
 	// Preencher os cabeçalhos
@@ -35,17 +35,18 @@ func GerarPlanilhaResultado(colaboradores map[string]*modelo.Colaborador, caminh
 	// Preencher os dados dos colaboradores
 	linha := 2
 	for _, colaborador := range colaboradores {
-		// Preencher os dados do colaborador (sem NOME, conforme Nota de Confidencialidade)
+		// Preencher os dados do colaborador conforme modelo da planilha
 		dados := []interface{}{
-			colaborador.Empresa,
-			colaborador.Matricula,
-			colaborador.Cargo,
-			colaborador.Sindicato,
-			"05/2025", // REF (mês de referência)
-			colaborador.DiasUteisEfetivos,
-			fmt.Sprintf("R$ %.2f", colaborador.ValorTotalVR),     // VR (valor total)
-			fmt.Sprintf("R$ %.2f", colaborador.ValorColaborador), // DESCONTO (20% do valor total)
-			fmt.Sprintf("R$ %.2f", colaborador.ValorEmpresa),     // VALOR (80% do valor total)
+			colaborador.Matricula,                                // Matricula
+			colaborador.DataAdmissao.Format("02-01-06"),         // Admissão (formato dd-mm-yy)
+			colaborador.Sindicato,                               // Sindicato do Colaborador
+			"05/2025",                                           // Competência
+			fmt.Sprintf("%.2f", float64(colaborador.DiasUteisEfetivos)), // Dias
+			37.50,                                               // VALOR DIÁRIO VR (valor fixo conforme planilha)
+			colaborador.ValorTotalVR,                           // TOTAL
+			colaborador.ValorEmpresa,                           // Custo empresa
+			colaborador.ValorColaborador,                       // Desconto profissional
+			"",                                                 // OBS GERAL (vazio por padrão)
 		}
 
 		// Preencher os dados na linha correspondente
@@ -89,7 +90,7 @@ func GerarPlanilhaResultadoComTemplate(colaboradores map[string]*modelo.Colabora
 		}
 
 		// Limpar a linha
-		for col := 1; col <= 9; col++ { // 9 colunas agora (sem NOME)
+		for col := 1; col <= 10; col++ { // 10 colunas conforme novo modelo
 			cell, _ := excelize.CoordinatesToCellName(col, linha)
 			f.SetCellValue(sheetName, cell, "")
 		}
@@ -100,17 +101,18 @@ func GerarPlanilhaResultadoComTemplate(colaboradores map[string]*modelo.Colabora
 	// Preencher os dados dos colaboradores começando da linha 2
 	linha = 2
 	for _, colaborador := range colaboradores {
-		// Preencher os dados do colaborador (sem NOME, conforme Nota de Confidencialidade)
+		// Preencher os dados do colaborador conforme modelo da planilha
 		dados := []interface{}{
-			colaborador.Empresa,
-			colaborador.Matricula,
-			colaborador.Cargo,
-			colaborador.Sindicato,
-			"05/2025", // REF (mês de referência)
-			colaborador.DiasUteisEfetivos,
-			colaborador.ValorTotalVR,     // VR (valor total)
-			colaborador.ValorColaborador, // DESCONTO (20% do valor total)
-			colaborador.ValorEmpresa,     // VALOR (80% do valor total)
+			colaborador.Matricula,                                // Matricula
+			colaborador.DataAdmissao.Format("02-01-06"),         // Admissão (formato dd-mm-yy)
+			colaborador.Sindicato,                               // Sindicato do Colaborador
+			"05/2025",                                           // Competência
+			fmt.Sprintf("%.2f", float64(colaborador.DiasUteisEfetivos)), // Dias
+			37.50,                                               // VALOR DIÁRIO VR (valor fixo conforme planilha)
+			colaborador.ValorTotalVR,                           // TOTAL
+			colaborador.ValorEmpresa,                           // Custo empresa
+			colaborador.ValorColaborador,                       // Desconto profissional
+			"",                                                 // OBS GERAL (vazio por padrão)
 		}
 
 		// Preencher os dados na linha correspondente
