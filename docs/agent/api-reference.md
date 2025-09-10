@@ -31,9 +31,16 @@ type App struct {
     cfg                  *config.Config
     chat                 *chat.Chat
     colaboradores        map[string]*modelo.Colaborador
-    agentStatus         string
-    currentWorkflow     *WorkflowInfo
-    // ... outros campos
+    vrAgent              *agent.VRAgent
+    agentStatus          string
+    currentWorkflow      *WorkflowInfo
+    
+    // Intelligence systems
+    trendPredictor       *intelligence.TrendPredictor
+    patternAnalyzer      *intelligence.PatternAnalyzer
+    forecaster           *intelligence.Forecaster
+    recommendationEngine *intelligence.RecommendationEngine
+    historicalData       []predicoes.HistoricalVRData
 }
 ```
 
@@ -140,6 +147,36 @@ if (isValid) {
   console.log('Diretório válido!');
 } else {
   console.error('Diretório inválido:', error);
+}
+```
+
+---
+
+### **RealizarAnaliseOrquestrada**
+Executa todo o processo de análise VR de forma automatizada.
+
+```go
+func (a *App) RealizarAnaliseOrquestrada(diretorioPlanilhas string) (string, error)
+```
+
+**Parâmetros:**
+- `diretorioPlanilhas` (string): Caminho para o diretório das planilhas
+
+**Processo executado:**
+1. Validação do diretório
+2. Extração do mês/ano da planilha DESLIGADOS
+3. Consolidação das bases de dados
+4. Aplicação das regras de negócio
+5. Geração da planilha final
+6. Configuração do contexto do chat
+
+**Exemplo:**
+```typescript
+try {
+  const resultado = await window.go.main.App.RealizarAnaliseOrquestrada('/path/to/planilhas');
+  console.log(resultado); // "Análise concluída com sucesso! X colaboradores processados..."
+} catch (error) {
+  console.error('Erro no processamento:', error);
 }
 ```
 

@@ -45,11 +45,12 @@ A aplicação abrirá uma janela desktop com interface gráfica moderna.
 
 ### **Tela Principal**
 Ao abrir a aplicação, você verá:
-- 📊 **Dashboard Principal**: Status do agente e métricas
-- 🗂️ **Seletor de Diretório**: Para escolher pasta com planilhas Excel
-- ⚙️ **Configurações**: API keys e parâmetros
-- 💬 **Chat Inteligente**: Para fazer perguntas ao agente
-- 🔄 **Workflows**: Botões para executar processamentos
+- 🏷️ **Cabeçalho**: Logo e título da aplicação
+- 📁 **Seção de Seleção**: Botão para escolher pasta com planilhas Excel
+- ▶️ **Seção de Processamento**: Botão para iniciar processamento (aparece após seleção válida)
+- 📊 **Área de Resultados**: Exibe progresso e resultados do processamento
+- ⚙️ **Configurações**: Modal acessível via botão no rodapé
+- 💬 **Chat Inteligente**: Painel expansível na parte inferior da tela
 
 ### **Cenário 1: Configuração Inicial**
 *"Primeira vez usando o sistema"*
@@ -66,44 +67,50 @@ Ao abrir a aplicação, você verá:
 ### **Cenário 2: Processamento de VR**
 *"Preciso processar o VR de outubro/2025"*
 
-1. **Coloque suas planilhas** na pasta selecionada:
-   - colaboradores.xlsx
-   - afastamentos.xlsx  
-   - feriados.xlsx
+1. **Organize suas planilhas** em uma pasta:
+   - Arquivo de colaboradores (.xlsx)
+   - Arquivo de afastamentos (.xlsx)  
+   - Arquivo de feriados (.xlsx)
+   - Arquivo de desligamentos (.xlsx)
 
-2. **Na tela principal, clique em "Processar VR"**
+2. **Na tela principal, clique em "Selecionar Diretório"**
 
-3. **Acompanhe o progresso** na interface:
-   - ✅ Lendo planilhas... (30s)
-   - ✅ Validando dados... (45s)
-   - 🔍 Detectando anomalias... (2m)
-   - ⚙️ Calculando VR... (3m)
-   - 📊 Gerando relatórios... (1m)
+3. **Escolha a pasta** com suas planilhas organizadas
 
-4. **Baixe os resultados** através dos botões na interface
+4. **Aguarde a validação** - aparecerá "Válido" se a pasta contém arquivos Excel
+
+5. **Clique em "Iniciar Processamento"** quando disponível
+
+6. **Acompanhe o progresso** na área de resultados:
+   - Status: "Análise em andamento, por favor aguarde..."
+   - Quando concluído: mostra número de colaboradores processados
+   - Arquivo é salvo automaticamente na pasta Downloads
 
 ### **Cenário 3: Chat Inteligente**
-*"Tenho dúvidas sobre políticas de VR"*
+*"Tenho dúvidas sobre dados processados"*
 
-1. **Clique na aba "💬 Chat"** na interface
-2. **Digite suas perguntas** na caixa de texto
-3. **Receba respostas inteligentes** do agente
+1. **Processe os dados primeiro** (Cenário 2)
+2. **Localize o chat** na parte inferior da tela
+3. **Clique para expandir** o painel do chat
+4. **Digite suas perguntas** na caixa de texto
+5. **Aguarde a resposta** do agente de IA
 
 **Exemplos de perguntas:**
 ```
-Você: "Quantos colaboradores do SINDPD temos ativos?"
-Agente: "Encontrei 247 colaboradores do SINDPD ativos. 
-        Destes, 234 são elegíveis para VR. 
-        Deseja ver a distribuição por setor?"
+Você: "Quantos colaboradores foram processados?"
+Agente: "Foram processados X colaboradores no último processamento."
 
-Você: "Um colaborador admitido no dia 20 tem direito a VR integral?"
-Agente: "Colaboradores admitidos após o dia 15 têm direito a VR 
-        proporcional. Para admissão no dia 20, o cálculo seria:
-        - Dias úteis restantes: 8 dias
-        - VR proporcional: R$ 184,00 (considerando VR base R$ 460,00)
-        
-        Fonte: Política interna VR-2025, seção 3.2"
+Você: "Qual o valor total de VR calculado?"
+Agente: "O valor total calculado foi de R$ X,XX baseado nos 
+        dados consolidados das planilhas."
+
+Você: "Explique como foi feito o cálculo?"
+Agente: "O cálculo foi realizado considerando os dias úteis 
+        do mês, descontando afastamentos e feriados conforme 
+        as regras de cada sindicato."
 ```
+
+**Nota:** O chat precisa de dados processados para funcionar com contexto completo.
 
 ### **Cenário 4: Análise de Anomalias**
 *"Suspeito que há problemas nos dados deste mês"*

@@ -17,49 +17,52 @@ Este guia detalha todas as funcionalidades da aplicação desktop BrxAgente e co
 
 ### **Layout Principal**
 
-A aplicação desktop BrxAgente possui uma interface moderna dividida em seções:
+A aplicação desktop BrxAgente possui uma interface simples e funcional:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  🤖 BrxAgente - Agente de IA para VR               │
-├─────────────────┬───────────────────────────────────┤
-│                 │  📊 Dashboard Principal           │
-│  📋 Menu        │  ┌─────────────────────────────┐   │
-│  • Dashboard    │  │ Status: 🟢 Ativo           │   │
-│  • Processar VR │  │ Último processo: 2h atrás   │   │
-│  • Chat         │  │ Colaboradores: 2.847        │   │
-│  • Configurações│  └─────────────────────────────┘   │
-│  • Relatórios   │                                   │
-│  • Ajuda        │  🔄 Workflow em Execução          │
-│                 │  ┌─────────────────────────────┐   │
-│                 │  │ ⚙️ Processando VR Outubro    │   │
-│                 │  │ Progresso: ████████░░ 80%   │   │
-│                 │  │ Etapa atual: Cálculos       │   │
-│                 │  └─────────────────────────────┘   │
-└─────────────────┴───────────────────────────────────┘
+│  🏷️ Automação de VR/VA                              │
+│  Sistema de processamento automatizado              │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  📁 Seleção de Planilhas                           │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │ [📁 Selecionar Diretório]                      │ │
+│  │ Diretório: /caminho/para/planilhas             │ │
+│  │ Status: ✅ Válido                               │ │
+│  └─────────────────────────────────────────────────┘ │
+│                                                     │
+│  ▶️ Processamento                                   │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │ [▶️ Iniciar Processamento]                      │ │
+│  └─────────────────────────────────────────────────┘ │
+│                                                     │
+│  📊 Resultados                                      │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │ Status: Análise concluída com sucesso!         │ │
+│  │ X colaboradores processados                     │ │
+│  │ Arquivo salvo em Downloads                      │ │
+│  └─────────────────────────────────────────────────┘ │
+│                                                     │
+├─────────────────────────────────────────────────────┤
+│ [⚙️ Configurações]               💬 Chat (expandir) │
+└─────────────────────────────────────────────────────┘
 ```
 
 ### **Seções da Interface**
 
-#### **1. Menu Principal (Sidebar)**
-- 📊 **Dashboard**: Visão geral e status
-- 🔄 **Processar VR**: Workflows de processamento
-- 💬 **Chat**: Consultor inteligente
-- ⚙️ **Configurações**: API keys e parâmetros
-- 📊 **Relatórios**: Resultados e análises
-- ❓ **Ajuda**: Documentação e suporte
+#### **1. Cabeçalho**
+- 🏷️ **Logo e Título**: Identificação da aplicação
+- 📝 **Subtítulo**: Descrição do propósito
 
 #### **2. Área Principal**
-- **Status Cards**: Métricas em tempo real
-- **Progress Bar**: Acompanhamento de workflows
-- **Action Buttons**: Botões para ações principais
-- **Data Tables**: Visualização de dados processados
+- **Seleção de Planilhas**: Botão para escolher diretório
+- **Processamento**: Botão para iniciar análise (aparece após seleção válida)
+- **Resultados**: Exibe progresso e resultados do processamento
 
-#### **3. Barra de Status (Footer)**
-- 🟢 **Conexão**: Status da API LLM
-- 📡 **Cache**: Hit ratio e performance
-- 💾 **Dados**: Último backup/processamento
-- ⚠️ **Alertas**: Notificações importantes
+#### **3. Rodapé**
+- ⚙️ **Configurações**: Acesso ao modal de configuração
+- 💬 **Chat**: Painel expansível de chat inteligente
 
 ## 🔍 Funcionalidades Principais
 

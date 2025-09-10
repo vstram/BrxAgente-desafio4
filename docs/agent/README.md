@@ -14,36 +14,37 @@ Em vez de processar planilhas manualmente por horas, o agente:
 - 📊 **Gera relatórios** inteligentes com insights automáticos
 - 🚀 **Otimiza performance** com cache e processamento paralelo
 
-## 🎯 Principais Funcionalidades
+## 🎯 Principais Funcionalidades Implementadas
 
-### 🔍 **Auditor Inteligente**
-- Detecta discrepâncias em valores de VR vs. dias úteis
-- Identifica colaboradores com padrões anômalos
-- Gera relatórios de exceções com sugestões de correção
-- Fornece confidence score (0-100%) para cada validação
+### 🔍 **Processamento Automatizado de VR**
+- Leitura e consolidação de planilhas Excel automatizada
+- Cálculo de VR com base nas regras de negócio configuradas
+- Validação de dados de colaboradores, afastamentos e feriados
+- Geração de planilha final formatada automaticamente
 
-### ⚙️ **Orquestrador de Workflows**
-- Executa sequência completa: validação → cálculo → relatório → notificação
-- Para automaticamente em caso de anomalias críticas
-- Permite intervenção manual em pontos específicos
-- Mantém log detalhado de todas as operações
+### 💬 **Chat Inteligente com IA**
+- Responde perguntas sobre dados de colaboradores e cálculos de VR
+- Integração com OpenAI (GPT) e Ollama (modelos locais)
+- Contexto baseado nos dados processados
+- Interface de chat integrada na aplicação desktop
 
-### 💬 **Consultor de Políticas**
-- Responde perguntas sobre elegibilidade, cálculos e exceções
-- Cita fontes específicas (regulamentações, políticas internas)
-- Fornece exemplos práticos para cada resposta
-- Mantém contexto da conversa
+### 📊 **Análise Preditiva Avançada** 
+- Sistema completo de predição de tendências de consumo
+- Análise de padrões históricos de VR por sindicato
+- Geração de recomendações baseadas em dados
+- Forecasting para planejamento de orçamento
 
-### 📊 **Análise Preditiva** 
-- Prediz tendências de consumo de VR
-- Identifica colaboradores em risco de inconsistências
-- Otimiza cronograma de processamento
-- Benchmarking automático com períodos anteriores
+### ⚙️ **Sistema de Workflows (Básico)**
+- Workflows simulados para processamento de VR
+- Monitoramento básico de status de execução
+- Logs de sistema para auditoria
+- API preparada para workflows avançados
 
-### 🛡️ **Assistente de Compliance**
-- Verificação automática de conformidade regulatória
-- Alertas proativos sobre mudanças na legislação
-- Documentação automática para auditorias
+### 🛡️ **Segurança e Configuração**
+- Gerenciamento seguro de chaves de API
+- Configuração flexível para diferentes provedores LLM
+- Validação de dados de entrada
+- Sistema de logs para auditoria
 
 ## 🚀 Quick Start
 
@@ -67,10 +68,10 @@ wails dev
 5. **Testar conexão** e validar arquivos
 
 ### 3. **Uso do Sistema**
-- **Dashboard**: Visualize métricas e status do agente
-- **Workflows**: Execute processamentos automatizados
-- **Chat**: Faça perguntas inteligentes sobre os dados  
-- **Relatórios**: Acesse análises e insights gerados
+- **Interface Principal**: Selecione diretório e execute processamento de VR
+- **Chat Inteligente**: Faça perguntas sobre dados processados
+- **Configurações**: Configure chaves de API e parâmetros do sistema
+- **Análise Preditiva**: Access através da API do backend
 
 ## 📈 Benefícios Comprovados
 
@@ -116,33 +117,34 @@ graph TB
 
 ## 🎯 Casos de Uso Principais
 
-### **Processamento Mensal Automático**
+### **Processamento Mensal de VR**
 1. **Abrir aplicação desktop**
-2. **Menu "🔄 Workflows"** → **"Processamento Completo de VR"**
-3. **Selecionar pasta** das planilhas do mês
-4. **Configurar parâmetros** (sindicatos, validação, etc.)
-5. **Clicar "▶️ Iniciar"** e acompanhar progresso
+2. **Clicar "Selecionar Diretório"** e escolher pasta com planilhas
+3. **Aguardar validação** do diretório selecionado
+4. **Clicar "Iniciar Processamento"** quando disponível
+5. **Aguardar conclusão** do processamento automatizado
 
 **Resultado:**
 ```
-✅ 2.847 colaboradores processados
-✅ 3 anomalias detectadas e corrigidas  
-✅ Relatório gerado: output/vr-setembro-2025.xlsx
-✅ Backup automático realizado
+✅ X colaboradores processados
+✅ Planilha gerada automaticamente na pasta Downloads
+✅ Dados carregados no contexto do chat para consultas
+✅ Logs de processamento disponíveis
 ```
 
-### **Análise de Anomalias**
-1. **Menu "🔄 Workflows"** → **"Detecção de Anomalias"**
-2. **Executar análise** nos dados processados
-3. **Revisar anomalias** detectadas na interface
-4. **Aprovar ou corrigir** cada caso
+### **Consultas via Chat Inteligente**  
+1. **Acessar o chat** na parte inferior da aplicação
+2. **Aguardar carregamento** do contexto após processamento
+3. **Fazer perguntas** sobre os dados processados:
+   - "Quantos colaboradores foram processados?"
+   - "Qual o valor total de VR calculado?"
+   - "Há alguma anomalia nos dados?"
 
-### **Consultoria Inteligente**  
-1. **Menu "💬 Chat"** para acessar assistente IA
-2. **Fazer perguntas** sobre políticas e dados:
-   - "Se um colaborador foi admitido no dia 15, ele tem direito a VR integral?"
-   - "Qual a diferença de cálculo entre SINDPD e SINDAC?"
-   - "Quantos colaboradores estão em período de experiência?"
+### **Análise Preditiva (API)**
+1. **Usar métodos da API** do backend
+2. **Adicionar dados históricos** via `AddHistoricalData`
+3. **Executar análises** com `PredictTrends` ou `GenerateForecast`
+4. **Obter recomendações** via `GenerateRecommendations`
 
 ## 💡 Dicas Importantes
 
