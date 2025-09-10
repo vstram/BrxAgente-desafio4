@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"BrxAgente-desafio4/internal/calculo"
 	"BrxAgente-desafio4/internal/excel"
@@ -20,6 +19,12 @@ func (a *App) RealizarAnaliseOrquestrada(diretorioPlanilhas string) (string, err
 		return "", fmt.Errorf("diretório de planilhas inválido")
 	}
 
+	// Extrair e validar o mês da planilha DESLIGADOS
+	mes, ano, err := calculo.ExtrairEValidarMesDesligados(diretorioPlanilhas)
+	if err != nil {
+		return "", fmt.Errorf("erro ao extrair mês da planilha DESLIGADOS: %w", err)
+	}
+
 	// Consolidar bases de dados
 	colaboradores, err := calculo.ConsolidarBases(diretorioPlanilhas)
 	if err != nil {
@@ -31,8 +36,8 @@ func (a *App) RealizarAnaliseOrquestrada(diretorioPlanilhas string) (string, err
 		return "", fmt.Errorf("nenhum colaborador encontrado para processar")
 	}
 
-	// Salvar planilha de resultado na pasta de Downloads
-	nomeArquivo := fmt.Sprintf("VR_Mensal_%s.xlsx", time.Now().Format("01.2006"))
+	// Salvar planilha de resultado na pasta de Downloads usando o mês extraído da planilha DESLIGADOS
+	nomeArquivo := fmt.Sprintf("VR_Mensal %02d.%d.xlsx", mes, ano)
 	if err := excel.SalvarPlanilhaEmDownloads(colaboradores, nomeArquivo); err != nil {
 		return "", fmt.Errorf("erro ao salvar planilha de resultado: %w", err)
 	}

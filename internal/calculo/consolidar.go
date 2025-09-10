@@ -852,6 +852,73 @@ func parseDataAdmissao(dataStr string) (time.Time, error) {
 	return data, nil
 }
 
+// ExtrairEValidarMesDesligados extrai o mês da planilha DESLIGADOS e valida se todas as datas são do mesmo mês
+func ExtrairEValidarMesDesligados(diretorioPlanilhas string) (int, int, error) {
+	// Ler a planilha de DESLIGADOS
+	caminhoDesligados := filepath.Join(diretorioPlanilhas, "DESLIGADOS.xlsx")
+	fDesligados, err := excel.LerPlanilha(caminhoDesligados)
+	if err != nil {
+		return 0, 0, fmt.Errorf("erro ao ler planilha DESLIGADOS.xlsx: %w", err)
+	}
+	defer fDesligados.Close()
+
+	// Obter todas as linhas da primeira sheet
+	rows, err := fDesligados.GetRows(fDesligados.GetSheetList()[0])
+	if err != nil {
+		return 0, 0, fmt.Errorf("erro ao ler linhas da planilha DESLIGADOS: %w", err)
+	}
+
+	var primeiroMes, primeiroAno int
+	mesDefinido := false
+
+	// Processar cada linha (ignorando o cabeçalho)
+	for i, row := range rows {
+		// Ignorar a primeira linha (cabeçalho)
+		if i == 0 {
+			continue
+		}
+
+		// Verificar se a linha tem dados suficientes (pelo menos 2 colunas para ter a data)
+		if len(row) < 2 {
+			continue
+		}
+
+		// Extrair data de desligamento da coluna 1 (DATA DEMISSÃO)
+		dataDesligamentoStr := strings.TrimSpace(row[1])
+		if dataDesligamentoStr == "" {
+			continue
+		}
+
+		// Parse da data de desligamento
+		data, err := parseDataDesligamento(dataDesligamentoStr)
+		if err != nil {
+			// Ignorar datas inválidas
+			continue
+		}
+
+		mes := int(data.Month())
+		ano := data.Year()
+
+		if !mesDefinido {
+			// Primeira data válida encontrada
+			primeiroMes = mes
+			primeiroAno = ano
+			mesDefinido = true
+		} else {
+			// Verificar se a data é do mesmo mês/ano
+			if mes != primeiroMes || ano != primeiroAno {
+				return 0, 0, fmt.Errorf("erro de processamento: a coluna DATA DEMISSÃO contém datas de meses diferentes. Encontrado: %02d/%d e %02d/%d. Todas as datas devem ser do mesmo mês", primeiroMes, primeiroAno, mes, ano)
+			}
+		}
+	}
+
+	if !mesDefinido {
+		return 0, 0, fmt.Errorf("nenhuma data válida encontrada na coluna DATA DEMISSÃO da planilha DESLIGADOS.xlsx")
+	}
+
+	return primeiroMes, primeiroAno, nil
+}
+
 // calcularValoresVR calcula os valores de VR para todos os colaboradores
 func calcularValoresVR(colaboradores map[string]*modelo.Colaborador, valorPorSindicato map[string]float64, diasUteisPorSindicato map[string]int) error {
 	// Data de referência para cálculo (maio de 2025)
