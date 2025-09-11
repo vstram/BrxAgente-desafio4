@@ -346,19 +346,20 @@ func TestVRAgent_QuestionRouting(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Testar apenas a função de classificação
-			isPolicy := agent.isPolicyQuestion(tt.question)
+			// Testar usando o novo classificador
+			classification := agent.ClassifyQuestion(tt.question)
+			isPolicy := classification.QuestionType == PolicyQuestion
 			
 			if isPolicy != tt.expectPolicy {
-				t.Errorf("isPolicyQuestion('%s') = %v, esperado %v (%s)", 
-					tt.question, isPolicy, tt.expectPolicy, tt.description)
+				t.Errorf("ClassifyQuestion('%s') = %s, esperado policy=%v (%s)", 
+					tt.question, classification.QuestionType.String(), tt.expectPolicy, tt.description)
 			}
 		})
 	}
 }
 
-// TestVRAgent_isPolicyQuestion testa especificamente a função de classificação
-func TestVRAgent_isPolicyQuestion(t *testing.T) {
+// TestVRAgent_QuestionClassification testa especificamente a função de classificação
+func TestVRAgent_QuestionClassification(t *testing.T) {
 	// Criar agente de teste
 	config := DefaultAgentConfig()
 	chatSvc := chat.NewChat(nil)
@@ -367,36 +368,51 @@ func TestVRAgent_isPolicyQuestion(t *testing.T) {
 		t.Fatalf("Erro ao criar agente: %v", err)
 	}
 
-	// Testes de palavras-chave específicas
+	// Testes de palavras-chave específicas para políticas
 	policyQuestions := []string{
 		"direito", "política", "regra", "elegível", "pode", "deve",
 		"diretores", "estagiários", "aprendizes", "terceirizados",
 		"licença", "afastamento", "férias", "admissão", "desligamento",
-		"como calcular", "qual valor", "quanto vale", "regras de",
 		"política de", "tem direito", "não tem direito", "excluído",
 		"incluído", "benefício", "vale refeição", "vale alimentação",
 	}
 
 	for _, keyword := range policyQuestions {
 		question := fmt.Sprintf("Pergunta com %s sobre VR", keyword)
-		if !agent.isPolicyQuestion(question) {
-			t.Errorf("Pergunta com palavra-chave '%s' deveria ser classificada como política", keyword)
+		classification := agent.ClassifyQuestion(question)
+		if classification.QuestionType != PolicyQuestion {
+			t.Errorf("Pergunta com palavra-chave '%s' deveria ser classificada como PolicyQuestion, obtido: %s", 
+				keyword, classification.QuestionType.String())
 		}
 	}
 
-	// Testes de perguntas que NÃO são sobre políticas
-	nonPolicyQuestions := []string{
-		"Quantos colaboradores?",
-		"Total de VR",
-		"Estatísticas de processamento",
-		"Resumo dos dados",
-		"Matrícula 12345",
-		"Processados este mês",
+	// Testes de palavras-chave específicas para cálculos
+	calculationQuestions := []string{
+		"como calcular", "qual valor", "quanto vale", "fórmula", "cálculo",
 	}
 
-	for _, question := range nonPolicyQuestions {
-		if agent.isPolicyQuestion(question) {
-			t.Errorf("Pergunta '%s' NÃO deveria ser classificada como política", question)
+	for _, keyword := range calculationQuestions {
+		question := fmt.Sprintf("Pergunta com %s sobre VR", keyword)
+		classification := agent.ClassifyQuestion(question)
+		if classification.QuestionType != CalculationQuestion {
+			t.Errorf("Pergunta com palavra-chave '%s' deveria ser classificada como CalculationQuestion, obtido: %s", 
+				keyword, classification.QuestionType.String())
+		}
+	}
+
+	// Testes de perguntas sobre dados processados
+	dataQuestions := []string{
+		"Quantos colaboradores processados?",
+		"Total de VR processado",
+		"Lista de colaboradores processados",
+		"Dados processados este mês",
+	}
+
+	for _, question := range dataQuestions {
+		classification := agent.ClassifyQuestion(question)
+		if classification.QuestionType != ProcessedDataQuestion {
+			t.Errorf("Pergunta '%s' deveria ser classificada como ProcessedDataQuestion, obtido: %s", 
+				question, classification.QuestionType.String())
 		}
 	}
 }

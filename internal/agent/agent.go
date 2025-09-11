@@ -38,6 +38,9 @@ type VRAgent struct {
 	// Sistema de detecção de anomalias
 	analyzer *intelligence.Analyzer
 
+	// Sistema de classificação de perguntas
+	questionClassifier *QuestionClassifier
+
 	// Estado do agente
 	enabled   bool
 	status    AgentStatus
@@ -85,15 +88,16 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 	}
 
 	agent := &VRAgent{
-		config:       agentConfig,
-		memory:       memoryBuffer,
-		chatService:  chatSvc,
-		excelService: excelSvc,
-		toolRegistry: toolRegistry,
-		orchestrator: orchestrator,
-		analyzer:     analyzer,
-		enabled:      agentConfig.Enabled,
-		startTime:    time.Now(),
+		config:             agentConfig,
+		memory:             memoryBuffer,
+		chatService:        chatSvc,
+		excelService:       excelSvc,
+		toolRegistry:       toolRegistry,
+		orchestrator:       orchestrator,
+		analyzer:           analyzer,
+		questionClassifier: NewQuestionClassifier(),
+		enabled:            agentConfig.Enabled,
+		startTime:          time.Now(),
 		status: AgentStatus{
 			State:         "idle",
 			LastActivity:  time.Now(),
@@ -155,37 +159,52 @@ func (a *VRAgent) Ask(question string) (string, error) {
 
 	a.status.TotalRequests++
 
-	// Roteamento inteligente baseado no tipo de pergunta
-	if a.isPolicyQuestion(question) {
-		a.logger.Printf("Roteando pergunta para PolicyConsultantTool: %.50s...", question)
+	// Classificar pergunta usando o novo sistema inteligente
+	classification := a.questionClassifier.Classify(question)
+	
+	// Log da classificação para debugging
+	a.logger.Printf("Pergunta classificada como %s (confiança: %.2f): %.50s...",
+		classification.QuestionType.String(), classification.Confidence, question)
+
+	// Roteamento inteligente baseado na classificação
+	switch classification.QuestionType {
+	case PolicyQuestion, ComplianceQuestion:
+		a.logger.Printf("Roteando para PolicyConsultantTool: %.50s...", question)
 		return a.askWithPolicyTool(question)
-	}
-
-	// Continuar com implementação atual para dados processados
-	a.logger.Printf("Roteando pergunta para dados processados: %.50s...", question)
-	return a.askWithProcessedData(question)
-}
-
-// isPolicyQuestion identifica se a pergunta é sobre políticas/regras de VR
-func (a *VRAgent) isPolicyQuestion(question string) bool {
-	policyKeywords := []string{
-		"direito", "política", "regra", "elegível", "pode", "deve",
-		"diretores", "estagiários", "aprendizes", "terceirizados",
-		"licença", "afastamento", "férias", "admissão", "desligamento",
-		"como calcular", "qual valor", "quanto vale", "regras de",
-		"política de", "tem direito", "não tem direito", "excluído",
-		"incluído", "benefício", "vale refeição", "vale alimentação",
-		"dias úteis", "proporcional", "período", "mês quebrado",
-	}
-
-	questionLower := strings.ToLower(question)
-	for _, keyword := range policyKeywords {
-		if strings.Contains(questionLower, keyword) {
-			return true
+		
+	case CalculationQuestion:
+		// Para perguntas de cálculo, primeiro tentar PolicyConsultantTool 
+		// (que pode ter fórmulas), depois fallback para dados processados
+		a.logger.Printf("Roteando pergunta de cálculo para PolicyConsultantTool: %.50s...", question)
+		result, err := a.askWithPolicyTool(question)
+		if err != nil {
+			a.logger.Printf("Fallback: roteando para dados processados")
+			return a.askWithProcessedData(question)
 		}
+		return result, nil
+		
+	case WhatIfQuestion:
+		// Para cenários hipotéticos, usar PolicyConsultantTool com contexto especial
+		a.logger.Printf("Roteando pergunta hipotética para PolicyConsultantTool: %.50s...", question)
+		return a.askWithPolicyTool(question)
+		
+	case ProcessedDataQuestion:
+		a.logger.Printf("Roteando para dados processados: %.50s...", question)
+		return a.askWithProcessedData(question)
+		
+	default: // UnknownQuestion ou baixa confiança
+		// Para perguntas desconhecidas, tentar primeiro PolicyConsultantTool
+		// depois fallback para dados processados
+		a.logger.Printf("Pergunta não classificada, tentando PolicyConsultantTool: %.50s...", question)
+		result, err := a.askWithPolicyTool(question)
+		if err != nil {
+			a.logger.Printf("Fallback: roteando para dados processados")
+			return a.askWithProcessedData(question)
+		}
+		return result, nil
 	}
-	return false
 }
+
 
 // askWithPolicyTool processa pergunta usando PolicyConsultantTool
 func (a *VRAgent) askWithPolicyTool(question string) (string, error) {
@@ -637,4 +656,22 @@ func (a *VRAgent) GetAnomalyAnalyzer() *intelligence.Analyzer {
 // FormatAnomalyReport formata relatório de anomalias para exibição
 func (a *VRAgent) FormatAnomalyReport(report *intelligence.AnomalyReport) string {
 	return intelligence.FormatAnomalyReportForHuman(report)
+}
+
+// ClassifyQuestion classifica uma pergunta e retorna o resultado detalhado
+func (a *VRAgent) ClassifyQuestion(question string) ClassificationResult {
+	return a.questionClassifier.Classify(question)
+}
+
+// GetClassifierStats retorna estatísticas do classificador de perguntas
+func (a *VRAgent) GetClassifierStats() map[string]interface{} {
+	return a.questionClassifier.GetStats()
+}
+
+// SetClassifierThresholds permite ajustar thresholds do classificador
+func (a *VRAgent) SetClassifierThresholds(minConfidence, multiClass float64) {
+	a.questionClassifier.SetMinConfidenceThreshold(minConfidence)
+	a.questionClassifier.SetMultiClassThreshold(multiClass)
+	a.logger.Printf("Classifier thresholds atualizados: minConfidence=%.2f, multiClass=%.2f", 
+		minConfidence, multiClass)
 }
