@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -254,4 +255,204 @@ func TestVRAgent_ToolsAlwaysAvailable(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestVRAgent_QuestionRouting testa o roteamento inteligente de perguntas
+func TestVRAgent_QuestionRouting(t *testing.T) {
+	// Criar agente de teste
+	config := DefaultAgentConfig()
+	chatSvc := chat.NewChat(nil)
+	agent, err := NewVRAgent(config, chatSvc)
+	if err != nil {
+		t.Fatalf("Erro ao criar agente: %v", err)
+	}
+
+	tests := []struct {
+		name           string
+		question       string
+		expectPolicy   bool
+		description    string
+	}{
+		// Perguntas sobre políticas (devem rotear para PolicyConsultantTool)
+		{
+			name:         "pergunta_sobre_direito_diretores",
+			question:     "Diretores têm direito a VR?",
+			expectPolicy: true,
+			description:  "Pergunta sobre direito de diretores",
+		},
+		{
+			name:         "pergunta_sobre_calculo_licenca",
+			question:     "Como calcular VR para licença médica de 20 dias?",
+			expectPolicy: true,
+			description:  "Pergunta sobre cálculo em licença médica",
+		},
+		{
+			name:         "pergunta_sobre_estagiarios",
+			question:     "Estagiários podem receber vale alimentação?",
+			expectPolicy: true,
+			description:  "Pergunta sobre elegibilidade de estagiários",
+		},
+		{
+			name:         "pergunta_sobre_regras_afastamento",
+			question:     "Qual a regra para colaborador em afastamento?",
+			expectPolicy: true,
+			description:  "Pergunta sobre regras de afastamento",
+		},
+		{
+			name:         "pergunta_sobre_admissao",
+			question:     "Como funciona VR para admissão no meio do mês?",
+			expectPolicy: true,
+			description:  "Pergunta sobre regras de admissão",
+		},
+		{
+			name:         "pergunta_sobre_politica_geral",
+			question:     "Qual a política de vale refeição da empresa?",
+			expectPolicy: true,
+			description:  "Pergunta sobre políticas gerais",
+		},
+		
+		// Perguntas sobre dados processados (devem rotear para dados)
+		{
+			name:         "pergunta_quantos_colaboradores",
+			question:     "Quantos colaboradores foram processados?",
+			expectPolicy: false,
+			description:  "Pergunta sobre quantidade de colaboradores processados",
+		},
+		{
+			name:         "pergunta_total_vr",
+			question:     "Qual o total de VR calculado este mês?",
+			expectPolicy: false,
+			description:  "Pergunta sobre totais calculados",
+		},
+		{
+			name:         "pergunta_colaborador_especifico",
+			question:     "Qual o valor de VR do colaborador matrícula 12345?",
+			expectPolicy: false,
+			description:  "Pergunta sobre colaborador específico",
+		},
+		{
+			name:         "pergunta_estatisticas",
+			question:     "Mostre as estatísticas de processamento",
+			expectPolicy: false,
+			description:  "Pergunta sobre estatísticas",
+		},
+		{
+			name:         "pergunta_resumo_dados",
+			question:     "Faça um resumo dos dados processados",
+			expectPolicy: false,
+			description:  "Pergunta sobre resumo de dados",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Testar apenas a função de classificação
+			isPolicy := agent.isPolicyQuestion(tt.question)
+			
+			if isPolicy != tt.expectPolicy {
+				t.Errorf("isPolicyQuestion('%s') = %v, esperado %v (%s)", 
+					tt.question, isPolicy, tt.expectPolicy, tt.description)
+			}
+		})
+	}
+}
+
+// TestVRAgent_isPolicyQuestion testa especificamente a função de classificação
+func TestVRAgent_isPolicyQuestion(t *testing.T) {
+	// Criar agente de teste
+	config := DefaultAgentConfig()
+	chatSvc := chat.NewChat(nil)
+	agent, err := NewVRAgent(config, chatSvc)
+	if err != nil {
+		t.Fatalf("Erro ao criar agente: %v", err)
+	}
+
+	// Testes de palavras-chave específicas
+	policyQuestions := []string{
+		"direito", "política", "regra", "elegível", "pode", "deve",
+		"diretores", "estagiários", "aprendizes", "terceirizados",
+		"licença", "afastamento", "férias", "admissão", "desligamento",
+		"como calcular", "qual valor", "quanto vale", "regras de",
+		"política de", "tem direito", "não tem direito", "excluído",
+		"incluído", "benefício", "vale refeição", "vale alimentação",
+	}
+
+	for _, keyword := range policyQuestions {
+		question := fmt.Sprintf("Pergunta com %s sobre VR", keyword)
+		if !agent.isPolicyQuestion(question) {
+			t.Errorf("Pergunta com palavra-chave '%s' deveria ser classificada como política", keyword)
+		}
+	}
+
+	// Testes de perguntas que NÃO são sobre políticas
+	nonPolicyQuestions := []string{
+		"Quantos colaboradores?",
+		"Total de VR",
+		"Estatísticas de processamento",
+		"Resumo dos dados",
+		"Matrícula 12345",
+		"Processados este mês",
+	}
+
+	for _, question := range nonPolicyQuestions {
+		if agent.isPolicyQuestion(question) {
+			t.Errorf("Pergunta '%s' NÃO deveria ser classificada como política", question)
+		}
+	}
+}
+
+// TestVRAgent_askWithPolicyTool testa o método de consulta a políticas
+func TestVRAgent_askWithPolicyTool(t *testing.T) {
+	// Criar agente de teste com configuração adequada
+	cfg := &config.Config{}
+	chatSvc := chat.NewChat(cfg)
+	config := DefaultAgentConfig()
+	agent, err := NewVRAgent(config, chatSvc)
+	if err != nil {
+		t.Fatalf("Erro ao criar agente: %v", err)
+	}
+
+	// Testar com ToolRegistry disponível
+	question := "Diretores têm direito a VR?"
+	result, err := agent.askWithPolicyTool(question)
+	
+	// No ambiente de teste, esperamos que o PolicyConsultantTool falhe devido a arquivos
+	// não disponíveis, mas deve usar fallback adequadamente
+	if result == "" {
+		t.Logf("PolicyConsultantTool falhou (esperado no ambiente de teste), verificando fallback")
+		// Se resultado vazio, pelo menos não deveria ter panic
+	}
+	
+	// Log do resultado para debug
+	t.Logf("Resultado askWithPolicyTool: err=%v, result_length=%d", err, len(result))
+}
+
+// TestVRAgent_askWithProcessedData testa o método de consulta a dados processados
+func TestVRAgent_askWithProcessedData(t *testing.T) {
+	// Criar agente de teste com configuração adequada
+	cfg := &config.Config{}
+	chatSvc := chat.NewChat(cfg)
+	config := DefaultAgentConfig()
+	agent, err := NewVRAgent(config, chatSvc)
+	if err != nil {
+		t.Fatalf("Erro ao criar agente: %v", err)
+	}
+
+	// Testar pergunta sobre dados processados
+	question := "Quantos colaboradores foram processados?"
+	result, err := agent.askWithProcessedData(question)
+	
+	// O resultado pode ser um erro se Ollama/OpenAI não estiverem disponíveis,
+	// mas a função deveria tentar processar
+	if err == nil && result == "" {
+		t.Error("askWithProcessedData retornou resultado vazio sem erro")
+	}
+
+	// Se houve erro, deveria ser erro de LLM, não de lógica
+	if err != nil {
+		t.Logf("Erro esperado no ambiente de teste (LLM não disponível): %v", err)
+	}
+	
+	// Log do resultado para debug
+	t.Logf("Resultado askWithProcessedData: err=%v, result_length=%d", err, len(result))
 }

@@ -143,7 +143,7 @@ func (a *VRAgent) setupLLMChain() error {
 	return nil
 }
 
-// Ask faz uma pergunta ao agente e retorna a resposta
+// Ask faz uma pergunta ao agente e retorna a resposta com roteamento inteligente
 func (a *VRAgent) Ask(question string) (string, error) {
 	if !a.enabled {
 		return "", fmt.Errorf("agente está desabilitado")
@@ -155,6 +155,61 @@ func (a *VRAgent) Ask(question string) (string, error) {
 
 	a.status.TotalRequests++
 
+	// Roteamento inteligente baseado no tipo de pergunta
+	if a.isPolicyQuestion(question) {
+		a.logger.Printf("Roteando pergunta para PolicyConsultantTool: %.50s...", question)
+		return a.askWithPolicyTool(question)
+	}
+
+	// Continuar com implementação atual para dados processados
+	a.logger.Printf("Roteando pergunta para dados processados: %.50s...", question)
+	return a.askWithProcessedData(question)
+}
+
+// isPolicyQuestion identifica se a pergunta é sobre políticas/regras de VR
+func (a *VRAgent) isPolicyQuestion(question string) bool {
+	policyKeywords := []string{
+		"direito", "política", "regra", "elegível", "pode", "deve",
+		"diretores", "estagiários", "aprendizes", "terceirizados",
+		"licença", "afastamento", "férias", "admissão", "desligamento",
+		"como calcular", "qual valor", "quanto vale", "regras de",
+		"política de", "tem direito", "não tem direito", "excluído",
+		"incluído", "benefício", "vale refeição", "vale alimentação",
+		"dias úteis", "proporcional", "período", "mês quebrado",
+	}
+
+	questionLower := strings.ToLower(question)
+	for _, keyword := range policyKeywords {
+		if strings.Contains(questionLower, keyword) {
+			return true
+		}
+	}
+	return false
+}
+
+// askWithPolicyTool processa pergunta usando PolicyConsultantTool
+func (a *VRAgent) askWithPolicyTool(question string) (string, error) {
+	if a.toolRegistry == nil {
+		a.logger.Printf("ToolRegistry não disponível, usando fallback para dados processados")
+		return a.askWithProcessedData(question)
+	}
+
+	// Executar PolicyConsultantTool
+	input := fmt.Sprintf(`{"query": "%s", "type": "simple"}`, question)
+	result, err := a.toolRegistry.Execute("policy_consultant", input)
+	if err != nil {
+		a.status.ErrorCount++
+		a.logger.Printf("Erro ao consultar políticas, usando fallback: %v", err)
+		// Fallback para dados processados se PolicyConsultantTool falhar
+		return a.askWithProcessedData(question)
+	}
+
+	a.logger.Printf("Consulta de política processada com sucesso: %.50s...", question)
+	return result, nil
+}
+
+// askWithProcessedData processa pergunta usando dados processados (implementação original)
+func (a *VRAgent) askWithProcessedData(question string) (string, error) {
 	// Usar apenas chat service para máxima simplicidade e estabilidade
 	var response string
 	var err error
