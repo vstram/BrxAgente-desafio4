@@ -191,3 +191,67 @@ func TestDefaultAgentConfig(t *testing.T) {
 		t.Errorf("Configuração padrão deveria ser válida: %v", err)
 	}
 }
+
+// TestVRAgent_ToolsAlwaysAvailable testa que as ferramentas estão sempre disponíveis independente do debug mode
+func TestVRAgent_ToolsAlwaysAvailable(t *testing.T) {
+	tests := []struct {
+		name      string
+		debugMode bool
+	}{
+		{
+			name:      "com debug mode ativado",
+			debugMode: true,
+		},
+		{
+			name:      "com debug mode desativado",
+			debugMode: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Criar configuração com debug mode específico
+			config := DefaultAgentConfig()
+			config.DebugMode = tt.debugMode
+
+			// Criar chat service
+			chatSvc := chat.NewChat(nil)
+
+			// Criar agente
+			agent, err := NewVRAgent(config, chatSvc)
+			if err != nil {
+				t.Fatalf("Erro ao criar agente: %v", err)
+			}
+
+			// Verificar se as ferramentas estão disponíveis
+			tools := agent.GetAvailableTools()
+			expectedTools := []string{"read_excel", "calculate_vr", "validate_data", "policy_consultant"}
+
+			if len(tools) != len(expectedTools) {
+				t.Errorf("Esperado %d ferramentas, mas obtido %d: %v", len(expectedTools), len(tools), tools)
+			}
+
+			// Verificar se cada ferramenta esperada está presente
+			toolMap := make(map[string]bool)
+			for _, tool := range tools {
+				toolMap[tool] = true
+			}
+
+			for _, expectedTool := range expectedTools {
+				if !toolMap[expectedTool] {
+					t.Errorf("Ferramenta '%s' deveria estar disponível (debug mode: %v)", expectedTool, tt.debugMode)
+				}
+			}
+
+			// Verificar se consegue obter informações da ferramenta policy_consultant
+			toolInfo, err := agent.GetToolInfo("policy_consultant")
+			if err != nil {
+				t.Errorf("Erro ao obter informações da ferramenta policy_consultant: %v", err)
+			}
+
+			if toolInfo == nil {
+				t.Error("Informações da ferramenta policy_consultant não deveriam ser nil")
+			}
+		})
+	}
+}

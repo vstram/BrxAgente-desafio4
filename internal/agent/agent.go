@@ -74,17 +74,14 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 	var orchestrator *workflows.Orchestrator
 	var analyzer *intelligence.Analyzer
 
-	// Inicialização condicional para evitar overhead
-	if agentConfig.DebugMode {
-		// Apenas se debug estiver ativado, criar componentes avançados
-		excelSvc = excel.NewService()
+	// Sempre criar componentes essenciais para funcionalidade completa
+	excelSvc = excel.NewService()
 
-		var toolErr error
-		toolRegistry, toolErr = tools.GetDefaultToolRegistry()
-		if toolErr != nil {
-			// Se falhar, continuar sem ferramentas - não é crítico
-			fmt.Printf("Warning: Failed to create tool registry: %v\n", toolErr)
-		}
+	var toolErr error
+	toolRegistry, toolErr = tools.GetDefaultToolRegistry()
+	if toolErr != nil {
+		// Se falhar, continuar sem ferramentas - não é crítico
+		fmt.Printf("Warning: Failed to create tool registry: %v\n", toolErr)
 	}
 
 	agent := &VRAgent{
