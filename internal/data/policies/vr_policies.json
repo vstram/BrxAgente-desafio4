@@ -45,7 +45,7 @@
       "effective_date": "2024-01-01T00:00:00Z",
       "categories": ["exclusoes", "tipos-colaborador"],
       "metadata": {
-        "tipos_excluidos": ["diretores", "estagiarios", "aprendizes", "terceirizados", "consultores"]
+        "tipos_excluidos": "diretores, estagiarios, aprendizes, terceirizados, consultores"
       },
       "type": "policy",
       "version": "2.1",
@@ -133,7 +133,7 @@
       "effective_date": "2024-01-01T00:00:00Z",
       "categories": ["feriados", "calendario", "dias-uteis"],
       "metadata": {
-        "tipos_feriados": ["nacionais", "estaduais", "municipais"]
+        "tipos_feriados": "nacionais, estaduais, municipais"
       },
       "type": "policy",
       "version": "2.1",
@@ -141,6 +141,48 @@
       "review_date": "2024-12-31T00:00:00Z",
       "status": "active",
       "scope": ["VR", "feriados"]
+    },
+    {
+      "id": "vr_009",
+      "title": "Licença Médica e Afastamentos INSS",
+      "content": "Colaboradores em licença médica superior a 15 dias corridos não têm direito ao VR no período. Para licenças de até 15 dias, o cálculo é proporcional aos dias efetivamente trabalhados. A partir do 16º dia de afastamento, o colaborador fica sob responsabilidade do INSS e perde o direito ao benefício de Vale Refeição.",
+      "source": "Manual de Recursos Humanos v2.2",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["afastamento", "licenca-medica", "inss", "calculo-proporcional"],
+      "metadata": {
+        "limite_dias": "15",
+        "calculo_ate_limite": "proporcional",
+        "calculo_apos_limite": "zero",
+        "responsavel_apos_limite": "INSS"
+      },
+      "type": "policy",
+      "version": "2.2",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "licenca-medica", "inss"]
+    },
+    {
+      "id": "vr_010",
+      "title": "Licença Maternidade e Paternidade",
+      "content": "Durante licença maternidade (120 dias) e paternidade (5 dias), o colaborador não recebe VR, pois o benefício é vinculado aos dias efetivamente trabalhados. A licença maternidade pode ser estendida por mais 60 dias conforme lei, totalizando 180 dias sem direito ao benefício. A licença paternidade pode ser estendida para até 20 dias em empresas do Programa Empresa Cidadã.",
+      "source": "Manual de Recursos Humanos v2.2",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "categories": ["afastamento", "licenca-maternidade", "licenca-paternidade", "programa-empresa-cidada"],
+      "metadata": {
+        "licenca_maternidade_dias": "120",
+        "licenca_maternidade_extendida_dias": "180",
+        "licenca_paternidade_dias": "5",
+        "licenca_paternidade_extendida_dias": "20",
+        "vr_durante_licenca": "false",
+        "base_legal": "CLT Art. 392, Lei 11.770/2008, Lei 13.257/2016"
+      },
+      "type": "policy",
+      "version": "2.2",
+      "approved_by": "Diretoria de RH",
+      "review_date": "2024-12-31T00:00:00Z",
+      "status": "active",
+      "scope": ["VR", "licenca-maternidade", "licenca-paternidade"]
     }
   ]
 }
