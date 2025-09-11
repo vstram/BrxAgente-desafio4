@@ -19,7 +19,7 @@ func TestRegisterDefaultTools(t *testing.T) {
 	}
 
 	// Verificar se todas as ferramentas foram registradas
-	expectedTools := []string{"read_excel", "calculate_vr", "validate_data"}
+	expectedTools := []string{"read_excel", "calculate_vr", "validate_data", "policy_consultant"}
 	expectedCount := len(expectedTools)
 
 	if registry.Count() != expectedCount {
@@ -56,7 +56,7 @@ func TestGetDefaultToolRegistry(t *testing.T) {
 	}
 
 	// Verificar se tem as ferramentas esperadas
-	expectedTools := []string{"read_excel", "calculate_vr", "validate_data"}
+	expectedTools := []string{"read_excel", "calculate_vr", "validate_data", "policy_consultant"}
 	expectedCount := len(expectedTools)
 
 	if registry.Count() != expectedCount {
@@ -112,6 +112,11 @@ func TestGetDefaultToolRegistry_ToolExecution(t *testing.T) {
 			input:       `{"tipo_validacao": "invalid"}`,
 			expectError: true, // Will fail validation and return execution error
 		},
+		{
+			toolName:    "policy_consultant",
+			input:       `{"query": "Diretores têm direito a VR?", "type": "simple"}`,
+			expectError: true, // May fail if knowledge base files are not available in test environment
+		},
 	}
 
 	for _, tt := range tests {
@@ -137,7 +142,7 @@ func TestGetDefaultToolRegistry_ToolInfo(t *testing.T) {
 	// Obter informações de todas as ferramentas
 	allInfo := registry.GetAllToolsInfo()
 
-	expectedTools := []string{"read_excel", "calculate_vr", "validate_data"}
+	expectedTools := []string{"read_excel", "calculate_vr", "validate_data", "policy_consultant"}
 	for _, toolName := range expectedTools {
 		info, exists := allInfo[toolName]
 		if !exists {
@@ -177,7 +182,7 @@ func TestRegisterDefaultTools_Twice(t *testing.T) {
 	}
 
 	// Registry deve manter apenas um conjunto de ferramentas
-	expectedCount := 3 // read_excel, calculate_vr, validate_data
+	expectedCount := 4 // read_excel, calculate_vr, validate_data, policy_consultant
 	if registry.Count() != expectedCount {
 		t.Errorf("Expected %d tools after duplicate registration attempt, got %d", expectedCount, registry.Count())
 	}
