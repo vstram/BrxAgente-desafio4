@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"BrxAgente-desafio4/internal/cache"
 	"BrxAgente-desafio4/internal/knowledge"
 	"github.com/tmc/langchaingo/tools"
 )
@@ -17,6 +18,7 @@ type PolicyConsultantTool struct {
 	policyEngine    *knowledge.PolicyEngine
 	reasoningEngine *knowledge.ReasoningEngine
 	citationManager *knowledge.CitationManager
+	cache           *cache.KnowledgeCache
 	initialized     bool
 }
 
@@ -27,11 +29,16 @@ func NewPolicyConsultantTool(dataDir string) *PolicyConsultantTool {
 	pe := knowledge.NewPolicyEngine(kb)
 	re := knowledge.NewReasoningEngine(kb, pe, cm)
 
+	// Criar cache com configuração padrão
+	cacheConfig := cache.DefaultCacheConfig()
+	knowledgeCache := cache.NewKnowledgeCache(cacheConfig)
+
 	tool := &PolicyConsultantTool{
 		knowledgeBase:   kb,
 		policyEngine:    pe,
 		reasoningEngine: re,
 		citationManager: cm,
+		cache:           knowledgeCache,
 		initialized:     false,
 	}
 
@@ -41,6 +48,40 @@ func NewPolicyConsultantTool(dataDir string) *PolicyConsultantTool {
 	}
 
 	return tool
+}
+
+// GetCache retorna o cache da ferramenta
+func (pct *PolicyConsultantTool) GetCache() *cache.KnowledgeCache {
+	return pct.cache
+}
+
+// EnableCache habilita o cache
+func (pct *PolicyConsultantTool) EnableCache() {
+	if pct.cache != nil {
+		pct.cache.Enable()
+	}
+}
+
+// DisableCache desabilita o cache
+func (pct *PolicyConsultantTool) DisableCache() {
+	if pct.cache != nil {
+		pct.cache.Disable()
+	}
+}
+
+// ClearCache limpa o cache
+func (pct *PolicyConsultantTool) ClearCache() {
+	if pct.cache != nil {
+		pct.cache.Clear()
+	}
+}
+
+// GetCacheMetrics retorna as métricas do cache
+func (pct *PolicyConsultantTool) GetCacheMetrics() cache.KnowledgeCacheMetrics {
+	if pct.cache != nil {
+		return pct.cache.GetMetrics()
+	}
+	return cache.KnowledgeCacheMetrics{}
 }
 
 // Name retorna o nome da ferramenta
@@ -77,7 +118,7 @@ func (pct *PolicyConsultantTool) Call(ctx context.Context, input string) (string
 	return pct.Execute(ctx, input)
 }
 
-// Execute executa a ferramenta com o input fornecido
+// Execute executa a ferramenta com o input fornecido, usando cache quando possível
 func (pct *PolicyConsultantTool) Execute(ctx context.Context, input string) (string, error) {
 	if !pct.initialized {
 		return "", fmt.Errorf("ferramenta não foi inicializada corretamente - verifique se os arquivos de dados estão disponíveis")
@@ -99,11 +140,34 @@ func (pct *PolicyConsultantTool) Execute(ctx context.Context, input string) (str
 		return "", fmt.Errorf("campo 'query' é obrigatório")
 	}
 
-	_, ok := query.(string)
+	queryStr, ok := query.(string)
 	if !ok {
 		return "", fmt.Errorf("campo 'query' deve ser uma string")
 	}
 
+	// Verificar cache primeiro
+	if pct.cache != nil && pct.cache.IsEnabled() {
+		if cached := pct.cache.Get(queryStr); cached != nil {
+			return cached.Response, nil
+		}
+	}
+
+	// Executar consulta normal
+	result, err := pct.executeWithoutCache(ctx, input, requestData)
+	if err != nil {
+		return "", err
+	}
+
+	// Armazenar no cache se executou com sucesso
+	if pct.cache != nil && pct.cache.IsEnabled() && result != "" {
+		pct.cache.Set(queryStr, result, 0.9) // Confidence padrão de 90%
+	}
+
+	return result, nil
+}
+
+// executeWithoutCache executa a consulta sem usar cache
+func (pct *PolicyConsultantTool) executeWithoutCache(ctx context.Context, input string, requestData map[string]interface{}) (string, error) {
 	// Determinar tipo de consulta
 	consultationType := pct.determineConsultationType(requestData)
 

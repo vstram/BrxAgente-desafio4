@@ -1,6 +1,6 @@
 module BrxAgente-desafio4
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.6
 
@@ -9,6 +9,7 @@ require (
 	github.com/tmc/langchaingo v0.1.12
 	github.com/wailsapp/wails/v2 v2.10.2
 	github.com/xuri/excelize/v2 v2.9.1
+	golang.org/x/text v0.29.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -65,7 +66,6 @@ require (
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
