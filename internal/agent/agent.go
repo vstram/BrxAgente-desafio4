@@ -44,6 +44,9 @@ type VRAgent struct {
 	// Sistema de otimização de performance
 	performanceOptimizer *PerformanceOptimizer
 
+	// Sistema de formatação de respostas
+	responseFormatter *ResponseFormatter
+
 	// Estado do agente
 	enabled   bool
 	status    AgentStatus
@@ -93,6 +96,9 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 	// Criar otimizador de performance
 	perfOptimizer := NewPerformanceOptimizer()
 
+	// Criar formatador de respostas
+	formatter := NewResponseFormatter(nil) // Usar configuração padrão
+
 	agent := &VRAgent{
 		config:               agentConfig,
 		memory:               memoryBuffer,
@@ -103,6 +109,7 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		analyzer:             analyzer,
 		questionClassifier:   NewQuestionClassifier(),
 		performanceOptimizer: perfOptimizer,
+		responseFormatter:    formatter,
 		enabled:              agentConfig.Enabled,
 		startTime:            time.Now(),
 		status: AgentStatus{
@@ -277,6 +284,19 @@ IMPORTANTE:
 	}
 
 	a.logger.Printf("Pergunta processada com sucesso: %.50s...", question)
+	
+	// Formatar resposta usando ResponseFormatter
+	if a.responseFormatter != nil {
+		responseData := ResponseData{
+			Question:    question,
+			Answer:      response,
+			Data:        contextData,
+			ProcessedAt: time.Now(),
+			Timestamp:   time.Now(),
+		}
+		return a.responseFormatter.Format(DataResponse, responseData), nil
+	}
+	
 	return response, nil
 }
 
@@ -718,4 +738,110 @@ func (a *VRAgent) ClearPerformanceCaches() {
 	if a.performanceOptimizer != nil {
 		a.performanceOptimizer.ClearAllCaches()
 	}
+}
+
+// Response formatting methods
+
+// FormatPolicyResponse formata uma resposta de política
+func (a *VRAgent) FormatPolicyResponse(question, answer, source string, confidence float64) string {
+	if a.responseFormatter == nil {
+		return answer
+	}
+
+	responseData := ResponseData{
+		Question:   question,
+		Answer:     answer,
+		Source:     source,
+		Confidence: confidence,
+		Timestamp:  time.Now(),
+	}
+
+	return a.responseFormatter.Format(PolicyResponse, responseData)
+}
+
+// FormatDataResponse formata uma resposta de dados processados
+func (a *VRAgent) FormatDataResponse(question, answer, data, stats string) string {
+	if a.responseFormatter == nil {
+		return answer
+	}
+
+	responseData := ResponseData{
+		Question:    question,
+		Answer:      answer,
+		Data:        data,
+		Stats:       stats,
+		ProcessedAt: time.Now(),
+		Timestamp:   time.Now(),
+	}
+
+	return a.responseFormatter.Format(DataResponse, responseData)
+}
+
+// FormatCalculationResponse formata uma resposta de cálculo
+func (a *VRAgent) FormatCalculationResponse(question, result, rule, calculation, policyRef string) string {
+	if a.responseFormatter == nil {
+		return result
+	}
+
+	responseData := ResponseData{
+		Question:    question,
+		Result:      result,
+		Rule:        rule,
+		Calculation: calculation,
+		PolicyRef:   policyRef,
+		Timestamp:   time.Now(),
+	}
+
+	return a.responseFormatter.Format(CalculationResponse, responseData)
+}
+
+// FormatErrorResponse formata uma resposta de erro
+func (a *VRAgent) FormatErrorResponse(errorMsg string, suggestions []string) string {
+	if a.responseFormatter == nil {
+		return errorMsg
+	}
+
+	responseData := ResponseData{
+		ErrorMessage: errorMsg,
+		Suggestions:  suggestions,
+		Timestamp:    time.Now(),
+	}
+
+	return a.responseFormatter.Format(ErrorResponse, responseData)
+}
+
+// FormatWhatIfResponse formata uma resposta de cenário hipotético
+func (a *VRAgent) FormatWhatIfResponse(question, answer, calculation string) string {
+	if a.responseFormatter == nil {
+		return answer
+	}
+
+	responseData := ResponseData{
+		Question:    question,
+		Answer:      answer,
+		Calculation: calculation,
+		Timestamp:   time.Now(),
+	}
+
+	return a.responseFormatter.Format(WhatIfResponse, responseData)
+}
+
+// GetResponseFormatter retorna o formatador de respostas
+func (a *VRAgent) GetResponseFormatter() *ResponseFormatter {
+	return a.responseFormatter
+}
+
+// SetResponseFormatterConfig atualiza a configuração do formatador
+func (a *VRAgent) SetResponseFormatterConfig(config *FormatterConfig) {
+	if a.responseFormatter != nil {
+		a.responseFormatter.UpdateConfig(config)
+	}
+}
+
+// GetResponseFormatterConfig retorna a configuração atual do formatador
+func (a *VRAgent) GetResponseFormatterConfig() *FormatterConfig {
+	if a.responseFormatter != nil {
+		return a.responseFormatter.GetConfig()
+	}
+	return nil
 }

@@ -49,6 +49,22 @@ func (qt QuestionType) String() string {
 	}
 }
 
+// ToResponseType converte QuestionType para ResponseType
+func (qt QuestionType) ToResponseType() ResponseType {
+	switch qt {
+	case PolicyQuestion, ComplianceQuestion:
+		return PolicyResponse
+	case CalculationQuestion:
+		return CalculationResponse
+	case ProcessedDataQuestion:
+		return DataResponse
+	case WhatIfQuestion:
+		return WhatIfResponse
+	default:
+		return DataResponse // Default para dados processados
+	}
+}
+
 // PatternMatcher representa um padrão de detecção para classificação
 type PatternMatcher struct {
 	Keywords []string  // Palavras-chave simples
