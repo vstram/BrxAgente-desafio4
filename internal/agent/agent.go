@@ -41,6 +41,9 @@ type VRAgent struct {
 	// Sistema de classificação de perguntas
 	questionClassifier *QuestionClassifier
 
+	// Sistema de otimização de performance
+	performanceOptimizer *PerformanceOptimizer
+
 	// Estado do agente
 	enabled   bool
 	status    AgentStatus
@@ -87,17 +90,21 @@ func NewVRAgent(agentConfig *AgentConfig, chatSvc *chat.Chat) (*VRAgent, error) 
 		fmt.Printf("Warning: Failed to create tool registry: %v\n", toolErr)
 	}
 
+	// Criar otimizador de performance
+	perfOptimizer := NewPerformanceOptimizer()
+
 	agent := &VRAgent{
-		config:             agentConfig,
-		memory:             memoryBuffer,
-		chatService:        chatSvc,
-		excelService:       excelSvc,
-		toolRegistry:       toolRegistry,
-		orchestrator:       orchestrator,
-		analyzer:           analyzer,
-		questionClassifier: NewQuestionClassifier(),
-		enabled:            agentConfig.Enabled,
-		startTime:          time.Now(),
+		config:               agentConfig,
+		memory:               memoryBuffer,
+		chatService:          chatSvc,
+		excelService:         excelSvc,
+		toolRegistry:         toolRegistry,
+		orchestrator:         orchestrator,
+		analyzer:             analyzer,
+		questionClassifier:   NewQuestionClassifier(),
+		performanceOptimizer: perfOptimizer,
+		enabled:              agentConfig.Enabled,
+		startTime:            time.Now(),
 		status: AgentStatus{
 			State:         "idle",
 			LastActivity:  time.Now(),
@@ -233,9 +240,16 @@ func (a *VRAgent) askWithProcessedData(question string) (string, error) {
 	var response string
 	var err error
 
-	// Usar diretamente AskOllama ou AskOpenAI para evitar recursão infinita
-	// (não usar a.chatService.Ask que pode chamar o próprio agente novamente)
-	contextData := a.chatService.GetContextDataAsString()
+	// Usar otimizador de performance para formatar contexto se disponível
+	var contextData string
+	if a.performanceOptimizer != nil {
+		// Obter dados do chat service
+		rawData := a.chatService.GetRawContextData()
+		contextData = a.performanceOptimizer.FormatContextWithCache(rawData, 5)
+	} else {
+		contextData = a.chatService.GetContextDataAsString()
+	}
+	
 	systemPrompt := fmt.Sprintf(`Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
 
 Seu trabalho é responder perguntas sobre os dados de colaboradores que foram PROCESSADOS pelo sistema de cálculo de VR/VA.
@@ -674,4 +688,34 @@ func (a *VRAgent) SetClassifierThresholds(minConfidence, multiClass float64) {
 	a.questionClassifier.SetMultiClassThreshold(multiClass)
 	a.logger.Printf("Classifier thresholds atualizados: minConfidence=%.2f, multiClass=%.2f", 
 		minConfidence, multiClass)
+}
+
+// GetPerformanceOptimizer retorna o otimizador de performance
+func (a *VRAgent) GetPerformanceOptimizer() *PerformanceOptimizer {
+	return a.performanceOptimizer
+}
+
+// GetPerformanceStats retorna estatísticas de performance
+func (a *VRAgent) GetPerformanceStats() PerformanceStats {
+	if a.performanceOptimizer != nil {
+		return a.performanceOptimizer.GetStats()
+	}
+	return PerformanceStats{}
+}
+
+// GetPerformanceCacheInfo retorna informações sobre o cache de performance
+func (a *VRAgent) GetPerformanceCacheInfo() map[string]interface{} {
+	if a.performanceOptimizer != nil {
+		return a.performanceOptimizer.GetCacheInfo()
+	}
+	return map[string]interface{}{
+		"performance_optimizer": "not available",
+	}
+}
+
+// ClearPerformanceCaches limpa todos os caches de performance
+func (a *VRAgent) ClearPerformanceCaches() {
+	if a.performanceOptimizer != nil {
+		a.performanceOptimizer.ClearAllCaches()
+	}
 }

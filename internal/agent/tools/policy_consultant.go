@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"BrxAgente-desafio4/internal/cache"
 	"BrxAgente-desafio4/internal/knowledge"
@@ -20,33 +21,26 @@ type PolicyConsultantTool struct {
 	citationManager *knowledge.CitationManager
 	cache           *cache.KnowledgeCache
 	initialized     bool
+	
+	// Lazy loading
+	dataDir         string
+	loadMutex       sync.Mutex
 }
 
 // NewPolicyConsultantTool cria uma nova instância da ferramenta
 func NewPolicyConsultantTool(dataDir string) *PolicyConsultantTool {
-	kb := knowledge.NewKnowledgeBaseManager()
-	cm := knowledge.NewCitationManager()
-	pe := knowledge.NewPolicyEngine(kb)
-	re := knowledge.NewReasoningEngine(kb, pe, cm)
-
 	// Criar cache com configuração padrão
 	cacheConfig := cache.DefaultCacheConfig()
 	knowledgeCache := cache.NewKnowledgeCache(cacheConfig)
 
 	tool := &PolicyConsultantTool{
-		knowledgeBase:   kb,
-		policyEngine:    pe,
-		reasoningEngine: re,
-		citationManager: cm,
 		cache:           knowledgeCache,
 		initialized:     false,
+		dataDir:         dataDir,
 	}
 
-	// Carregar base de conhecimento
-	if err := kb.LoadFromFiles(dataDir); err == nil {
-		tool.initialized = true
-	}
-
+	// Não carregar base de conhecimento imediatamente (lazy loading)
+	
 	return tool
 }
 
@@ -118,10 +112,45 @@ func (pct *PolicyConsultantTool) Call(ctx context.Context, input string) (string
 	return pct.Execute(ctx, input)
 }
 
+// ensureInitialized garante que a base de conhecimento está carregada
+func (pct *PolicyConsultantTool) ensureInitialized() error {
+	if pct.initialized {
+		return nil
+	}
+	
+	pct.loadMutex.Lock()
+	defer pct.loadMutex.Unlock()
+	
+	// Double-check pattern
+	if pct.initialized {
+		return nil
+	}
+	
+	// Carregar base de conhecimento
+	kb := knowledge.NewKnowledgeBaseManager()
+	if err := kb.LoadFromFiles(pct.dataDir); err != nil {
+		return fmt.Errorf("erro ao carregar base de conhecimento de %s: %w", pct.dataDir, err)
+	}
+	
+	// Inicializar componentes dependentes
+	cm := knowledge.NewCitationManager()
+	pe := knowledge.NewPolicyEngine(kb)
+	re := knowledge.NewReasoningEngine(kb, pe, cm)
+	
+	pct.knowledgeBase = kb
+	pct.policyEngine = pe
+	pct.reasoningEngine = re
+	pct.citationManager = cm
+	pct.initialized = true
+	
+	return nil
+}
+
 // Execute executa a ferramenta com o input fornecido, usando cache quando possível
 func (pct *PolicyConsultantTool) Execute(ctx context.Context, input string) (string, error) {
-	if !pct.initialized {
-		return "", fmt.Errorf("ferramenta não foi inicializada corretamente - verifique se os arquivos de dados estão disponíveis")
+	// Garantir que está inicializada (lazy loading)
+	if err := pct.ensureInitialized(); err != nil {
+		return "", fmt.Errorf("falha na inicialização lazy: %w", err)
 	}
 
 	// Parsear input JSON
@@ -420,29 +449,40 @@ func (pct *PolicyConsultantTool) getConfidenceLevel(confidence float64) string {
 
 // GetKnowledgeStats retorna estatísticas da base de conhecimento
 func (pct *PolicyConsultantTool) GetKnowledgeStats() map[string]interface{} {
+	if err := pct.ensureInitialized(); err != nil {
+		return map[string]interface{}{
+			"error": err.Error(),
+			"initialized": false,
+		}
+	}
 	return pct.knowledgeBase.GetStats()
 }
 
 // SearchKnowledge busca diretamente na base de conhecimento
 func (pct *PolicyConsultantTool) SearchKnowledge(query string, limit int) ([]knowledge.SearchResult, error) {
+	if err := pct.ensureInitialized(); err != nil {
+		return nil, fmt.Errorf("falha na inicialização: %w", err)
+	}
 	return pct.knowledgeBase.Search(query, limit)
 }
 
 // GetByCategory busca itens por categoria
 func (pct *PolicyConsultantTool) GetByCategory(category string) ([]knowledge.KnowledgeItem, error) {
+	if err := pct.ensureInitialized(); err != nil {
+		return nil, fmt.Errorf("falha na inicialização: %w", err)
+	}
 	return pct.knowledgeBase.GetByCategory(category)
 }
 
 // ReloadKnowledgeBase recarrega a base de conhecimento
 func (pct *PolicyConsultantTool) ReloadKnowledgeBase(dataDir string) error {
-	err := pct.knowledgeBase.LoadFromFiles(dataDir)
-	if err != nil {
-		pct.initialized = false
-		return err
-	}
-
-	pct.initialized = true
-	return nil
+	pct.loadMutex.Lock()
+	defer pct.loadMutex.Unlock()
+	
+	pct.initialized = false
+	pct.dataDir = dataDir
+	
+	return pct.ensureInitialized()
 }
 
 // AvailableCategories retorna categorias disponíveis na base de conhecimento

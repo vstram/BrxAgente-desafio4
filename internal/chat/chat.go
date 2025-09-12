@@ -272,6 +272,11 @@ func (c *Chat) GetContextDataAsString() string {
 	return c.formatContextData()
 }
 
+// GetRawContextData returns the raw context data for performance optimization
+func (c *Chat) GetRawContextData() map[string]*modelo.Colaborador {
+	return c.contextData
+}
+
 // formatContextData formats the context data as a string for inclusion in the prompt
 func (c *Chat) formatContextData() string {
 	return c.formatContextDataWithDetail(5) // Default to 5 detailed entries
