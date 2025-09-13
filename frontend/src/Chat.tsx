@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import './Chat.css';
 import { AskAI, AskAIBasic, GetSystemPrompt, IsAgentEnabled, SetAgentEnabled } from "../wailsjs/go/main/App";
 
@@ -206,7 +207,11 @@ function Chat() {
                 messages.map((message) => (
                   <div key={message.id} className={`chat-message ${message.role}`}>
                     <div className="chat-message-content">
-                      {message.content}
+                      {message.role === 'assistant' ? (
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      ) : (
+                        message.content
+                      )}
                     </div>
                     <div className="chat-message-time">
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
