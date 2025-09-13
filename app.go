@@ -15,6 +15,7 @@ import (
 	"github.com/xuri/excelize/v2"
 
 	"BrxAgente-desafio4/internal/agent"
+	"BrxAgente-desafio4/internal/agent/tools"
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/config"
 	"BrxAgente-desafio4/internal/intelligence"
@@ -1612,4 +1613,59 @@ func (a *App) filterDataBySindicato(data []predicoes.HistoricalVRData, sindicato
 		}
 	}
 	return filtered
+}
+
+// ============ Métodos de Controle do Cache ============
+
+// IsKnowledgeCacheEnabled verifica se o cache de conhecimento está habilitado
+func (a *App) IsKnowledgeCacheEnabled() bool {
+	// Usar funções globais para garantir que estamos controlando o cache correto
+	return tools.IsGlobalKnowledgeCacheEnabled()
+}
+
+// SetKnowledgeCacheEnabled habilita/desabilita o cache de conhecimento
+func (a *App) SetKnowledgeCacheEnabled(enabled bool) error {
+	// Usar funções globais para controlar o cache correto
+	if enabled {
+		tools.EnableGlobalKnowledgeCache()
+		a.addSystemLog("info", "Cache de Consultas Frequentes habilitado", "cache")
+		fmt.Printf("✅ Knowledge Cache HABILITADO - consultas repetidas serão mais rápidas\n")
+	} else {
+		tools.DisableGlobalKnowledgeCache()
+		a.addSystemLog("info", "Cache de Consultas Frequentes desabilitado", "cache")
+		fmt.Printf("🚫 Knowledge Cache DESABILITADO - todas as consultas serão processadas sem cache\n")
+	}
+
+	return nil
+}
+
+// GetKnowledgeCacheMetrics retorna as métricas do cache
+func (a *App) GetKnowledgeCacheMetrics() (map[string]interface{}, error) {
+	// Usar funções globais para obter métricas do cache correto
+	metrics := tools.GetGlobalKnowledgeCacheMetrics()
+
+	// Convert to map for JSON serialization
+	return map[string]interface{}{
+		"enabled":            metrics.CacheSize >= 0, // Cache exists
+		"hitCount":          metrics.HitCount,
+		"missCount":         metrics.MissCount,
+		"totalRequests":     metrics.TotalRequests,
+		"hitRate":           float64(metrics.HitCount) / float64(metrics.TotalRequests) * 100,
+		"cacheSize":         metrics.CacheSize,
+		"evictionCount":     metrics.EvictionCount,
+		"expiredCount":      metrics.ExpiredCount,
+		"averageHitTime":    metrics.AverageHitTime.String(),
+		"averageMissTime":   metrics.AverageMissTime.String(),
+		"lastCleanup":       metrics.LastCleanup,
+	}, nil
+}
+
+// ClearKnowledgeCache limpa todas as entradas do cache
+func (a *App) ClearKnowledgeCache() error {
+	// Usar funções globais para limpar o cache correto
+	tools.ClearGlobalKnowledgeCache()
+	a.addSystemLog("info", "Cache de Consultas Frequentes limpo", "cache")
+	fmt.Printf("Knowledge Cache limpo\n")
+
+	return nil
 }

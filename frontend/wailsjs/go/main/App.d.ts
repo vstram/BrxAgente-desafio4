@@ -19,6 +19,8 @@ export function CancelWorkflow():Promise<void>;
 
 export function ClearAgentLogs():Promise<void>;
 
+export function ClearKnowledgeCache():Promise<void>;
+
 export function CreateHistoricalDataFromCurrent(arg1:string,arg2:time.Time):Promise<void>;
 
 export function DetectTrends(arg1:string):Promise<intelligence.TrendAnalysisResult>;
@@ -39,6 +41,8 @@ export function GetConsolidatedData():Promise<Record<string, modelo.Colaborador>
 
 export function GetHistoricalData():Promise<Array<predicoes.HistoricalVRData>>;
 
+export function GetKnowledgeCacheMetrics():Promise<Record<string, any>>;
+
 export function GetPredictiveAnalysisSummary(arg1:string):Promise<Record<string, any>>;
 
 export function GetSystemPrompt():Promise<string>;
@@ -48,6 +52,8 @@ export function GetWorkflowHistory():Promise<Array<main.WorkflowExecution>>;
 export function Greet(arg1:string):Promise<string>;
 
 export function IsAgentEnabled():Promise<boolean>;
+
+export function IsKnowledgeCacheEnabled():Promise<boolean>;
 
 export function PredictTrends(arg1:string):Promise<predicoes.Prediction>;
 
@@ -60,6 +66,8 @@ export function SetAgentEnabled(arg1:boolean):Promise<void>;
 export function SetChatContext():Promise<void>;
 
 export function SetDiretorioPlanilhas(arg1:string):Promise<boolean>;
+
+export function SetKnowledgeCacheEnabled(arg1:boolean):Promise<void>;
 
 export function SetOllamaConfig(arg1:config.OllamaConfig):Promise<void>;
 

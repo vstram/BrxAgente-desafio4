@@ -180,36 +180,45 @@ func (a *VRAgent) Ask(question string) (string, error) {
 	a.logger.Printf("Pergunta classificada como %s (confiança: %.2f): %.50s...",
 		classification.QuestionType.String(), classification.Confidence, question)
 
-	// Roteamento inteligente baseado na classificação
+	// Verificar se o cache está habilitado para decidir o roteamento
+	cacheEnabled := tools.IsGlobalKnowledgeCacheEnabled()
+
+	if !cacheEnabled {
+		// Com cache DESABILITADO: usar sempre dados processados com LLM para análise profunda
+		a.logger.Printf("🚫 Cache DESABILITADO - roteando TODAS as perguntas para análise LLM com dados reais: %.50s...", question)
+		return a.askWithProcessedData(question)
+	}
+
+	// Roteamento inteligente baseado na classificação (COM cache habilitado)
 	switch classification.QuestionType {
 	case PolicyQuestion, ComplianceQuestion:
-		a.logger.Printf("Roteando para PolicyConsultantTool: %.50s...", question)
+		a.logger.Printf("📚 Roteando para PolicyConsultantTool (cache enabled): %.50s...", question)
 		return a.askWithPolicyTool(question)
-		
+
 	case CalculationQuestion:
-		// Para perguntas de cálculo, primeiro tentar PolicyConsultantTool 
+		// Para perguntas de cálculo, primeiro tentar PolicyConsultantTool
 		// (que pode ter fórmulas), depois fallback para dados processados
-		a.logger.Printf("Roteando pergunta de cálculo para PolicyConsultantTool: %.50s...", question)
+		a.logger.Printf("🧮 Roteando pergunta de cálculo para PolicyConsultantTool (cache enabled): %.50s...", question)
 		result, err := a.askWithPolicyTool(question)
 		if err != nil {
 			a.logger.Printf("Fallback: roteando para dados processados")
 			return a.askWithProcessedData(question)
 		}
 		return result, nil
-		
+
 	case WhatIfQuestion:
 		// Para cenários hipotéticos, usar PolicyConsultantTool com contexto especial
-		a.logger.Printf("Roteando pergunta hipotética para PolicyConsultantTool: %.50s...", question)
+		a.logger.Printf("🤔 Roteando pergunta hipotética para PolicyConsultantTool (cache enabled): %.50s...", question)
 		return a.askWithPolicyTool(question)
-		
+
 	case ProcessedDataQuestion:
-		a.logger.Printf("Roteando para dados processados: %.50s...", question)
+		a.logger.Printf("📊 Roteando para dados processados: %.50s...", question)
 		return a.askWithProcessedData(question)
-		
+
 	default: // UnknownQuestion ou baixa confiança
 		// Para perguntas desconhecidas, tentar primeiro PolicyConsultantTool
 		// depois fallback para dados processados
-		a.logger.Printf("Pergunta não classificada, tentando PolicyConsultantTool: %.50s...", question)
+		a.logger.Printf("❓ Pergunta não classificada, tentando PolicyConsultantTool (cache enabled): %.50s...", question)
 		result, err := a.askWithPolicyTool(question)
 		if err != nil {
 			a.logger.Printf("Fallback: roteando para dados processados")
@@ -843,5 +852,25 @@ func (a *VRAgent) GetResponseFormatterConfig() *FormatterConfig {
 	if a.responseFormatter != nil {
 		return a.responseFormatter.GetConfig()
 	}
+	return nil
+}
+
+// GetPolicyConsultantTool retorna a ferramenta PolicyConsultant para controle direto do cache
+func (a *VRAgent) GetPolicyConsultantTool() *tools.PolicyConsultantTool {
+	if a.toolRegistry == nil {
+		return nil
+	}
+
+	// Buscar ferramenta pelo nome
+	tool, err := a.toolRegistry.Get("policy_consultant")
+	if err != nil {
+		return nil
+	}
+
+	// Cast para VRPolicyConsultantTool (wrapper) e depois acessar a tool interna
+	if vrWrapper, ok := tool.(*tools.VRPolicyConsultantTool); ok {
+		return vrWrapper.GetInternalTool()
+	}
+
 	return nil
 }

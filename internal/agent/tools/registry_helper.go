@@ -56,6 +56,11 @@ func (vrpct *VRPolicyConsultantTool) Schema() map[string]interface{} {
 	}
 }
 
+// GetInternalTool retorna a instância interna do PolicyConsultantTool para controle direto do cache
+func (vrpct *VRPolicyConsultantTool) GetInternalTool() *PolicyConsultantTool {
+	return vrpct.tool
+}
+
 // RegisterDefaultTools registra todas as ferramentas padrão no registry
 func RegisterDefaultTools(registry *ToolRegistry) error {
 	// Registrar ReadExcelTool

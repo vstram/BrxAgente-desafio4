@@ -13,6 +13,12 @@ import (
 	"github.com/tmc/langchaingo/tools"
 )
 
+// Cache global compartilhado por todas as instâncias
+var (
+	globalKnowledgeCache *cache.KnowledgeCache
+	globalCacheMutex     sync.Mutex
+)
+
 // PolicyConsultantTool é a ferramenta que integra o consultor de políticas com LangChain
 type PolicyConsultantTool struct {
 	knowledgeBase   *knowledge.KnowledgeBaseManager
@@ -27,20 +33,31 @@ type PolicyConsultantTool struct {
 	loadMutex       sync.Mutex
 }
 
+// initGlobalCache inicializa o cache global uma única vez
+func initGlobalCache() {
+	globalCacheMutex.Lock()
+	defer globalCacheMutex.Unlock()
+
+	if globalKnowledgeCache == nil {
+		cacheConfig := cache.DefaultCacheConfig()
+		globalKnowledgeCache = cache.NewKnowledgeCache(cacheConfig)
+		fmt.Printf("🌟 Global KnowledgeCache inicializado: Enabled=%t\n", globalKnowledgeCache.IsEnabled())
+	}
+}
+
 // NewPolicyConsultantTool cria uma nova instância da ferramenta
 func NewPolicyConsultantTool(dataDir string) *PolicyConsultantTool {
-	// Criar cache com configuração padrão
-	cacheConfig := cache.DefaultCacheConfig()
-	knowledgeCache := cache.NewKnowledgeCache(cacheConfig)
+	// Inicializar cache global se necessário
+	initGlobalCache()
 
 	tool := &PolicyConsultantTool{
-		cache:           knowledgeCache,
+		cache:           globalKnowledgeCache, // Usar cache global compartilhado
 		initialized:     false,
 		dataDir:         dataDir,
 	}
 
 	// Não carregar base de conhecimento imediatamente (lazy loading)
-	
+
 	return tool
 }
 
@@ -76,6 +93,41 @@ func (pct *PolicyConsultantTool) GetCacheMetrics() cache.KnowledgeCacheMetrics {
 		return pct.cache.GetMetrics()
 	}
 	return cache.KnowledgeCacheMetrics{}
+}
+
+// Funções globais para controlar o cache compartilhado
+
+// EnableGlobalKnowledgeCache habilita o cache global compartilhado
+func EnableGlobalKnowledgeCache() {
+	initGlobalCache()
+	globalKnowledgeCache.Enable()
+	fmt.Printf("✅ Global Knowledge Cache HABILITADO\n")
+}
+
+// DisableGlobalKnowledgeCache desabilita o cache global compartilhado
+func DisableGlobalKnowledgeCache() {
+	initGlobalCache()
+	globalKnowledgeCache.Disable()
+	fmt.Printf("🚫 Global Knowledge Cache DESABILITADO\n")
+}
+
+// IsGlobalKnowledgeCacheEnabled retorna se o cache global está habilitado
+func IsGlobalKnowledgeCacheEnabled() bool {
+	initGlobalCache()
+	return globalKnowledgeCache.IsEnabled()
+}
+
+// GetGlobalKnowledgeCacheMetrics retorna métricas do cache global
+func GetGlobalKnowledgeCacheMetrics() cache.KnowledgeCacheMetrics {
+	initGlobalCache()
+	return globalKnowledgeCache.GetMetrics()
+}
+
+// ClearGlobalKnowledgeCache limpa o cache global
+func ClearGlobalKnowledgeCache() {
+	initGlobalCache()
+	globalKnowledgeCache.Clear()
+	fmt.Printf("🧹 Global Knowledge Cache LIMPO\n")
 }
 
 // Name retorna o nome da ferramenta
@@ -176,9 +228,14 @@ func (pct *PolicyConsultantTool) Execute(ctx context.Context, input string) (str
 
 	// Verificar cache primeiro
 	if pct.cache != nil && pct.cache.IsEnabled() {
+		fmt.Printf("🔍 PolicyConsultant: Cache ENABLED - verificando cache para: %.50s...\n", queryStr)
 		if cached := pct.cache.Get(queryStr); cached != nil {
+			fmt.Printf("⚡ PolicyConsultant: Cache HIT - retornando resposta do cache\n")
 			return cached.Response, nil
 		}
+		fmt.Printf("❌ PolicyConsultant: Cache MISS - executando consulta completa\n")
+	} else {
+		fmt.Printf("🚫 PolicyConsultant: Cache DISABLED ou NULL - executando consulta sem cache\n")
 	}
 
 	// Executar consulta normal

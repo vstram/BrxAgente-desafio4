@@ -26,6 +26,10 @@ export function ClearAgentLogs() {
   return window['go']['main']['App']['ClearAgentLogs']();
 }
 
+export function ClearKnowledgeCache() {
+  return window['go']['main']['App']['ClearKnowledgeCache']();
+}
+
 export function CreateHistoricalDataFromCurrent(arg1, arg2) {
   return window['go']['main']['App']['CreateHistoricalDataFromCurrent'](arg1, arg2);
 }
@@ -66,6 +70,10 @@ export function GetHistoricalData() {
   return window['go']['main']['App']['GetHistoricalData']();
 }
 
+export function GetKnowledgeCacheMetrics() {
+  return window['go']['main']['App']['GetKnowledgeCacheMetrics']();
+}
+
 export function GetPredictiveAnalysisSummary(arg1) {
   return window['go']['main']['App']['GetPredictiveAnalysisSummary'](arg1);
 }
@@ -84,6 +92,10 @@ export function Greet(arg1) {
 
 export function IsAgentEnabled() {
   return window['go']['main']['App']['IsAgentEnabled']();
+}
+
+export function IsKnowledgeCacheEnabled() {
+  return window['go']['main']['App']['IsKnowledgeCacheEnabled']();
 }
 
 export function PredictTrends(arg1) {
@@ -108,6 +120,10 @@ export function SetChatContext() {
 
 export function SetDiretorioPlanilhas(arg1) {
   return window['go']['main']['App']['SetDiretorioPlanilhas'](arg1);
+}
+
+export function SetKnowledgeCacheEnabled(arg1) {
+  return window['go']['main']['App']['SetKnowledgeCacheEnabled'](arg1);
 }
 
 export function SetOllamaConfig(arg1) {

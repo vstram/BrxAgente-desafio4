@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './Chat.css';
-import { AskAI, AskAIBasic, GetSystemPrompt, IsAgentEnabled, SetAgentEnabled } from "../wailsjs/go/main/App";
+import { AskAI, AskAIBasic, GetSystemPrompt, IsAgentEnabled, SetAgentEnabled, IsKnowledgeCacheEnabled, SetKnowledgeCacheEnabled } from "../wailsjs/go/main/App";
 
 // Importando ícones
 import ChatIcon from './assets/icons/chat.svg';
@@ -25,19 +25,29 @@ function Chat() {
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [isAgentEnabled, setIsAgentEnabled] = useState(false);
+  const [isCacheEnabled, setIsCacheEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load initial agent state
+  // Load initial agent state and cache state
   useEffect(() => {
-    const loadAgentState = async () => {
+    const loadInitialState = async () => {
       try {
         const enabled = await IsAgentEnabled();
         setIsAgentEnabled(enabled);
+
+        // Load cache state
+        try {
+          const cacheEnabled = await IsKnowledgeCacheEnabled();
+          setIsCacheEnabled(cacheEnabled);
+        } catch (cacheErr) {
+          console.warn('Could not load cache state (agent may not be ready):', cacheErr);
+          // Keep default state (enabled)
+        }
       } catch (err) {
-        console.error('Error loading agent state:', err);
+        console.error('Error loading initial state:', err);
       }
     };
-    loadAgentState();
+    loadInitialState();
   }, []);
 
   // Scroll to bottom of messages
@@ -121,6 +131,37 @@ function Chat() {
     }
   };
 
+  const toggleCache = async () => {
+    try {
+      const newState = !isCacheEnabled;
+      await SetKnowledgeCacheEnabled(newState);
+      setIsCacheEnabled(newState);
+
+      // Show feedback message
+      const feedbackMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Cache de Consultas Frequentes ${newState ? 'habilitado' : 'desabilitado'}. ${
+          newState
+            ? 'As consultas repetidas serão muito mais rápidas.'
+            : 'Todas as consultas serão processadas sem usar o cache.'
+        }`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, feedbackMessage]);
+    } catch (err: any) {
+      console.error('Error toggling cache:', err);
+      // Show error message in chat
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Erro ao alterar o estado do cache: ${err?.message || err?.toString() || 'Erro desconhecido'}`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
   const inspectSystemPrompt = async () => {
     try {
       // Get the system prompt from the backend
@@ -141,13 +182,22 @@ function Chat() {
             <div className="chat-header">
               <h3>Assistente de Dados</h3>
               <div className="chat-header-actions">
-                <button 
-                  className={`chat-agent-toggle ${isAgentEnabled ? 'enabled' : 'disabled'}`} 
+                <button
+                  className={`chat-agent-toggle ${isAgentEnabled ? 'enabled' : 'disabled'}`}
                   onClick={toggleAgent}
                   title={isAgentEnabled ? 'Agente IA Avançado Ativado' : 'Modo Básico Ativado'}
                 >
                   {isAgentEnabled ? '🧠' : '💬'}
                 </button>
+                {isAgentEnabled && (
+                  <button
+                    className={`chat-cache-toggle ${isCacheEnabled ? 'enabled' : 'disabled'}`}
+                    onClick={toggleCache}
+                    title={isCacheEnabled ? 'Cache de Consultas Frequentes Ativado' : 'Cache de Consultas Frequentes Desativado'}
+                  >
+                    {isCacheEnabled ? '⚡' : '🐌'}
+                  </button>
+                )}
                 <button className="chat-inspect-btn" onClick={inspectSystemPrompt}>
                   <img src={EyeIcon} alt="Inspecionar" className="icon" />
                 </button>
@@ -177,7 +227,7 @@ function Chat() {
                     // Modo Avançado - Funcionalidades IA
                     <>
                       <p><strong>🧠 Funcionalidades Avançadas do Agente IA (usando LangChainGO):</strong></p>
-                      <p><small>💡 Use o botão {isAgentEnabled ? '🧠' : '💬'} no cabeçalho para alternar entre os modos Básico/Avançado.</small></p>
+                      <p><small>💡 Use o botão {isAgentEnabled ? '🧠' : '💬'} para alternar entre os modos Básico/Avançado e o botão {isCacheEnabled ? '⚡' : '🐌'} para controlar o Cache de Consultas Frequentes.</small></p>
                       <ul>
                         <li><strong>Análise Inteligente de Padrões:</strong> Detecta automaticamente anomalias e inconsistências nos dados de VR/VA</li>
                         <li><strong>Respostas Contextuais:</strong> Compreende perguntas complexas e fornece análises detalhadas com base no histórico</li>
