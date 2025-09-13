@@ -409,9 +409,88 @@ Threshold exceeded: >5 critical anomalies
 ✅ Claro: "Há anomalias nos valores de VR detectadas?"
 ```
 
-3. **Verificar logs do sistema:**
+3. **Verificar modalidade de análise:**
+   - **🐌 Modo Detalhado**: Análises profundas (padrão)
+   - **⚡ Modo Rápido**: Consultas simples
+   - Usar modo apropriado para o tipo de pergunta
+
+4. **Verificar logs do sistema:**
    - Procurar por erros de contexto
    - Confirmar que dados foram indexados
+
+---
+
+### **❌ Problema: "Chat muito lento" ou "Respostas genéricas"**
+
+**Sintomas:**
+- Demora >15 segundos para responder
+- Respostas muito genéricas sem dados específicos
+- LLM parece não ter acesso aos dados
+
+**Diagnóstico da Modalidade:**
+- **🐌 Análise Detalhada**: ~13 segundos é normal
+- **⚡ Análise Rápida**: ~2 segundos é esperado
+
+**Soluções por Modalidade:**
+
+#### **🐌 Análise Detalhada (Padrão)**
+**Características normais:**
+- Cache desabilitado automaticamente
+- Processa todos os 1794+ colaboradores (~216KB)
+- Respostas brutas da LLM (sem formatação)
+- Tempo: 10-15 segundos é normal
+
+**Como verificar se está funcionando:**
+```bash
+# Nos logs, procure por:
+"🧪 TESTE DE CAPACIDADE AUTOMÁTICO: Cache desabilitado, enviando TODOS os 1794 colaboradores"
+"🔓 BYPASS FORMATTER AUTOMÁTICO: Cache desabilitado, retornando resposta RAW da LLM"
+```
+
+**Problemas comuns:**
+1. **Respostas genéricas**: LLM pode estar recebendo dados truncados
+2. **Timeout**: Modelo local (Ollama) pode ser muito lento
+3. **Dados incompletos**: Context não foi carregado corretamente
+
+**Soluções:**
+1. **Usar OpenAI** em vez de Ollama para análises complexas
+2. **Verificar contexto**: Deve mostrar "1794+ colaboradores"
+3. **Aguardar tempo completo**: Não interromper processamento
+
+#### **⚡ Análise Rápida (Opcional)**
+**Características normais:**
+- Cache habilitado para velocidade
+- Dados agregados otimizados (~702 chars)
+- Respostas formatadas profissionalmente
+- Tempo: 2-5 segundos
+
+**Como ativar:**
+1. Clicar no ícone do cache (🐌 → ⚡) no cabeçalho do chat
+2. Tooltip muda para "Cache habilitado - Respostas rápidas"
+3. Sistema confirma com mensagem
+
+**Como verificar se está funcionando:**
+```bash
+# Nos logs, procure por:
+"📊 MODO NORMAL: Enviando dados otimizados (tamanho: 702 chars)"
+"🔓 BYPASS FORMATTER: Retornando resposta RAW da LLM" # NÃO aparece
+```
+
+**Ideal para:**
+- Consultas simples ("Quantos colaboradores?")
+- Validação de políticas ("Estagiários têm direito a VR?")
+- Status rápidos ("Há anomalias críticas?")
+
+### **🔄 Alternando Entre Modalidades**
+
+**Indicadores visuais:**
+- **🐌**: Modo detalhado ativo (padrão)
+- **⚡**: Modo rápido ativo (opcional)
+- **Tooltip**: Explica qual modo está ativo
+
+**Quando usar cada uma:**
+- **🐌 Detalhada**: Análises estatísticas, comparações, detecção de padrões
+- **⚡ Rápida**: Consultas simples, verificações rápidas, políticas
 
 ## ⚡ Problemas de Performance
 

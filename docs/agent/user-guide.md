@@ -314,11 +314,80 @@ Consulta dados do último processamento realizado:
 **Funcionalidades do Chat:**
 - 🤖 **Classificação Inteligente**: Identifica automaticamente o tipo de pergunta
 - 📋 **Base de Conhecimento**: Respostas baseadas em políticas oficiais
-- 📊 **Contexto de Dados**: Acesso aos dados processados
+- 📊 **Contexto de Dados**: Acesso aos dados processados (1794+ colaboradores)
+- 🐌⚡ **Duas Modalidades**: Análise Detalhada (padrão) ou Análise Rápida
 - 💾 **Histórico Persistente**: Conversas salvas
 - 🔍 **Citação de Fontes**: Referencias oficiais nas respostas
-- 📈 **Formatação Profissional**: Respostas estruturadas e claras
+- 📈 **Formatação Inteligente**: Profissional (rápida) ou Raw (detalhada)
 - 🎯 **Confiança**: Indica nível de certeza da resposta
+
+### **🎯 Modalidades de Análise**
+
+#### **🐌 Análise Detalhada (Modo Padrão)**
+
+**Características:**
+- ✅ **Cache desabilitado** por padrão para máxima precisão
+- ✅ **Dados completos**: Envia todos os 1794+ colaboradores individuais (~216KB)
+- ✅ **Respostas brutas**: Direto da LLM, sem formatação pré-definida
+- ⏱️ **Tempo**: ~13 segundos para análises profundas
+- 🧠 **Capacidade**: Processa OpenAI com contexto completo
+
+**Ideal Para:**
+- 📊 Análises estatísticas complexas
+- 🔍 Detecção de anomalias e padrões
+- 📈 Comparações multi-dimensionais
+- 🎯 Relatórios customizados e detalhados
+
+**Exemplos de Perguntas Avançadas:**
+```
+💬 "Identifique colaboradores com valores de VR que desviam mais de 20% da média
+   do seu sindicato e analise se há padrões relacionados aos dias úteis efetivos"
+
+💬 "Compare a eficiência de VR por sindicato considerando a relação entre valor médio,
+   variabilidade dos dias úteis e distribuição geográfica"
+
+💬 "Analise se existem colaboradores que, baseado no padrão de dias úteis e valores
+   de VR do seu sindicato, podem estar recebendo valores incorretos"
+```
+
+#### **⚡ Análise Rápida (Modo Opcional)**
+
+**Características:**
+- 🚀 **Cache habilitado** para máxima velocidade
+- 📊 **Dados agregados**: Informações otimizadas (~702 chars)
+- 🎨 **Respostas formatadas**: Interface padronizada e consistente
+- ⏱️ **Tempo**: ~2 segundos para consultas diretas
+- 💫 **PolicyConsultant**: Acesso à base de conhecimento estruturada
+
+**Como Ativar:**
+1. **Clique no ícone do cache** no cabeçalho do chat (🐌 → ⚡)
+2. **Observe a mudança** no tooltip e comportamento
+3. **Use para consultas** simples e validações rápidas
+
+**Ideal Para:**
+- ❓ Consultas simples e diretas
+- 📋 Validação de políticas
+- 🔄 Verificações rápidas de status
+- 📊 Dados agregados básicos
+
+**Exemplos de Perguntas Rápidas:**
+```
+💬 "Quantos colaboradores foram processados neste mês?"
+
+💬 "Qual o valor total de VR calculado?"
+
+💬 "Estagiários têm direito a VR segundo as políticas?"
+
+💬 "Há alguma anomalia crítica detectada?"
+```
+
+### **🔄 Alternando Entre Modalidades**
+
+**Na Interface:**
+- **🐌 Padrão**: Aparece automaticamente ao abrir o chat
+- **⚡ Rápida**: Clique no ícone do cache para alternar
+- **Tooltip**: Mostra claramente qual modo está ativo
+- **Feedback**: Sistema confirma a mudança com mensagem explicativa
 
 ### **Comandos Especiais do Chat**
 

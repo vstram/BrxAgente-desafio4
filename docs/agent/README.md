@@ -23,10 +23,12 @@ Em vez de processar planilhas manualmente por horas, o agente:
 - Geração de planilha final formatada automaticamente
 
 ### 💬 **Chat Inteligente com IA**
-- Responde perguntas sobre dados de colaboradores e cálculos de VR
-- Integração com OpenAI (GPT) e Ollama (modelos locais)
-- Contexto baseado nos dados processados
-- Interface de chat integrada na aplicação desktop
+- **Duas modalidades**: Análise Detalhada (🐌 padrão) e Análise Rápida (⚡ opcional)
+- **Modo Detalhado**: Processa todos os 1794+ colaboradores individuais (216KB+)
+- **Modo Rápido**: Usa dados agregados otimizados para velocidade
+- **Integração LLM**: OpenAI (GPT) e Ollama (modelos locais)
+- **Contexto dinâmico**: Baseado nos dados processados em tempo real
+- **Interface integrada**: Chat expandível na aplicação desktop
 
 ### 📊 **Análise Preditiva Avançada** 
 - Sistema completo de predição de tendências de consumo
@@ -69,9 +71,11 @@ wails dev
 
 ### 3. **Uso do Sistema**
 - **Interface Principal**: Selecione diretório e execute processamento de VR
-- **Chat Inteligente**: Faça perguntas sobre dados processados
+- **Chat Inteligente**:
+  - **🐌 Padrão**: Análises detalhadas com todos os dados (13s)
+  - **⚡ Rápido**: Consultas simples com dados agregados (2s)
 - **Configurações**: Configure chaves de API e parâmetros do sistema
-- **Análise Preditiva**: Access através da API do backend
+- **Análise Preditiva**: Acesso através da API do backend
 
 ## 📈 Benefícios Comprovados
 
@@ -132,13 +136,23 @@ graph TB
 ✅ Logs de processamento disponíveis
 ```
 
-### **Consultas via Chat Inteligente**  
-1. **Acessar o chat** na parte inferior da aplicação
-2. **Aguardar carregamento** do contexto após processamento
-3. **Fazer perguntas** sobre os dados processados:
-   - "Quantos colaboradores foram processados?"
-   - "Qual o valor total de VR calculado?"
-   - "Há alguma anomalia nos dados?"
+### **Consultas via Chat Inteligente**
+1. **Acessar o chat** clicando no ícone na parte inferior da aplicação
+2. **Aguardar carregamento** do contexto após processamento (1794+ colaboradores)
+3. **Escolher modalidade**:
+   - **🐌 Detalhada (Padrão)**: Para análises profundas e estatísticas
+   - **⚡ Rápida**: Para consultas simples (clique no ícone do cache)
+4. **Fazer perguntas** baseadas na modalidade escolhida:
+
+**🐌 Exemplos para Análise Detalhada:**
+- "Identifique colaboradores com VR 20% acima da média do sindicato"
+- "Compare eficiência de VR entre sindicatos considerando variabilidade"
+- "Analise padrões de dias úteis e sugira otimizações"
+
+**⚡ Exemplos para Análise Rápida:**
+- "Quantos colaboradores foram processados?"
+- "Qual o valor total de VR calculado?"
+- "Há alguma anomalia crítica nos dados?"
 
 ### **Análise Preditiva (API)**
 1. **Usar métodos da API** do backend

@@ -36,19 +36,36 @@ Antes de começar, certifique-se de ter instalado em seu sistema:
 ### Chat Avançado
 O BrxAgente possui um sistema de chat inteligente que combina:
 - **Base de conhecimento estruturada** sobre políticas de VR
-- **Dados processados em tempo real** do último processamento
+- **Dados processados em tempo real** do último processamento (1794+ colaboradores)
 - **Classificação automática** de perguntas
-- **Respostas com citação de fontes** oficiais
+- **Duas modalidades de análise**: Rápida (⚡) ou Detalhada (🐌)
 
-### Exemplos de Uso
-- **Políticas:** "Estagiários têm direito a VR?"
-- **Cálculos:** "Como calcular para licença médica?"
-- **Dados:** "Total processado este mês?"
+### 🎯 Modalidades de Análise
+
+#### **🐌 Análise Detalhada (Padrão)**
+- ✅ **Cache desabilitado** por padrão para máxima precisão
+- ✅ **Dados completos**: Envia todos os 1794+ colaboradores individuais (216KB+)
+- ✅ **Respostas brutas da LLM**: Sem formatação pré-definida, análises personalizadas
+- ⏱️ **Tempo**: ~13 segundos para análises profundas
+- 🎯 **Ideal para**: Análises estatísticas, detecção de anomalias, relatórios customizados
+
+#### **⚡ Análise Rápida (Opcional)**
+- 🚀 **Cache habilitado** para velocidade máxima
+- 📊 **Dados resumidos**: Informações agregadas otimizadas (702 chars)
+- 🎨 **Respostas formatadas**: Interface padronizada e consistente
+- ⏱️ **Tempo**: ~2 segundos para consultas diretas
+- 🎯 **Ideal para**: Consultas simples, políticas, validações rápidas
+
+### Exemplos de Análises Avançadas
+- **Detecção de Anomalias:** "Identifique colaboradores com VR 20% acima da média do sindicato"
+- **Análise Comparativa:** "Compare eficiência de VR entre sindicatos considerando variabilidade"
+- **Validação de Conformidade:** "Analise colaboradores com valores incorretos e sugira correções"
 
 ### Capacidades do Sistema
 - 📋 **Consultor de Políticas**: Respostas baseadas em regulamentações oficiais
 - 🧮 **Explicação de Cálculos**: Como aplicar regras para cenários específicos
-- 📊 **Análise de Dados**: Consultas sobre dados processados
+- 📊 **Análise Estatística Profunda**: Processamento de dados completos com LLM
+- 🔍 **Detecção de Padrões**: Identificação automática de anomalias e inconsistências
 - 🎯 **Confiança das Respostas**: Indica nível de certeza (Baixa/Média/Alta/Muito Alta)
 
 ## Instalação
@@ -107,7 +124,23 @@ Certifique-se de ter as seguintes planilhas no formato `.xlsx` em uma pasta:
 2. Clique no botão "Fazer Análise" para iniciar o processamento
 3. A planilha de resultado será gerada na pasta de Downloads do usuário
 
-### 4. Configuração (Opcional)
+### 4. Usar Chat Avançado
+
+**🐌 Modo Padrão (Análise Detalhada):**
+- O chat abre automaticamente em modo detalhado para análises profundas
+- Faça perguntas complexas sobre os dados processados
+- Sistema processa todos os colaboradores individuais para análises precisas
+
+**⚡ Modo Rápido (Opcional):**
+- Clique no botão do cache (🐌→⚡) para ativar respostas rápidas
+- Ideal para consultas simples e validações rápidas
+- Usa dados agregados para velocidade máxima
+
+**Exemplos de perguntas por modalidade:**
+- **Detalhada:** "Compare a distribuição de VR entre sindicatos e identifique outliers"
+- **Rápida:** "Quantos colaboradores foram processados neste mês?"
+
+### 5. Configuração (Opcional)
 
 Para usar funcionalidades de IA:
 1. Clique no botão "Configurações"
