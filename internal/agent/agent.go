@@ -11,6 +11,7 @@ import (
 	"BrxAgente-desafio4/internal/chat"
 	"BrxAgente-desafio4/internal/excel"
 	"BrxAgente-desafio4/internal/intelligence"
+	"BrxAgente-desafio4/internal/modelo"
 	"BrxAgente-desafio4/internal/workflows"
 
 	"github.com/tmc/langchaingo/chains"
@@ -261,29 +262,64 @@ func (a *VRAgent) askWithProcessedData(question string) (string, error) {
 	if a.performanceOptimizer != nil {
 		// Obter dados do chat service
 		rawData := a.chatService.GetRawContextData()
-		contextData = a.performanceOptimizer.FormatContextWithCache(rawData, 5)
+
+		// TESTE DE CAPACIDADE: Cache desabilitado OU palavras-chave específicas
+		questionLower := strings.ToLower(question)
+		cacheEnabled := tools.IsGlobalKnowledgeCacheEnabled()
+
+		useFullCapacityTest := !cacheEnabled ||
+			strings.Contains(questionLower, "teste completo") ||
+			strings.Contains(questionLower, "capacidade total") ||
+			strings.Contains(questionLower, "todos os dados") ||
+			strings.Contains(questionLower, "dataset completo") ||
+			strings.Contains(questionLower, "análise completa") ||
+			strings.Contains(questionLower, "processamento completo")
+
+		if useFullCapacityTest {
+			contextData = a.formatAllDataForCapacityTest(rawData)
+			if !cacheEnabled {
+				a.logger.Printf("🧪 TESTE DE CAPACIDADE AUTOMÁTICO: Cache desabilitado, enviando TODOS os %d colaboradores para LLM (tamanho: %d chars)", len(rawData), len(contextData))
+			} else {
+				a.logger.Printf("🧪 TESTE DE CAPACIDADE: Enviando TODOS os %d colaboradores para LLM (tamanho: %d chars)", len(rawData), len(contextData))
+			}
+		} else {
+			contextData = a.performanceOptimizer.FormatContextWithCache(rawData, 100)
+			a.logger.Printf("📊 MODO NORMAL: Enviando dados otimizados (tamanho: %d chars)", len(contextData))
+		}
 	} else {
 		contextData = a.chatService.GetContextDataAsString()
 	}
 	
-	systemPrompt := fmt.Sprintf(`Você é um assistente especializado em análise de dados de Vale Refeição (VR) e Vale Alimentação (VA).
+	systemPrompt := fmt.Sprintf(`Você é um assistente especializado em análise ESTATÍSTICA de dados de Vale Refeição (VR) e Vale Alimentação (VA).
 
-Seu trabalho é responder perguntas sobre os dados de colaboradores que foram PROCESSADOS pelo sistema de cálculo de VR/VA.
+Seu trabalho é fazer análises DETALHADAS dos dados de colaboradores processados.
 
-Contexto dos dados processados:
+Dados disponíveis para análise:
 %s
 
-IMPORTANTE: 
-- "Colaboradores processados" = colaboradores que tiveram seus dados de VR/VA calculados pelo sistema
-- Todos os colaboradores mostrados no contexto JÁ FORAM PROCESSADOS pelo sistema
-- Use os dados fornecidos para responder as perguntas de forma clara e objetiva
-- Seja preciso com números e cálculos`, contextData)
+INSTRUÇÕES ESPECÍFICAS:
+- CALCULE médias, medianas, desvios padrão e outliers por sindicato
+- IDENTIFIQUE valores que desviam >20%% da média do sindicato
+- ANALISE distribuições e padrões estatísticos específicos
+- COMPARE valores entre diferentes sindicatos numericamente
+- FORNEÇA números exatos e percentuais em suas análises
+- NÃO dê respostas genéricas - use os dados específicos fornecidos
+- FOQUE em anomalias estatísticas reais nos dados mostrados
+
+Exemplo de boa resposta: "O colaborador X tem VR de R$1200 enquanto a média do seu sindicato é R$750 (60%% acima da média)"`, contextData)
 
 	// Tentar Ollama primeiro, depois OpenAI se configurado
+	a.logger.Printf("🔄 Tentando Ollama...")
 	response, err = a.chatService.AskOllama(question, systemPrompt)
 	if err != nil {
 		// Se Ollama falhar, tentar OpenAI
+		a.logger.Printf("❌ Ollama falhou (%v), tentando OpenAI...", err)
 		response, err = a.chatService.AskOpenAI(question, []chat.Message{})
+		if err == nil {
+			a.logger.Printf("✅ Resposta obtida via OpenAI")
+		}
+	} else {
+		a.logger.Printf("✅ Resposta obtida via Ollama")
 	}
 
 	if err != nil {
@@ -293,7 +329,26 @@ IMPORTANTE:
 	}
 
 	a.logger.Printf("Pergunta processada com sucesso: %.50s...", question)
-	
+
+	// Verificar se deve fazer bypass do formatter
+	questionLower := strings.ToLower(question)
+	cacheEnabled := tools.IsGlobalKnowledgeCacheEnabled()
+
+	// Bypass automático quando cache está desabilitado OU quando solicitado explicitamente
+	useRawResponse := !cacheEnabled ||
+		strings.Contains(questionLower, "resposta raw") ||
+		strings.Contains(questionLower, "bypass formatter") ||
+		strings.Contains(questionLower, "resposta direta")
+
+	if useRawResponse {
+		if !cacheEnabled {
+			a.logger.Printf("🔓 BYPASS FORMATTER AUTOMÁTICO: Cache desabilitado, retornando resposta RAW da LLM (tamanho: %d chars)", len(response))
+		} else {
+			a.logger.Printf("🔓 BYPASS FORMATTER: Retornando resposta RAW da LLM (tamanho: %d chars)", len(response))
+		}
+		return response, nil
+	}
+
 	// Formatar resposta usando ResponseFormatter
 	if a.responseFormatter != nil {
 		responseData := ResponseData{
@@ -305,8 +360,72 @@ IMPORTANTE:
 		}
 		return a.responseFormatter.Format(DataResponse, responseData), nil
 	}
-	
+
 	return response, nil
+}
+
+// formatAllDataForCapacityTest formata TODOS os colaboradores para teste de capacidade da LLM
+func (a *VRAgent) formatAllDataForCapacityTest(data map[string]*modelo.Colaborador) string {
+	var summary strings.Builder
+
+	// Estatísticas agregadas primeiro
+	total := len(data)
+	var totalVR, totalEmpresa, totalColaborador float64
+	var totalDiasUteis int
+	sindicatos := make(map[string]int)
+	empresas := make(map[string]int)
+
+	// Collect all matriculas for consistent ordering
+	matriculas := make([]string, 0, len(data))
+	for matricula := range data {
+		matriculas = append(matriculas, matricula)
+	}
+
+	// Sort matriculas
+	for i := 0; i < len(matriculas)-1; i++ {
+		for j := i + 1; j < len(matriculas); j++ {
+			if matriculas[i] > matriculas[j] {
+				matriculas[i], matriculas[j] = matriculas[j], matriculas[i]
+			}
+		}
+	}
+
+	// Calculate aggregated stats
+	for _, matricula := range matriculas {
+		colaborador := data[matricula]
+		totalVR += colaborador.ValorTotalVR
+		totalEmpresa += colaborador.ValorEmpresa
+		totalColaborador += colaborador.ValorColaborador
+		totalDiasUteis += colaborador.DiasUteisEfetivos
+		sindicatos[colaborador.Sindicato]++
+		empresas[colaborador.Empresa]++
+	}
+
+	summary.WriteString(fmt.Sprintf("=== TESTE DE CAPACIDADE TOTAL - TODOS OS %d COLABORADORES ===\n", total))
+	summary.WriteString(fmt.Sprintf("Total VR: R$ %.2f | Total Empresa: R$ %.2f | Total Colaborador: R$ %.2f\n", totalVR, totalEmpresa, totalColaborador))
+	summary.WriteString(fmt.Sprintf("Total dias úteis: %d\n\n", totalDiasUteis))
+
+	// Distribuição por sindicato
+	summary.WriteString("DISTRIBUIÇÃO POR SINDICATO:\n")
+	for sindicato, count := range sindicatos {
+		summary.WriteString(fmt.Sprintf("- %s: %d colaboradores\n", sindicato, count))
+	}
+	summary.WriteString("\n")
+
+	// TODOS OS DADOS INDIVIDUAIS COMPLETOS
+	summary.WriteString("=== DADOS COMPLETOS DE TODOS OS COLABORADORES ===\n")
+	for i, matricula := range matriculas {
+		colaborador := data[matricula]
+		summary.WriteString(fmt.Sprintf("%d) Mat=%s|Emp=%s|Sind=%s|VR=%.2f|Dias=%d\n",
+			i+1,
+			colaborador.Matricula,
+			colaborador.Empresa,
+			colaborador.Sindicato,
+			colaborador.ValorTotalVR,
+			colaborador.DiasUteisEfetivos))
+	}
+
+	return summary.String()
 }
 
 // askWithLangChain processa pergunta usando LangChain com memory

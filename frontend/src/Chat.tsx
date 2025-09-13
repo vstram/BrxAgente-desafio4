@@ -25,7 +25,7 @@ function Chat() {
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [isAgentEnabled, setIsAgentEnabled] = useState(false);
-  const [isCacheEnabled, setIsCacheEnabled] = useState(true);
+  const [isCacheEnabled, setIsCacheEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load initial agent state and cache state
@@ -41,7 +41,7 @@ function Chat() {
           setIsCacheEnabled(cacheEnabled);
         } catch (cacheErr) {
           console.warn('Could not load cache state (agent may not be ready):', cacheErr);
-          // Keep default state (enabled)
+          // Keep default state (disabled for detailed analysis)
         }
       } catch (err) {
         console.error('Error loading initial state:', err);
@@ -143,8 +143,8 @@ function Chat() {
         role: 'assistant',
         content: `Cache de Consultas Frequentes ${newState ? 'habilitado' : 'desabilitado'}. ${
           newState
-            ? 'As consultas repetidas serão muito mais rápidas.'
-            : 'Todas as consultas serão processadas sem usar o cache.'
+            ? 'As consultas repetidas serão muito mais rápidas com respostas formatadas.'
+            : 'Todas as consultas serão processadas com dados completos e respostas brutas da LLM para análises detalhadas.'
         }`,
         timestamp: new Date(),
       };
@@ -193,7 +193,9 @@ function Chat() {
                   <button
                     className={`chat-cache-toggle ${isCacheEnabled ? 'enabled' : 'disabled'}`}
                     onClick={toggleCache}
-                    title={isCacheEnabled ? 'Cache de Consultas Frequentes Ativado' : 'Cache de Consultas Frequentes Desativado'}
+                    title={isCacheEnabled
+                      ? 'Cache de Consultas Frequentes Ativado - Respostas rápidas e formatadas'
+                      : 'Cache de Consultas Frequentes Desativado - Análises detalhadas com dados completos e respostas brutas da LLM'}
                   >
                     {isCacheEnabled ? '⚡' : '🐌'}
                   </button>
@@ -227,7 +229,7 @@ function Chat() {
                     // Modo Avançado - Funcionalidades IA
                     <>
                       <p><strong>🧠 Funcionalidades Avançadas do Agente IA (usando LangChainGO):</strong></p>
-                      <p><small>💡 Use o botão {isAgentEnabled ? '🧠' : '💬'} para alternar entre os modos Básico/Avançado e o botão {isCacheEnabled ? '⚡' : '🐌'} para controlar o Cache de Consultas Frequentes.</small></p>
+                      <p><small>💡 Use o botão {isAgentEnabled ? '🧠' : '💬'} para alternar entre os modos Básico/Avançado e o botão {isCacheEnabled ? '⚡' : '🐌'} para controlar o tipo de análise (o padrão são análises detalhadas 🐌).</small></p>
                       <ul>
                         <li><strong>Análise Inteligente de Padrões:</strong> Detecta automaticamente anomalias e inconsistências nos dados de VR/VA</li>
                         <li><strong>Respostas Contextuais:</strong> Compreende perguntas complexas e fornece análises detalhadas com base no histórico</li>
@@ -235,9 +237,14 @@ function Chat() {
                       </ul>
                       <p>Exemplos de perguntas avançadas:</p>
                       <ul>
-                        <li>Identifique anomalias nos valores de VR por sindicato</li>
-                        <li>Compare a distribuição de dias úteis entre os sindicatos</li>
-                        <li>Que recomendações você tem para otimizar os custos de VR?</li>
+                        <li>Identifique colaboradores com valores de VR que desviam mais de 20% da média do seu
+  sindicato e analise se há padrões relacionados aos dias úteis efetivos</li>
+                        <li>Compare a eficiência de VR por sindicato considerando a relação entre valor médio,
+  variabilidade dos dias úteis e distribuição geográfica, identificando qual sindicato tem a
+  política mais consistente</li>
+                        <li>Analise se existem colaboradores que, baseado no padrão de dias úteis e valores de VR do seu
+   sindicato, podem estar recebendo valores incorretos e sugira correções com base nas
+  políticas identificadas</li>
                       </ul>
                     </>
                   ) : (

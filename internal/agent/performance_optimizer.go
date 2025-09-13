@@ -322,32 +322,7 @@ func (po *PerformanceOptimizer) formatContextData(data map[string]*modelo.Colabo
 		summary.WriteString(fmt.Sprintf("  %s: %d colaboradores\n", empresa, empresas[empresa]))
 	}
 
-	// Add detailed examples (optimized loop)
-	if total > 0 && maxDetailed > 0 {
-		detailedCount := maxDetailed
-		if total < maxDetailed {
-			detailedCount = total
-		}
-		summary.WriteString(fmt.Sprintf("\n=== EXEMPLOS DETALHADOS (primeiros %d) ===\n", detailedCount))
-		
-		for i, matricula := range matriculas {
-			if i >= maxDetailed {
-				summary.WriteString(fmt.Sprintf("... e mais %d colaboradores com dados detalhados disponíveis\n", total-maxDetailed))
-				break
-			}
-			
-			colaborador := data[matricula]
-			summary.WriteString(fmt.Sprintf(
-				"Colaborador %d: Matrícula=%s, Empresa=%s, Sindicato=%s, VR=R$%.2f, Dias=%d\n",
-				i+1,
-				colaborador.Matricula,
-				colaborador.Empresa,
-				colaborador.Sindicato,
-				colaborador.ValorTotalVR,
-				colaborador.DiasUteisEfetivos,
-			))
-		}
-	}
+	// Seção de exemplos detalhados removida - não agrega valor para análises estatísticas
 
 	return summary.String()
 }

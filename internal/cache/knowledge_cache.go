@@ -65,7 +65,7 @@ func DefaultCacheConfig() CacheConfig {
 	return CacheConfig{
 		MaxEntries:      1000,                // Máximo 1000 entradas
 		TTL:             24 * time.Hour,      // 24 horas de TTL
-		Enabled:         true,                // Cache habilitado por padrão
+		Enabled:         false,               // Cache desabilitado por padrão para análises detalhadas
 		CleanupInterval: 1 * time.Hour,       // Limpeza a cada hora
 	}
 }
