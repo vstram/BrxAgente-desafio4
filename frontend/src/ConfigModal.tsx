@@ -41,7 +41,7 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (closeAfterSave = false) => {
     try {
       setIsLoading(true);
       setMessage(null);
@@ -56,6 +56,12 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
       });
       
       setMessage({type: 'success', text: 'Configurações salvas com sucesso!'});
+      
+      if (closeAfterSave) {
+        setTimeout(() => {
+          onClose();
+        }, 1000); // Wait 1 second to show the success message
+      }
     } catch (err: any) {
       setMessage({type: 'error', text: `Erro ao salvar configurações: ${err.message}`});
     } finally {
@@ -185,7 +191,7 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
             <img src={CancelIcon} alt="Cancelar" className="icon" />
             Cancelar
           </button>
-          <button className="btn save-btn" onClick={handleSave} disabled={isLoading}>
+          <button className="btn save-btn" onClick={() => handleSave(false)} disabled={isLoading}>
             {isLoading ? (
               <>
                 <img src={SaveIcon} alt="Salvando" className="icon spinner" />
@@ -195,6 +201,19 @@ function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
               <>
                 <img src={SaveIcon} alt="Salvar" className="icon" />
                 Salvar
+              </>
+            )}
+          </button>
+          <button className="btn save-close-btn" onClick={() => handleSave(true)} disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <img src={SaveIcon} alt="Salvando" className="icon spinner" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <img src={SaveIcon} alt="Salvar e Fechar" className="icon" />
+                Salvar e Fechar
               </>
             )}
           </button>

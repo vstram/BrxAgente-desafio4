@@ -235,6 +235,15 @@
   background-color: var(--secondary-dark);
 }
 
+.save-close-btn {
+  background-color: var(--primary-color);
+  color: var(--surface-color);
+}
+
+.save-close-btn:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
