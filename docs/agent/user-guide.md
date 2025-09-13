@@ -233,7 +233,53 @@ A aplicação desktop BrxAgente possui uma interface simples e funcional:
 └─────────────────────────────────────────┘
 ```
 
-## 💬 Sistema de Chat Inteligente
+## 🤖 Chat Avançado com IA
+
+### **Tipos de Consulta Suportadas**
+
+O sistema de chat inteligente pode responder diferentes tipos de perguntas com base em conhecimento estruturado e dados processados.
+
+#### 📋 Consultas sobre Políticas
+O sistema pode responder perguntas sobre políticas de VR com base em sua base de conhecimento:
+
+**Exemplos:**
+- "Diretores têm direito a VR?"
+- "Estagiários podem receber Vale Refeição?"
+- "Qual a política para colaboradores de 4h/dia?"
+
+**Resposta típica:**
+> ## 📋 Consulta de Política
+> **Pergunta:** Diretores têm direito a VR?
+> **Resposta:** Não, diretores não têm direito ao Vale Refeição.
+> **Fonte:** Política VR_003 - Manual de RH v2.1
+> **Confiança:** 95% (Muito Alta)
+
+#### 🧮 Cálculos Específicos
+Explica como calcular VR para cenários específicos:
+
+**Exemplos:**
+- "Como calcular VR para licença médica de 20 dias?"
+- "Colaborador admitido dia 25, qual valor?"
+- "Desligamento comunicado dia 18, tem direito?"
+
+**Resposta típica:**
+> ## 🧮 Cálculo de VR
+> **Cenário:** Licença médica de 20 dias
+> 
+> Para licença médica > 15 dias:
+> - **Fórmula:** (Dias trabalhados ÷ Dias úteis) × VR base
+> - **Exemplo:** (2 ÷ 22) × R$ 460,00 = R$ 41,82
+> 
+> **Fonte:** Manual VR-2025, Seção 5.4
+> **Confiança:** 90% (Alta)
+
+#### 📊 Dados Processados
+Consulta dados do último processamento realizado:
+
+**Exemplos:**
+- "Quantos colaboradores foram processados?"
+- "Qual o total de VR este mês?"
+- "Distribuição por empresa"
 
 ### **Interface de Chat**
 
@@ -245,16 +291,20 @@ A aplicação desktop BrxAgente possui uma interface simples e funcional:
 │                                                     │
 │ 👤 Quantos colaboradores do SINDPD temos?          │
 │                                                     │
-│ 🤖 Encontrei 247 colaboradores ativos do SINDPD.   │
-│    Destes, 234 são elegíveis para VR (94.7%).     │
+│ 🤖 ## 📊 Consulta de Dados                         │
+│    **Colaboradores SINDPD Processados:**           │
+│    • Total: 247 colaboradores                      │
+│    • Elegíveis para VR: 234 (94.7%)               │
+│    • Não elegíveis: 13 (5.3%)                     │
 │                                                     │
-│    📊 Detalhamento:                                 │
+│    **Detalhamento:**                                │
 │    • Ativos e elegíveis: 234                       │
 │    • Em licença: 8                                 │
 │    • Estagiários: 3 (não elegíveis)               │
 │    • Diretores: 2 (não elegíveis)                 │
 │                                                     │
-│    💡 Deseja ver distribuição por setor?           │
+│    **Fonte:** Último processamento (Out/2025)      │
+│    **Confiança:** 100% (Dados Reais)              │
 │                                                     │
 ├─────────────────────────────────────────────────────┤
 │ Digite sua pergunta...                    [Enviar] │
@@ -262,11 +312,13 @@ A aplicação desktop BrxAgente possui uma interface simples e funcional:
 ```
 
 **Funcionalidades do Chat:**
+- 🤖 **Classificação Inteligente**: Identifica automaticamente o tipo de pergunta
+- 📋 **Base de Conhecimento**: Respostas baseadas em políticas oficiais
+- 📊 **Contexto de Dados**: Acesso aos dados processados
 - 💾 **Histórico Persistente**: Conversas salvas
-- 📋 **Sugestões**: Perguntas comuns predefinidas
-- 📊 **Visualizações**: Tabelas e gráficos inline
-- 🔗 **Links**: Acesso direto a dados relacionados
-- 📤 **Exportação**: Salvar conversas em PDF/Word
+- 🔍 **Citação de Fontes**: Referencias oficiais nas respostas
+- 📈 **Formatação Profissional**: Respostas estruturadas e claras
+- 🎯 **Confiança**: Indica nível de certeza da resposta
 
 ### **Comandos Especiais do Chat**
 

@@ -580,6 +580,97 @@ wails version
 ### **P: O sistema guarda histórico de conversas do chat?**
 **R:** Sim, por 30 dias por padrão. Configure retenção em Configurações → Chat → Histórico.
 
+## ❓ FAQ - Inteligência Artificial e Chat
+
+### **P: Como o chat decide que tipo de resposta dar?**
+**R:** O sistema usa classificação automática baseada em:
+- **Análise de palavras-chave**: Identifica se é pergunta sobre política, dados ou cálculo
+- **Contexto atual**: Considera dados processados disponíveis
+- **Base de conhecimento**: Acessa políticas estruturadas para respostas precisas
+- **Fallback inteligente**: Usa LLM quando necessário
+
+### **P: Diretores têm direito a VR?**
+**R:** Não. Segundo a política VR_003:
+- Diretores Estatutários: Sempre excluídos
+- Diretores Executivos: Sempre excluídos
+- Diretores de Área: Sempre excluídos
+- **Exceção:** Diretores com salário < R$ 15.000 podem ser incluídos com aprovação especial
+
+### **P: E estagiários?**
+**R:** Estagiários também estão excluídos do Vale Refeição conforme:
+- Lei nº 11.788/2008 (Lei do Estágio)
+- Política interna VR_003
+- Aprendizes também são excluídos (Lei 10.097/2000)
+
+### **P: Como calcular VR para licença médica?**
+**R:** Depende da duração:
+- **Até 15 dias:** Valor proporcional usando fórmula: (Dias trabalhados ÷ Dias úteis) × VR base
+- **Acima de 15 dias:** Sem direito ao VR do mês
+- **Exemplo:** 20 dias de licença em mês de 22 dias úteis = (2 ÷ 22) × R$ 460 = R$ 41,82
+
+### **P: Por que o chat às vezes diz "Confiança: 95%"?**
+**R:** O sistema indica níveis de confiança:
+- **Muito Alta (91-100%):** Dados reais processados ou políticas explícitas
+- **Alta (76-90%):** Informações bem documentadas na base de conhecimento  
+- **Média (51-75%):** Cenários com múltiplas interpretações
+- **Baixa (0-50%):** Informações incompletas, requer validação manual
+
+### **P: O chat funciona sem internet?**
+**R:** Parcialmente:
+- ✅ **Com internet:** Funcionalidade completa via OpenAI
+- ✅ **Com Ollama local:** Funciona offline se configurado
+- ❌ **Sem ambos:** Apenas validações básicas sem chat inteligente
+
+### **P: Como adicionar novas políticas ao sistema?**
+**R:** Atualmente requer atualização da base de conhecimento:
+1. Documentar nova política no formato estruturado
+2. Adicionar à base de conhecimento (`data/training/knowledge_base/`)
+3. Testar com perguntas de exemplo
+4. Validar respostas com RH/Compliance
+5. Deploy da versão atualizada
+
+### **P: O chat pode acessar dados de colaboradores específicos?**
+**R:** **Não intencionalmente**, por sigilo:
+- ❌ Não acessa nomes de colaboradores
+- ❌ Não mostra dados pessoais
+- ✅ Fornece estatísticas agregadas (totais, médias, distribuições)
+- ✅ Usa apenas números de matrícula como identificador quando necessário
+
+### **P: Por que o chat às vezes não entende minha pergunta?**
+**R:** Possíveis causas:
+1. **Pergunta muito vaga:** Use termos específicos (sindicato, período, etc.)
+2. **Contexto vazio:** Processe dados antes de fazer perguntas sobre eles
+3. **Caso não coberto:** Política ou cenário não documentado na base
+4. **Problema de API:** Verificar configuração OpenAI/Ollama
+
+**Dicas para melhores respostas:**
+- ✅ "Quantos colaboradores ativos do SINDPD foram processados?"
+- ❌ "Quantos temos?"
+- ✅ "Como calcular VR para admissão dia 25?"
+- ❌ "Como calcular isso?"
+
+### **P: O chat substitui o RH para decisões?**
+**R:** **Não!** O chat é uma ferramenta de consulta que:
+- ✅ **Apoia decisões** com informações estruturadas
+- ✅ **Esclarece políticas** existentes
+- ✅ **Explica cálculos** padrão
+- ❌ **Não toma decisões finais**
+- ❌ **Não cria exceções**
+- ❌ **Não substitui validação humana**
+
+### **P: Como melhorar a performance das respostas do chat?**
+**R:** Otimizações disponíveis:
+- **Cache:** 90%+ das consultas sobre políticas são em cache (resposta <200ms)
+- **Contexto atualizado:** Reprocesse dados para perguntas sobre números atuais
+- **Perguntas específicas:** Evite perguntas muito amplas
+- **Configuração:** Use GPT-4-turbo para respostas mais rápidas que GPT-4
+
+### **P: Posso exportar conversas do chat?**
+**R:** Atualmente não há exportação automática, mas você pode:
+- Copiar texto das respostas manualmente
+- Usar screenshots para documentar
+- Solicitar implementação de exportação em PDF/Word como melhoria futura
+
 ---
 
 ## 🚨 Situações de Emergência

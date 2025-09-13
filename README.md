@@ -31,6 +31,26 @@ Antes de começar, certifique-se de ter instalado em seu sistema:
 - Chave de API do OpenAI (para usar modelos GPT)
 - [Ollama](https://ollama.ai/) (para usar modelos locais)
 
+## 🤖 Inteligência Artificial
+
+### Chat Avançado
+O BrxAgente possui um sistema de chat inteligente que combina:
+- **Base de conhecimento estruturada** sobre políticas de VR
+- **Dados processados em tempo real** do último processamento
+- **Classificação automática** de perguntas
+- **Respostas com citação de fontes** oficiais
+
+### Exemplos de Uso
+- **Políticas:** "Estagiários têm direito a VR?"
+- **Cálculos:** "Como calcular para licença médica?"
+- **Dados:** "Total processado este mês?"
+
+### Capacidades do Sistema
+- 📋 **Consultor de Políticas**: Respostas baseadas em regulamentações oficiais
+- 🧮 **Explicação de Cálculos**: Como aplicar regras para cenários específicos
+- 📊 **Análise de Dados**: Consultas sobre dados processados
+- 🎯 **Confiança das Respostas**: Indica nível de certeza (Baixa/Média/Alta/Muito Alta)
+
 ## Instalação
 
 ### 1. Clonar o Repositório
