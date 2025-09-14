@@ -66,7 +66,7 @@ A aplicação desktop BrxAgente possui uma interface simples e funcional:
 
 ## 🔍 Funcionalidades Principais
 
-### **1. Auditor Inteligente**
+### **1. Auditor Inteligente [⚠️FALTA Integrar esta funcionalidade à UI - Backend pronto]**
 
 **Como Acessar:**
 1. Vá para **"Processar VR"** no menu
@@ -98,7 +98,7 @@ A aplicação desktop BrxAgente possui uma interface simples e funcional:
 └─────────────────────────────────────────────────┘
 ```
 
-### **2. Orquestrador de Workflows**
+### **2. Orquestrador de Workflows [⚠️ Falta itegrar esta funcionalidade à UI - Backend pronto]**
 
 **Interface de Workflows:**
 1. **Seletor de Workflow**: Dropdown com opções
@@ -156,7 +156,7 @@ A aplicação desktop BrxAgente possui uma interface simples e funcional:
     📚 Fonte: Manual VR-2025, Seção 5.4"
 ```
 
-### **4. Análise Preditiva**
+### **4. Análise Preditiva [⚠️FALTA Integrar esta funcionalidade à UI - Backend pronto]**
 
 **Como Acessar:**
 1. Vá para **"Relatórios"** → **"Análise Preditiva"**
@@ -170,7 +170,7 @@ A aplicação desktop BrxAgente possui uma interface simples e funcional:
 - 📊 **Métricas Preditas**: Valores futuros estimados
 - ⚠️ **Alertas Proativos**: Riscos identificados
 
-## ⚙️ Workflows Disponíveis
+## ⚙️ Workflows Disponíveis [⚠️FALTA Integrar esta funcionalidade à UI - Backend pronto]
 
 ### **1. Workflow: Processamento Completo de VR**
 
@@ -416,7 +416,7 @@ Consulta dados do último processamento realizado:
     • Jan/2026: R$ 267.890 (+6.6% pico sazonal)
 ```
 
-## 📊 Dashboard e Monitoramento
+## 📊 Dashboard e Monitoramento [⚠️FALTA Integrar esta funcionalidade à UI - Backend pronto]
 
 ### **Dashboard Principal**
 
@@ -487,7 +487,7 @@ Consulta dados do último processamento realizado:
 └─────────────────────────────────────────────────────┘
 ```
 
-### **Configurações Avançadas**
+### **Configurações Avançadas [⚠️Não implementado]**
 
 **Performance:**
 - 🔄 **Workers Paralelos**: 4, 8, 16, 32
@@ -537,7 +537,7 @@ Consulta dados do último processamento realizado:
 └─────────────────────────────────────────────────────┘
 ```
 
-### **Relatório de Anomalias**
+### **Relatório de Anomalias [⚠️FALTA Integrar esta funcionalidade à UI - Backend pronto]**
 
 **Interface de Anomalias:**
 ```
